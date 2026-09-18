@@ -19,3 +19,5 @@ local.properties
 __pycache__/
 *.pyc
 /ml/**/dataset_fuera_de_clase/
+# Carpeta de paso donde se dejan los archivos bajados de Colab (el modelo definitivo va a app/src/main/assets)
+/ml/salida_colab/

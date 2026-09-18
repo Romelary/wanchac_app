@@ -271,7 +271,7 @@ Al terminar cada módulo, antes de pasar al siguiente:
 | 0. Fundamentos del proyecto | ✅ Completado (2026-09-17) |
 | 1. Onboarding y consentimiento | ✅ Completado (2026-09-17) |
 | 2. Captura y almacenamiento offline-first | ✅ Completado (2026-09-17) |
-| 3. Clasificación IA on-device | 🔶 3a: pipeline de Colab preparado y probado en CPU (2026-09-18; modelo de **4 clases**, `escombros` manual), **pendiente ejecutarlo en Colab con fotos propias de `organico` y fotos "fuera de clase" para medir la sobreconfianza**; 3b (integración Android): bloqueada hasta tener el `.tflite` |
+| 3. Clasificación IA on-device | 🔶 3a: **ejecutado en Colab el 2026-09-18** (modelo v1 provisional de **4 clases**, exactitud de prueba 0,89 sobre un dataset fácil; `escombros` manual). **Sin medir aún con fotos de calle ni "fuera de clase"**; 7 fotos de `organico` sin declarar; 3b (integración Android): bloqueada hasta tener el `.tflite` |
 | 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17); backend real sigue pendiente |
 | 5. Mapa público | ⏳ No iniciado (bloqueado por backend) |
 | 6. Mis reportes | ✅ Completado (2026-09-18) — con eliminación, ver ADR-0002 |

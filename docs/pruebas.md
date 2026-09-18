@@ -156,7 +156,7 @@ Además, el propio cuaderno lleva **verificaciones en tiempo de ejecución** (no
 
 **Qué NO comprueban estas pruebas** (dicho sin rodeos, para que nadie cite lo que no se midió):
 - **La calidad del modelo.** Los datos de la prueba son ruido: sirven para probar la *tubería*, no el *aprendizaje*. Las métricas reales solo se obtienen en Colab con fotos verdaderas.
-- **Que corra en Colab.** Se probó con Python y TensorFlow locales; Colab trae otras versiones. Se mitigó usando solo APIs estables (Keras 3, `tf.lite.TFLiteConverter`) y con un cargador de intérprete que prefiere LiteRT (`ai_edge_litert`) y recurre a `tf.lite.Interpreter`; **el camino LiteRT no se ejecutó aquí** (no está instalado en el entorno de prueba, solo el de respaldo). La primera corrida en Colab es la prueba definitiva.
+- **Que corra en Colab: verificado el 2026-09-18.** El cuaderno corrió de punta a punta en Colab (TensorFlow 2.20.0) y produjo un `.tflite` cuyo `sha256` coincide con `metadata.json` y que concuerda con el modelo Keras en 99,0 % de las fotos de prueba. Sigue **sin** probarse: el camino LiteRT (`ai_edge_litert`), el comportamiento con fotos de calle y con fotos fuera de clase.
 - **La descarga real de TrashNet.** La estructura del zip se verificó el 2026-09-18 leyendo su directorio central en Hugging Face (2 527 imágenes; cardboard 403, glass 501, metal 410, paper 594, plastic 482, trash 137), pero la descarga de 43 MB en sí ocurre solo en Colab.
 - **El indicador del Anexo 2.** La coincidencia IA–observador ≥ 70 % se mide en campo, no aquí.
 

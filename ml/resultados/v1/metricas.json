@@ -1,0 +1,84 @@
+{
+  "exactitud_test": 0.8928571428571429,
+  "por_clase": {
+    "plastico": {
+      "precision": 0.8253968253968254,
+      "recall": 0.8666666666666667,
+      "f1-score": 0.8455284552845529,
+      "support": 60.0
+    },
+    "carton": {
+      "precision": 1.0,
+      "recall": 0.9333333333333333,
+      "f1-score": 0.9655172413793104,
+      "support": 60.0
+    },
+    "vidrio": {
+      "precision": 0.85,
+      "recall": 0.85,
+      "f1-score": 0.85,
+      "support": 60.0
+    },
+    "organico": {
+      "precision": 0.9411764705882353,
+      "recall": 1.0,
+      "f1-score": 0.9696969696969697,
+      "support": 16.0
+    }
+  },
+  "macro_f1": 0.9076856665902082,
+  "concordancia_keras_vs_tflite": 0.9897959183673469,
+  "fuera_de_clase": null,
+  "tabla_umbrales_validacion": [
+    {
+      "umbral": 0.5,
+      "cobertura": 0.995,
+      "precision": 0.9128205128205128
+    },
+    {
+      "umbral": 0.55,
+      "cobertura": 0.99,
+      "precision": 0.9175257731958762
+    },
+    {
+      "umbral": 0.6,
+      "cobertura": 0.964,
+      "precision": 0.9259259259259259
+    },
+    {
+      "umbral": 0.65,
+      "cobertura": 0.944,
+      "precision": 0.9405405405405406
+    },
+    {
+      "umbral": 0.7,
+      "cobertura": 0.923,
+      "precision": 0.9447513812154696
+    },
+    {
+      "umbral": 0.75,
+      "cobertura": 0.878,
+      "precision": 0.9534883720930233
+    },
+    {
+      "umbral": 0.8,
+      "cobertura": 0.827,
+      "precision": 0.9629629629629629
+    },
+    {
+      "umbral": 0.85,
+      "cobertura": 0.806,
+      "precision": 0.9620253164556962
+    },
+    {
+      "umbral": 0.9,
+      "cobertura": 0.74,
+      "precision": 0.9655172413793104
+    },
+    {
+      "umbral": 0.95,
+      "cobertura": 0.653,
+      "precision": 0.9921875
+    }
+  ]
+}
