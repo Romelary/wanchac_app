@@ -1,0 +1,8 @@
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated: ["Composable"]
+
+style:
+  MagicNumber:
+    active: false

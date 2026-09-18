@@ -32,7 +32,8 @@
 - **Plantilla usada**: Empty Activity con Jetpack Compose
 - **`applicationId` / `namespace` actual**: `com.wanchaqlimpio.app` (definitivo, fijado el 2026-09-17 — ver Sesión 8. No cambiar nunca más, Play Store lo prohíbe tras publicar)
 - **`minSdk`**: 26 → ✅ coincide con el documento (API mínima 26, Android 8.0 Oreo)
-- **`targetSdk` / `compileSdk`**: 36 → ⚠️ el documento especifica API 34 (Android 14) como target. Se creó con la versión más reciente disponible en el entorno; falta decidir si se homologa a 34 o se documenta como actualización deliberada en la tesis.
+- **`compileSdk`**: 37 (subido desde 36 el 2026-09-17: OkHttp 5.5.0 y AndroidX Core 1.19.0 lo exigen)
+- **`targetSdk`**: 36 → ⚠️ el documento especifica API 34 (Android 14) como target. Falta decidir si se homologa a 34 o se documenta como actualización deliberada en la tesis.
 - **AGP**: 9.2.1 · **Kotlin**: 2.2.10 · **Compose BOM**: 2025.12.00
 
 ### Nota de desviación: Compose vs. vistas XML
@@ -87,6 +88,23 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
   - Se identificó que la pista de pruebas cerradas obligatoria de Google Play (≥12 testers, ≥14 días) puede coincidir con la aplicación del Instrumento 1 (SUS, 38 participantes), evitando duplicar esfuerzo.
 - Se agrega `Módulo 9 — Publicación en Play Store` a `plan.md`, dependiente del Módulo 8.
 - **`applicationId` definitivo fijado: `com.wanchaqlimpio.app`**. Se renombró el paquete Kotlin (`com.example.wanchaq_limpio` → `com.wanchaqlimpio.app`) en todos los archivos fuente (`main`, `androidTest`, `test`) y en `app/build.gradle.kts` (`namespace` y `applicationId`). Se verificó que no quedan referencias al paquete anterior.
+- Se verificó con `./gradlew assembleDebug` (corrido en segundo plano) que el proyecto compila correctamente tras el rename — **éxito, exit code 0**.
+
+### 2026-09-17 — Sesión 9: Módulo 0 (fundamentos del proyecto)
+- **Git inicializado**: `git init`, `.gitignore` corregido (faltaba excluir `/.idea` completo y `/.kotlin`, el cache de compilación incremental de Kotlin), primer commit creado con el proyecto base (wizard + rename de paquete + `docs/`).
+- **Versiones verificadas contra Maven Central / Gradle Plugin Portal** (no asumidas de memoria, dado lo reciente del toolchain AGP 9.2.1 / Kotlin 2.2.10): KSP `2.2.10-2.0.2` (debe calzar exacto con la versión de Kotlin), Hilt `2.60.1`, Room `2.8.5`, Retrofit `3.0.0` (con `converter-gson` y `okhttp-logging-interceptor` a la par), Coroutines `1.11.0`, ktlint-gradle `14.2.0`, detekt `1.23.8`, MockK `1.14.11`, Turbine `1.2.1`.
+- **Hilt** configurado: `WanchaqLimpioApp` (`@HiltAndroidApp`), registrada en el `AndroidManifest.xml`.
+- **Room** configurado con una entidad de prueba (`PruebaEntity`/`PruebaDao`/`AppDatabase`), como pide el Módulo 0 — se reemplaza en el Módulo 2 por las entidades reales de `diseno.md` §6.
+- **Retrofit + OkHttp** configurados vía Hilt (`NetworkModule`), apuntando a `BuildConfig.BASE_URL = "http://10.0.2.2:8000/"` (placeholder de desarrollo — alias de emulador Android hacia `localhost` del host, para cuando exista un mock/backend local).
+- **ktlint** y **detekt** aplicados en `app/build.gradle.kts` con configuración mínima (defaults).
+- Se creó el resto de la estructura de paquetes de `plan.md` §2 (vacía, con `.gitkeep`): `core/{util,location,sync}`, `data/{remote/api,remote/dto,mapper,repository}`, `domain/{model,repository}`, `ml/clasificador`, `ui/{onboarding,reporte,mapa,misreportes,ajustes}`.
+- Se agregó permiso `INTERNET` al manifest (necesario para Retrofit).
+- **Verificación exitosa**: `./gradlew assembleDebug ktlintCheck detekt testDebugUnitTest` → **BUILD SUCCESSFUL**. Módulo 0 marcado como completado en `plan.md`.
+- **Problemas reales encontrados y resueltos en el camino** (documentados por si vuelven a aparecer):
+  1. AGP 9.2.1 trae "built-in Kotlin" habilitado por defecto, que es incompatible con cómo KSP `2.2.10-2.0.2` registra fuentes generadas (`kotlin.sourceSets` DSL) — error: *"Using kotlin.sourceSets DSL to add Kotlin sources is not allowed with built-in Kotlin"*. Intentar desactivar "built-in Kotlin" (`android.builtInKotlin=false`) y volver al plugin clásico `org.jetbrains.kotlin.android` **tampoco funciona**: ese plugin ya no es compatible con las clases internas de AGP 9.2.1 (`ClassCastException`). La solución real fue actualizar KSP a `2.3.12` (versión que ya arregló el issue google/ksp#2729) y dejar "built-in Kotlin" activado (el default).
+  2. OkHttp `5.5.0` y AndroidX Core `1.19.0` exigen compilar contra API 37 → se subió `compileSdk` de 36 a 37 (el SDK 37 ya estaba instalado). El `targetSdk` se mantiene en 36 (decisión aparte, sigue pendiente homologar con el documento).
+  3. ktlint por defecto no reconoce la convención de nombres PascalCase de `@Composable` ni el mismo detekt — se agregó `.editorconfig` (`ktlint_function_naming_ignore_when_annotated_with = Composable`) y `config/detekt/detekt.yml` (mismo ignore para `FunctionNaming`, y se desactivó `MagicNumber` porque marcaba como error los literales de color hexadecimal del tema).
+- Segundo commit de git creado con todo el Módulo 0.
 
 ## Pendientes / decisiones abiertas
 

@@ -24,4 +24,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Wanchaq_Limpio"
 include(":app")
- 
