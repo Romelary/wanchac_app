@@ -17,9 +17,9 @@
 | Lenguaje | Kotlin | ✅ definido |
 | UI | Jetpack Compose | ✅ definido (ver nota de desviación abajo) |
 | Arquitectura | MVVM + Repository, offline-first | ✅ definido |
-| Persistencia local | Room sobre SQLite | ⏳ por implementar |
-| Comunicación | Retrofit + GeoJSON (RFC 7946) contra API REST Django | ⏳ por implementar |
-| Clasificación de residuos | MobileNetV2 vía TensorFlow Lite | ⏳ transfer learning pendiente |
+| Persistencia local | Room sobre SQLite | ✅ implementado (Módulo 2) |
+| Comunicación | Retrofit + GeoJSON (RFC 7946) contra API REST Django | ✅ cliente implementado y probado contra `MockWebServer` (Módulo 4); falta el backend real |
+| Clasificación de residuos | MobileNetV2 vía TensorFlow Lite | 🔶 pipeline de entrenamiento listo en [`ml/`](../ml/README.md) (Módulo 3a); falta ejecutarlo en Colab con fotos propias e integrarlo en la app (3b) |
 | Clustering de focos | DBSCAN (scikit-learn), ε inicial 50 m, MinSamples 4 | ⏳ backend pendiente |
 | Hosting API Django | Render (plan Free + pinger anti-cold-start) | ⏳ backend pendiente |
 | Base de datos | Neon (PostgreSQL + PostGIS, serverless) | ⏳ backend pendiente |
@@ -148,6 +148,17 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
 - Pruebas: 14 unitarias nuevas + 5 de UI (compilan, sin emulador). Total del proyecto: **51 unitarias en verde**. Detalle en [`pruebas.md`](./pruebas.md).
 - Se creó `docs/plan.md` → Módulo 7 marcado como completado.
 
+### 2026-09-18 — Sesión 15: Módulo 3a (pipeline de entrenamiento del clasificador en Colab)
+- **Pedido del usuario**: empezar el Módulo 3 por el Colab, y saber si su Google One sirve. **Respuesta**: solo el espacio de Drive. El cómputo premium de Colab lo dan los planes *Google AI* de pago (según las preguntas frecuentes oficiales de Colab, no está garantizado para planes de solo almacenamiento), y aquí no hace falta: es un entrenamiento pequeño que el plan gratuito resuelve.
+- **Entregables** (carpeta [`ml/`](../ml/README.md)): `clasificador_residuos.py` (fuente única, formato de celdas), `construir_notebook.py` (genera y valida el `.ipynb`), `clasificador_residuos.ipynb` (lo que se sube a Colab), `probar_notebook.py` (prueba de humo) y `ml/README.md` (pasos, contrato con la app, decisiones y limitaciones). El cuaderno hace transfer learning con MobileNetV2 en 2 fases, evalúa, elige el umbral de confianza con validación, exporta a TFLite float16 y **comprueba que el `.tflite` se comporta igual que el modelo original** antes de dar nada por bueno.
+- **Hechos verificados antes de escribir código** (no de memoria): TrashNet es MIT y no requiere cuenta; trae `dataset-resized.zip` de solo 43 MB con la estructura `dataset-resized/<clase>/*.jpg` (leída del directorio central del zip, sin descargarlo; 2 527 fotos) — con eso se descartó hacer *streaming* del dataset completo (3,7 GB) y se corrigió una estimación mía anterior que era incorrecta. TrashNet fotografía **un objeto solo sobre cartulina blanca** (según su README), y su autor pide citar el repositorio.
+- **Brecha de datos, sin maquillar**: TrashNet cubre 3 de las 5 clases (`plastico`, `carton` = cartón+papel, `vidrio`). **`organico` y `escombros` no existen en ningún dataset público**: las fotos las tiene que aportar el equipo. El cuaderno se detiene si una clase tiene < 50 fotos, en vez de entrenar algo engañoso.
+- **Contrato modelo↔app** (`diseno.md` §5): entrada `float32 [1,224,224,3]` con píxeles 0–255 (la normalización va *dentro* del modelo, así Kotlin no replica el preprocesado), salida `[1,5]` softmax en el orden `plastico, carton, vidrio, organico, escombros`, y `MIXTO` como "no sé" cuando la confianza queda bajo el umbral. La prueba de humo **lee el enum `CategoriaResiduo` de Kotlin y exige el mismo orden** que `labels.txt`: si se desordenara, la app etiquetaría mal todo sin lanzar ningún error.
+- **Pruebas**: 10 de humo en verde en CPU local (Python 3.12.2, TensorFlow 2.21.0, Keras 3.15.1; ~2 min), ver [`pruebas.md`](./pruebas.md). Al inspeccionar la salida real aparecieron y se corrigieron 5 problemas (aviso engañoso "ran out of data" por `ignore_errors()`, umbral que podía quedar en 0,30, intérprete `tf.lite` en desuso, ruido de exportación, `NaN` no válido en `metricas.json`). **Limitación honesta**: se probó en CPU con datos sintéticos; la calidad del modelo y el comportamiento en Colab solo se conocen al correrlo allí.
+- **Hallazgo para el Módulo 3b**: TensorFlow avisa que `tf.lite.Interpreter` está en desuso a favor de **LiteRT**. Al integrar en Android hay que verificar el artefacto y la versión vigentes antes de agregar la dependencia (no asumir el nombre de memoria).
+- **Riesgo de cronograma detectado** (registrado en `correcciones-documento.md` y en pendientes): la ventana de observación empieza el 21-sep-2026 y aún faltan modelo entrenado, backend real, pruebas en dispositivo y publicación.
+- Se actualizaron `plan.md` (Módulo 3 dividido en 3a/3b), `diseno.md` (contrato del modelo), `pruebas.md`, `correcciones-documento.md` y el `.gitignore` (las fotos del dataset **no** se versionan: peso y privacidad).
+
 ## Pendientes / decisiones abiertas
 
 - [x] Definir `applicationId` definitivo → `com.wanchaqlimpio.app` (2026-09-17)
@@ -156,7 +167,11 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
 - [x] Crear la estructura de paquetes definida en `plan.md` §2 → hecho, Módulo 0
 - [x] Configurar Hilt, Retrofit, Room base, ktlint/detekt → hecho, Módulo 0
 - [x] Implementar el modelo de datos Room real (`Reporte`, `CategoriaResiduo`, `EstadoReporte`) según `diseno.md` §6, reemplazando `PruebaEntity` → hecho, Módulo 2
-- [ ] Iniciar pipeline de entrenamiento del modelo MobileNetV2 en Colab (bloquea Módulo 3)
+- [x] Preparar el pipeline de entrenamiento de MobileNetV2 (`ml/`, cuaderno de Colab + prueba de humo) → hecho, Módulo 3a (Sesión 15)
+- [ ] **Reunir fotos propias de `organico` y `escombros`** (mínimo 50 por clase, ideal 200 o más; variedad de luz y ángulo; **sin rostros, placas ni interiores de viviendas**) y subirlas a `Mi unidad/wanchaq_limpio_ml/dataset/<clase>/` en Drive. Ningún dataset público las cubre. Sin esto el cuaderno se detiene (a propósito). Bloquea el Módulo 3b
+- [ ] **Ejecutar el cuaderno en Colab** (pasos en [`ml/README.md`](../ml/README.md)), completar `FUENTES_DATASET` con la procedencia/licencia de las fotos propias, y guardar `metricas.json`, las gráficas y `metadata.json` como evidencia. La primera corrida en Colab es la prueba definitiva del pipeline (solo se probó en CPU local)
+- [ ] Citar TrashNet en la tesis (su autor lo pide: Thung y Yang, 2016, `github.com/garythung/trashnet`) y declarar la procedencia de los datos de entrenamiento — ver `correcciones-documento.md`
+- [ ] **Revisar con el asesor el cronograma**: la ventana de observación (21-sep → 15-nov-2026) empieza en días y faltan backend real, modelo entrenado, pruebas en dispositivo y publicación en Play Store — ver `correcciones-documento.md`, "Riesgo de cronograma"
 - [ ] Validar el diseño corregido con el asesor de tesis antes de avanzar en código, dado que se aparta del Capítulo IV del documento entregado
 - [ ] Decidir si se actualiza el `.docx` de la tesis para reflejar el ADR-0001 (login eliminado)
 - [ ] Decidir cuándo aplicar el primer lote de las 9 correcciones (CORR-001 a CORR-009) al `.docx`, y si las Ilustraciones 1, 2 y 6 (diagramas de casos de uso, arquitectura y entidad-relación) deben rehacerse en consecuencia

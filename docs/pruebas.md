@@ -128,6 +128,37 @@ Alcance: solo el cliente Android, contra un backend simulado (`MockWebServer3`, 
 
 **Estado**: 14 pruebas unitarias nuevas en verde (4 `AlmacenFotosImplTest`, 3 `BorrarTodosMisDatosTest`, 3 `AjustesViewModelTest`, 4 nuevas en `ReporteViewModelTest`). **Total del proyecto: 51 pruebas unitarias** en verde (50 propias + el `ExampleUnitTest` del wizard). Las 5 pruebas de UI de `AjustesContentTest` compilan pero no se ejecutaron (sin emulador). En total hay **4 clases de prueba de UI pendientes de correr en un dispositivo real**: `OnboardingContentTest`, `ReporteEstadoContentTest`, `MisReportesContentTest` y `AjustesContentTest`. Lo que **no** se puede verificar en automático es que el borrado remoto llegue a un servidor real (no existe todavía) ni el envío del correo (`Intent` a una app de correo real).
 
+## Módulo 3a — Pipeline de entrenamiento del clasificador (`ml/`)
+
+Estas pruebas **no son de la app Android** sino del código Python que entrena el modelo. Se ejecutan con `python probar_notebook.py` desde `ml/entrenamiento/` (requiere TensorFlow, scikit-learn, matplotlib, pillow y nbformat; sin GPU, sin internet, sin Drive). El propósito es que un error a mitad del cuaderno —típicamente en la exportación a TFLite, que ocurre al final— **no se descubra después de haber gastado el tiempo de entrenamiento en Colab**.
+
+Cómo funciona: `probar_notebook.py` ejecuta el **mismo** `clasificador_residuos.py` que se convierte en el cuaderno, con `SMOKE_TEST=1`. En ese modo se reemplazan los datos reales por (a) un zip falso con la misma estructura que `dataset-resized.zip` de TrashNet —incluida la carpeta `__MACOSX` de basura— para ejercitar el código real de la siembra, y (b) imágenes de ruido para `organico` y `escombros`; el entrenamiento se reduce a 1 época por fase y el modelo arranca sin pesos de ImageNet (para no depender de la red). Todo lo demás (particiones, augmentación, entrenamiento en 2 fases, evaluación, umbral, exportación float16, verificación del `.tflite`, escritura de archivos) corre igual que en Colab.
+
+| Clase (`probar_notebook.py`) | Caso de prueba | Qué verifica | Requisito / dimensión relacionada |
+|---|---|---|---|
+| `PruebaDeHumoDelCuaderno` | `test_el_cuaderno_corre_de_principio_a_fin` | El script termina con código 0 (imprime el final de la salida si falla) | RF-04 |
+| | `test_genera_todos_los_archivos` | Existen y no están vacíos: `.tflite`, `labels.txt`, `metadata.json`, `metricas.json`, curvas y matriz de confusión | Trazabilidad (evidencia para la tesis) |
+| | `test_labels_coincide_con_el_enum_de_kotlin` | **Contrato más frágil:** `labels.txt` es idéntico, y en el mismo orden, a los valores de `CategoriaResiduo` del código Kotlin (sin `MIXTO`). Si difirieran, la app etiquetaría mal *todas* las predicciones sin dar ningún error | RF-04, `diseno.md` §5 |
+| | `test_la_siembra_de_trashnet_mapea_las_carpetas_y_descarta_la_basura` | `plastic→plastico`; `cardboard`+`paper→carton` (con tope); `glass→vidrio`; `metal`, `trash` y `__MACOSX` no entran | RF-04, procedencia de datos |
+| | `test_un_archivo_corrupto_se_descarta_y_se_informa_y_un_formato_no_soportado_se_avisa` | El dataset de prueba trae `corrupta.jpg` (bytes que no son imagen) y `foto.heic` (formato que TensorFlow no lee): el primero queda en `metadata.json → archivos_descartados` y no cuenta; el segundo se avisa por consola. Ninguno se ignora **en silencio** ni rompe el entrenamiento | Calidad de datos |
+| | `test_los_json_son_json_estandar` | `metadata.json` y `metricas.json` no contienen `NaN`/`Infinity` (Python los escribe sin quejarse, pero no son JSON válido y un lector estricto —como el de la app— fallaría). La tabla de umbrales guarda `null` cuando no hay predicciones aceptadas | Robustez del contrato |
+| | `test_metadata_es_coherente` | `metadata.json` coincide con `labels.txt`, declara entrada `[1,224,224,3]` y salida `[1,5]`, umbral entre 0,50 (el piso) y 1, bandera `umbral_alcanza_precision_objetivo` booleana, y su `sha256` corresponde al `.tflite` guardado | Trazabilidad |
+| | `test_el_tflite_tiene_la_entrada_y_salida_que_la_app_espera` | Cargando el `.tflite` con el intérprete: entrada `float32 [1,224,224,3]`, salida `[1,5]`, y una inferencia devuelve probabilidades válidas (suman 1, en 0–1) con píxeles en 0–255 | RF-04, contrato `diseno.md` §5 |
+| `PruebaDelNotebook` | `test_el_notebook_generado_es_valido_y_compila` | El `.ipynb` que se genera valida contra `nbformat` y **cada celda de código compila** (un `#%%` mal cortado sería un `SyntaxError`) | Mantenibilidad |
+| | `test_el_ipynb_versionado_esta_al_dia` | El `.ipynb` guardado en git coincide celda por celda con el `.py`: no se sube a Colab una versión distinta de la que se probó | Mantenibilidad |
+
+**Lo que la prueba de humo ya cazó** (sirve de evidencia de que vale la pena): al inspeccionar la salida real del cuaderno se encontraron y corrigieron (1) `ignore_errors()` dejaba el tamaño del dataset "desconocido" y Keras avisaba *"Your input ran out of data"* al final de cada época —un mensaje alarmante pero inofensivo—, ahora las imágenes se validan por adelantado; (2) el umbral de confianza podía quedar en 0,30 (casi azar con 5 clases) si el dataset era fácil, ahora tiene un piso de 0,50; (3) `tf.lite.Interpreter` está en desuso (TensorFlow avisa que lo eliminará), ahora se prefiere LiteRT con respaldo; (4) la exportación imprimía ~150 líneas de ruido; (5) `metricas.json` podía contener `NaN`, que no es JSON válido.
+
+**Estado**: **10 pruebas de humo en verde** (8 de `PruebaDeHumoDelCuaderno` + 2 de `PruebaDelNotebook`; ~2 min en CPU) con Python 3.12.2, TensorFlow 2.21.0, Keras 3.15.1, scikit-learn 1.9.1.
+
+Además, el propio cuaderno lleva **verificaciones en tiempo de ejecución** (no son JUnit, pero protegen la corrida real): se detiene si alguna clase tiene menos de 50 fotos; compara el `.tflite` contra el modelo Keras original sobre imágenes reales de *test* y **aborta si la concordancia es < 97 %** (o si la probabilidad difiere más de 0,05); y fija todas las semillas para que la corrida sea reproducible.
+
+**Qué NO comprueban estas pruebas** (dicho sin rodeos, para que nadie cite lo que no se midió):
+- **La calidad del modelo.** Los datos de la prueba son ruido: sirven para probar la *tubería*, no el *aprendizaje*. Las métricas reales solo se obtienen en Colab con fotos verdaderas.
+- **Que corra en Colab.** Se probó con Python y TensorFlow locales; Colab trae otras versiones. Se mitigó usando solo APIs estables (Keras 3, `tf.lite.TFLiteConverter`) y con un cargador de intérprete que prefiere LiteRT (`ai_edge_litert`) y recurre a `tf.lite.Interpreter`; **el camino LiteRT no se ejecutó aquí** (no está instalado en el entorno de prueba, solo el de respaldo). La primera corrida en Colab es la prueba definitiva.
+- **La descarga real de TrashNet.** La estructura del zip se verificó el 2026-09-18 leyendo su directorio central en Hugging Face (2 527 imágenes; cardboard 403, glass 501, metal 410, paper 594, plastic 482, trash 137), pero la descarga de 43 MB en sí ocurre solo en Colab.
+- **El indicador del Anexo 2.** La coincidencia IA–observador ≥ 70 % se mide en campo, no aquí.
+
 ---
 
 ## Cómo usar este archivo

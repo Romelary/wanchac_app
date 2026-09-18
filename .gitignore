@@ -9,3 +9,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Modulo 3 (ML): lo que se genera al entrenar NO se versiona.
+# - dataset/: fotos (peso y privacidad; solo deben vivir en Drive del equipo)
+# - salida/: modelos y graficas intermedias (el .tflite definitivo se versiona en app/src/main/assets)
+/ml/**/dataset/
+/ml/**/salida/
+/ml/**/wanchaq_limpio_ml/
+__pycache__/
+*.pyc

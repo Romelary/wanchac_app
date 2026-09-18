@@ -162,12 +162,15 @@ flowchart TD
 
 - **Objetivo**: sugerir categoría de residuo con MobileNetV2/TFLite, editable por el usuario.
 - **Requisitos que satisface**: RF-04.
-- **Entregables**:
-  - Modelo `.tflite` entrenado (pipeline en Colab, ver `progreso.md`) copiado a `app/src/main/assets/`
-  - `ClasificadorResiduo` (wrapper del intérprete TFLite)
-  - UI de categoría sugerida + selector manual de corrección
-- **Depende de**: Módulo 2 (necesita la foto capturada) + pipeline de Colab terminado
-- **Pruebas**: unit test con set fijo de imágenes de referencia (una por categoría) verificando que la predicción coincide con la esperada dentro de un umbral de confianza.
+- **Se divide en dos partes** porque la primera depende de datos y de una sesión de Colab que corre el usuario:
+  - **3a — Pipeline de entrenamiento** (carpeta [`ml/`](../ml/README.md)) — ✅ preparado, **falta ejecutarlo en Colab**. Entregables: cuaderno `clasificador_residuos.ipynb` (generado desde el `.py`), prueba de humo `probar_notebook.py` y el contrato modelo↔app (entrada/salida/orden de clases/umbral) documentado en `ml/README.md`. Salida esperada: `clasificador_residuos.tflite`, `labels.txt`, `metadata.json`, `metricas.json`.
+  - **3b — Integración Android** — ⏳ bloqueada hasta tener el `.tflite`. Entregables:
+    - Modelo `.tflite` + `labels.txt` + `metadata.json` copiados a `app/src/main/assets/`
+    - `ClasificadorResiduo` (wrapper del intérprete TFLite/LiteRT; verificar el artefacto y la versión antes de agregar la dependencia)
+    - UI de categoría sugerida + selector manual de corrección; si la confianza queda bajo `umbral_confianza_sugerido` se propone `MIXTO`
+- **Depende de**: Módulo 2 (necesita la foto capturada) + 3a ejecutado (dataset con fotos de `organico` y `escombros`, que ningún dataset público cubre)
+- **Pruebas**: 3a → `probar_notebook.py` (ver [`pruebas.md`](./pruebas.md)); 3b → unit test con set fijo de imágenes de referencia (una por categoría) verificando que la predicción coincide con la esperada dentro de un umbral de confianza.
+- **Nota de alcance**: las métricas del cuaderno se miden sobre el mismo dataset y **no son** el indicador de la tesis (Anexo 2: coincidencia IA–observador ≥ 70 %, medida en campo). No citarlas como tal.
 
 ### Módulo 4 — Sincronización diferida
 
@@ -267,7 +270,7 @@ Al terminar cada módulo, antes de pasar al siguiente:
 | 0. Fundamentos del proyecto | ✅ Completado (2026-09-17) |
 | 1. Onboarding y consentimiento | ✅ Completado (2026-09-17) |
 | 2. Captura y almacenamiento offline-first | ✅ Completado (2026-09-17) |
-| 3. Clasificación IA on-device | ⏳ No iniciado (bloqueado por pipeline de Colab) |
+| 3. Clasificación IA on-device | 🔶 3a: pipeline de Colab preparado y probado en CPU (2026-09-18), **pendiente ejecutarlo en Colab con las fotos propias**; 3b (integración Android): bloqueada hasta tener el `.tflite` |
 | 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17); backend real sigue pendiente |
 | 5. Mapa público | ⏳ No iniciado (bloqueado por backend) |
 | 6. Mis reportes | ✅ Completado (2026-09-18) — con eliminación, ver ADR-0002 |

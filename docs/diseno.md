@@ -208,7 +208,17 @@ classDiagram
 - `ReporteViewModel`: coordina captura de GPS (filtra > 15 m localmente, RF-02) y foto, invoca al clasificador on-device (RF-04).
 - `ReporteRepository`: única fuente de verdad. Si hay red, envía por Retrofit; si no, persiste en Room y deja el reporte en estado `pendiente`.
 - `SyncWorker` (WorkManager): reintenta el envío de reportes `pendiente` cuando la conectividad se restablece (RNF-01, RF-03).
-- `ClasificadorResiduo`: envuelve el intérprete de TensorFlow Lite (modelo MobileNetV2 reentrenado, ver `progreso.md`).
+- `ClasificadorResiduo`: envuelve el intérprete de TensorFlow Lite (modelo MobileNetV2 reentrenado, ver `progreso.md`). Solo **sugiere**: el usuario siempre puede corregir (RF-04). Si la confianza queda bajo el umbral del modelo, propone `MIXTO`.
+
+**Contrato del modelo de IA (Colab ↔ app)** — el modelo se entrena fuera de la app ([`ml/`](../ml/README.md)) y se comunica con ella solo por tres archivos en `app/src/main/assets/`. Cualquier cambio en un lado exige cambiarlo en el otro; el orden de las clases se comprueba automáticamente contra el enum `CategoriaResiduo` (ver `pruebas.md`).
+
+| Aspecto | Valor |
+|---|---|
+| Entrada | `float32 [1, 224, 224, 3]`, RGB, píxeles 0–255 **sin normalizar** (la normalización va dentro del modelo, para no duplicar el preprocesado en Kotlin) |
+| Salida | `float32 [1, 5]`, softmax, en el orden de `labels.txt`: `plastico, carton, vidrio, organico, escombros` |
+| `MIXTO` | No es clase del modelo: es el "no sé" que la app usa cuando la confianza máxima < `umbral_confianza_sugerido` |
+| Archivos | `clasificador_residuos.tflite` (float16), `labels.txt`, `metadata.json` (umbral, `sha256`, fuentes y conteo del dataset) |
+| Privacidad | La clasificación ocurre **en el teléfono**: la foto no viaja a ningún servidor para clasificarse (ADR-0001) |
 
 ---
 
