@@ -9,7 +9,8 @@ los datos reales por imágenes sintéticas y reduce el entrenamiento a una époc
   2. que `labels.txt` y `metadata.json` respetan el contrato con la app, incluido el ORDEN de las
      clases, que se compara contra el enum `CategoriaResiduo` de Kotlin;
   3. que el `.tflite` tiene la entrada/salida que la app espera y produce probabilidades válidas;
-  4. que el `.ipynb` generado es válido y está al día respecto al `.py`.
+  4. que el `.ipynb` generado es válido y está al día respecto al `.py`;
+  5. que `probar_modelo.py` (prueba del modelo con fotos reales de calle) funciona con el `.tflite` recién generado.
 
 Lo que NO comprueba: la calidad del modelo (los datos son de ruido). Eso solo se ve en Colab.
 
@@ -47,7 +48,7 @@ class PruebaDeHumoDelCuaderno(unittest.TestCase):
     def setUpClass(cls):
         cls._tmp = tempfile.TemporaryDirectory()
         cls.raiz = Path(cls._tmp.name)
-        entorno = {
+        cls.entorno = {
             **os.environ,
             "SMOKE_TEST": "1",
             "SMOKE_DIR": str(cls.raiz),
@@ -55,7 +56,7 @@ class PruebaDeHumoDelCuaderno(unittest.TestCase):
             "TF_CPP_MIN_LOG_LEVEL": "2",
         }
         cls.proceso = subprocess.run(
-            [sys.executable, str(FUENTE)], env=entorno, capture_output=True, text=True, encoding="utf-8"
+            [sys.executable, str(FUENTE)], env=cls.entorno, capture_output=True, text=True, encoding="utf-8"
         )
         cls.salida = cls.raiz / "salida"
 
@@ -118,6 +119,67 @@ class PruebaDeHumoDelCuaderno(unittest.TestCase):
         self.assertEqual(len(fuera["peores_casos"]), 6)
         confianzas = [caso["confianza"] for caso in fuera["peores_casos"]]
         self.assertEqual(confianzas, sorted(confianzas, reverse=True), "los peores casos deben ir del más al menos seguro")
+
+    def test_probar_modelo_mide_fotos_reales_con_el_tflite_generado(self):
+        """`probar_modelo.py` es lo que permitirá decidir el umbral con fotos de calle. Se ejecuta contra el
+        `.tflite` recién generado con fotos de ruido (3 por clase + 3 fuera de clase + 1 corrupta) y debe
+        producir un informe coherente: conteos, un archivo ilegible informado y no silenciado, y el barrido de
+        umbrales completo. No evalúa la calidad (son ruido), solo que la herramienta funciona."""
+        import numpy as np
+        from PIL import Image
+
+        carpeta = self.raiz / "prueba_calle_falsa"
+        rng = np.random.default_rng(7)
+        for clase in ["plastico", "carton", "vidrio", "organico", "fuera_de_clase"]:
+            (carpeta / clase).mkdir(parents=True, exist_ok=True)
+            for n in range(3):
+                Image.fromarray(rng.integers(0, 255, (64, 64, 3), dtype="uint8")).save(carpeta / clase / f"{n}.jpg")
+        (carpeta / "organico" / "corrupta.jpg").write_bytes(b"esto no es una imagen")
+
+        resultado_json = self.raiz / "prueba_calle.json"
+        proceso = subprocess.run(
+            [
+                sys.executable,
+                str(AQUI / "probar_modelo.py"),
+                str(carpeta),
+                "--modelo",
+                str(self.salida / "clasificador_residuos.tflite"),
+                "--umbral",
+                "0.70",
+                "--tope-fuera",
+                "0.10",
+                "--salida",
+                str(resultado_json),
+            ],
+            env=self.entorno,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(proceso.returncode, 0, f"probar_modelo.py falló:\n{proceso.stdout[-1500:]}\n{proceso.stderr[-1500:]}")
+        r = json.loads(resultado_json.read_text(encoding="utf-8"))
+        self.assertEqual(r["n_fotos_clases"], 12)
+        self.assertEqual(r["n_fuera_de_clase"], 3)
+        self.assertEqual(r["ilegibles"], ["organico/corrupta.jpg"], "el archivo corrupto debe informarse, no ignorarse")
+        self.assertEqual(sum(c["n"] for c in r["por_clase"].values()), 12)
+        self.assertEqual([f["umbral"] for f in r["barrido_umbral"]], [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95])
+        # cobertura y fuera-de-clase sobre umbral nunca aumentan al subir el umbral
+        cobertura = [f["cobertura"] for f in r["barrido_umbral"]]
+        self.assertEqual(cobertura, sorted(cobertura, reverse=True))
+        self.assertTrue(0.0 <= r["acierto_global"] <= 1.0)
+        self.assertIsNotNone(r["fuera_de_clase"])
+        self.assertIn("advertencia", r)
+
+    def test_probar_modelo_falla_con_claridad_si_la_carpeta_no_existe(self):
+        proceso = subprocess.run(
+            [sys.executable, str(AQUI / "probar_modelo.py"), str(self.raiz / "no_existe")],
+            env=self.entorno,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertNotEqual(proceso.returncode, 0)
+        self.assertIn("No existe la carpeta de fotos", proceso.stderr)
 
     def test_los_json_son_json_estandar(self):
         """Python escribe NaN/Infinity sin quejarse, pero no son JSON válido: un lector estricto (p. ej. el

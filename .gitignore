@@ -21,3 +21,5 @@ __pycache__/
 /ml/**/dataset_fuera_de_clase/
 # Carpeta de paso donde se dejan los archivos bajados de Colab (el modelo definitivo va a app/src/main/assets)
 /ml/salida_colab/
+# Fotos de calle para probar el modelo (pueden traer rostros o placas): NUNCA a git
+/ml/prueba_calle/

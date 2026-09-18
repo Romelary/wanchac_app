@@ -18,6 +18,8 @@ archivo `.tflite` que se copia a la app y se ejecuta **en el teléfono, sin inte
 | `entrenamiento/clasificador_residuos.ipynb` | Cuaderno generado a partir del `.py`; es lo que se sube a Colab. |
 | `entrenamiento/construir_notebook.py` | Convierte el `.py` en `.ipynb` (y lo valida con `nbformat`). |
 | `entrenamiento/probar_notebook.py` | Prueba de humo: ejecuta el cuaderno sin GPU ni internet y verifica el contrato con la app. |
+| `entrenamiento/probar_modelo.py` | Prueba el `.tflite` con **fotos reales de calle**, sin Colab, y ayuda a elegir el umbral de confianza. |
+| `resultados/v1/` | `metadata.json` y `metricas.json` **originales** de la primera corrida en Colab (evidencia; no se editan). |
 
 ## Cómo entrenar (Colab)
 
@@ -192,6 +194,32 @@ Verificados el 2026-09-18 leyendo **solo metadatos públicos** (listado de archi
 **Si la tasa resulta alta**, en orden de menor a mayor esfuerzo: (a) subir el umbral (menos sugerencias, más `mixto`); (b) agregar una clase `sin_residuo` entrenada con esos negativos (cambia el contrato: 5 salidas, y la app la trataría como "sin sugerencia", nunca para bloquear un reporte); (c) volver a entrenar `escombros` como clase con fotos propias.
 
 Además, la propia app dará evidencia gratis: cuando el Módulo 3b guarde la sugerencia del modelo aparte de la categoría final del ciudadano, se sabrá cuántas veces y hacia qué clase se corrige la sugerencia.
+
+## Probar el modelo con fotos reales de calle
+
+Las métricas del cuaderno usan el mismo tipo de fotos con que se entrenó y **no dicen cómo funcionará en la calle**. `probar_modelo.py` sí lo mide, con tus fotos, sin Colab.
+
+```
+ml/prueba_calle/            ← NO se sube a git (pueden traer rostros o placas)
+  plastico/  carton/  vidrio/  organico/    ← ~20 fotos reales de cada una
+  fuera_de_clase/                           ← 30–60: escombros, muros, veredas, suelo…
+```
+
+```bash
+cd ml/entrenamiento
+python probar_modelo.py ../prueba_calle --tope-fuera 0.10
+```
+
+Requiere TensorFlow (usa su mismo decodificado y redimensionado que el entrenamiento, para que la prueba sea fiel). Cómo leer el informe:
+
+- **Acierta / IC 95 %**: el intervalo importa más que el porcentaje. Con ~20 fotos por clase es ancho: *aun con 20 de 20 correctas, el límite inferior es ≈ 84 %*.
+- **Sug. ok / sug. mal / mixto**: con el umbral evaluado, cuántas veces la app sugeriría bien, sugeriría mal **con seguridad** (lo más dañino), o no sugeriría (`mixto`).
+- **Fuera de clase**: qué % de escombros/muros/suelo supera el umbral, es decir, la app los clasificaría con seguridad como algo que no son.
+- **Barrido de umbrales** y **umbral mínimo que cumple** una precisión objetivo (85 % por defecto) y el tope de fuera de clase. **Fija el tope ANTES de ver el resultado** (`--tope-fuera`; 0.10 es solo un ejemplo, decídelo con el asesor).
+
+Reglas: estas fotos son **solo para probar**; si se usan para entrenar, la prueba deja de valer. Y no reemplazan el indicador de la tesis (coincidencia IA–observador, medida en campo). El informe se guarda como JSON (sin fotos) en `ml/resultados/` para citarlo como evidencia.
+
+**Advertencia ilustrativa:** al probar la herramienta con imágenes de *ruido puro*, el modelo v1 respondió "cartón" con 83–89 % de confianza en la mayoría. No son fotos reales y no mide nada de la calle, pero muestra que una confianza alta no garantiza que la foto sea de una clase: el umbral es una defensa parcial.
 
 ## Limitaciones honestas
 
