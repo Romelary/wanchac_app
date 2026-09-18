@@ -14,7 +14,7 @@
 # ## Cómo usarlo en Colab
 # 1. **Entorno de ejecución → Cambiar tipo de entorno → GPU (T4).** Sin GPU también funciona, pero es mucho más lento.
 # 2. Prepara tus imágenes en Google Drive: `MyDrive/wanchaq_limpio_ml/dataset/<clase>/*.jpg`, con una
-#    carpeta por clase (ver la sección 2). La celda 2a siembra por sí sola 3 de las 5 clases desde un
+#    carpeta por clase (ver la sección 2). La celda 2a siembra por sí sola 3 de las 4 clases desde un
 #    dataset público (TrashNet); se desactiva con `SEMBRAR_TRASHNET = False` en la sección 1.
 # 3. Ejecuta las celdas en orden (**Entorno de ejecución → Ejecutar todo**). Te pedirá permiso para acceder a Drive.
 # 4. Al final descarga los tres archivos (o búscalos en `MyDrive/wanchaq_limpio_ml/salida/`).
@@ -25,11 +25,16 @@
 #   desempeño real.
 # * El indicador de la tesis (Anexo 2: *coincidencia IA-observador ≥ 70 %*) se mide en campo contra un
 #   observador, no aquí. Lo que sale de este cuaderno es una comprobación de desarrollo, no ese indicador.
-# * Ningún dataset público cubre las 5 clases. Sobre todo **`escombros`** y **`organico`** en la calle
-#   exigen fotos propias del equipo (sin rostros ni placas).
+# * **El modelo NO reconoce `escombros` ni `mixto`** (decisión del 2026-09-18): la app los ofrece como
+#   categorías de elección manual. Por eso una foto de escombros, de un muro o de suelo desnudo *no tiene
+#   clase propia* y el modelo la forzará hacia una de las 4; lo único que lo evita es que la confianza quede
+#   bajo el umbral. La sección 7b **mide** ese riesgo con fotos "fuera de clase" (solo para probar).
+# * Ningún dataset público cubre bien `organico` en la calle: exige fotos propias del equipo (sin rostros
+#   ni placas).
 
 # %%
 # 1. CONFIGURACIÓN ------------------------------------------------------------------------------
+import collections
 import contextlib
 import datetime
 import hashlib
@@ -49,7 +54,12 @@ SMOKE = os.environ.get("SMOKE_TEST") == "1"
 
 # El ORDEN importa: es el orden de la salida del modelo, de labels.txt y del enum
 # CategoriaResiduo de la app (que las usa en mayúsculas). No lo cambies sin cambiar ambos lados.
-CLASES = ["plastico", "carton", "vidrio", "organico", "escombros"]
+CLASES = ["plastico", "carton", "vidrio", "organico"]
+
+# Categorías de la app que el modelo NO predice: las elige el ciudadano a mano (o `mixto` cuando el modelo
+# duda). `escombros` salió del modelo el 2026-09-18: ningún dataset público lo cubre y, siendo material
+# mineral gris, se confundiría con muros y veredas. Se guarda en metadata.json para que la app lo sepa.
+CATEGORIAS_MANUALES = ["escombros", "mixto"]
 
 IMG_SIZE = 224  # MobileNetV2 con pesos de ImageNet espera 224x224
 SEMILLA = 42
@@ -60,7 +70,7 @@ CAPAS_A_DESCONGELAR = 30
 MIN_IMAGENES_POR_CLASE = 50  # por debajo de esto se detiene: entrenar así sería engañarse
 PRECISION_OBJETIVO_UMBRAL = 0.85  # precisión que se exige a las predicciones que la app acepte
 
-# TrashNet (MIT) sirve para 3 de las 5 clases. Ponlo en False si prefieres usar solo tus propias fotos.
+# TrashNet (MIT) sirve para 3 de las 4 clases. Ponlo en False si prefieres usar solo tus propias fotos.
 SEMBRAR_TRASHNET = True
 MAX_TRASHNET_POR_CLASE = 400  # tope por clase: evita que TrashNet ahogue a las clases con fotos propias
 
@@ -72,8 +82,7 @@ FUENTES_DATASET = [
         "fuente": "TrashNet, dataset-resized.zip (huggingface.co/datasets/garythung/trashnet; github.com/garythung/trashnet)",
         "licencia": "MIT",
     },
-    {"clases": ["organico"], "fuente": "COMPLETAR (p. ej. fotos propias del equipo)", "licencia": "COMPLETAR"},
-    {"clases": ["escombros"], "fuente": "COMPLETAR (p. ej. fotos propias del equipo)", "licencia": "COMPLETAR"},
+    {"clases": ["organico"], "fuente": "COMPLETAR (fotos propias del equipo, u otra fuente que declares aquí)", "licencia": "COMPLETAR"},
 ]
 
 if SMOKE:
@@ -124,12 +133,12 @@ if not GPUS and not SMOKE:
 # Estructura esperada (una carpeta por clase, nombres exactos):
 # ```
 # wanchaq_limpio_ml/dataset/
-#   plastico/  carton/  vidrio/  organico/  escombros/
+#   plastico/  carton/  vidrio/  organico/
 # ```
 # La celda 2a descarga **TrashNet** (MIT, `dataset-resized.zip`, 43 MB) y toma hasta 400 fotos por clase para
 # `plastico`, `carton` (cartón + papel, igual que la ficha de campo: *"Papel y cartón"*) y `vidrio`. Las
 # carpetas `metal` y `trash` de TrashNet no se usan porque no son categorías de la app. **No** hay
-# `organico` ni `escombros` en TrashNet: esas dos carpetas las llenas tú.
+# `organico` en TrashNet: esa carpeta la llenas tú.
 #
 # Si usas TrashNet en la tesis, cítalo (lo pide su autor): *Thung, G. y Yang, M. (2016). "Classification of
 # Trash for Recyclability Status", Stanford CS229* — repositorio `github.com/garythung/trashnet`.
@@ -235,7 +244,7 @@ if SMOKE:
     zip_falso = RAIZ / "trashnet_falso.zip"
     generar_zip_trashnet_falso(zip_falso)
     sembrar_desde_trashnet(DATASET_DIR, ruta_zip=zip_falso)
-    generar_dataset_sintetico(DATASET_DIR, ["organico", "escombros"])
+    generar_dataset_sintetico(DATASET_DIR, ["organico"])
     # Un archivo corrupto y otro de formato no soportado: el primero debe descartarse e informarse, el segundo ignorarse.
     (DATASET_DIR / "organico" / "corrupta.jpg").write_bytes(b"esto no es una imagen")
     (DATASET_DIR / "organico" / "foto.heic").write_bytes(b"formato no soportado")
@@ -491,7 +500,7 @@ mostrar()
 # La app solo debería PROPONER una categoría si el modelo está suficientemente seguro; si no, cae en
 # "mixto" y el usuario elige. El umbral se elige con VALIDACIÓN (no con test) para no sesgar el test.
 #
-# Piso de 0.50: con 5 clases, una confianza de 0.30 apenas supera el azar (0.20). Si el dataset es fácil
+# Piso de 0.50: con 4 clases, una confianza de 0.30 apenas supera el azar (0.25). Si el dataset es fácil
 # (como TrashNet), la validación aceptaría umbrales absurdamente bajos; y esa validación es optimista
 # respecto de la calle. Por eso el umbral nunca baja de 0.50; se recalibrará con datos de campo.
 UMBRAL_MINIMO = 0.50
@@ -520,6 +529,77 @@ if not UMBRAL_CUMPLE_OBJETIVO:
     print(f"AVISO: ningún umbral alcanza {PRECISION_OBJETIVO_UMBRAL:.0%} de precisión; se usa 0.70 por defecto. "
           "El modelo todavía no es confiable: revisa el dataset antes de integrarlo en la app.")
 print("Umbral sugerido:", UMBRAL_SUGERIDO)
+
+# %% [markdown]
+# ## 7b. Fotos "fuera de clase": medir la sobreconfianza
+# El modelo es **cerrado**: ante *cualquier* foto elige una de sus 4 clases, aunque no haya residuo o sea de un
+# tipo que no conoce (escombros, un muro, una vereda, suelo desnudo…). Lo único que evita que la app sugiera
+# una categoría equivocada con aparente seguridad es que la confianza quede **bajo el umbral**.
+#
+# Esta celda lo **mide**. Crea `MyDrive/wanchaq_limpio_ml/dataset_fuera_de_clase/` y pon ahí fotos que *no*
+# sean de las 4 clases (escombros, muros de concreto/ladrillo/adobe/piedra, veredas, suelo…). **No se usan para
+# entrenar**, solo para probar. Se informa qué porcentaje supera el umbral. Fija el tope aceptable *antes* de
+# ver el resultado (p. ej. "no más de 10 %"; es solo un ejemplo, decídelo con tu asesor). Toma esas fotos en
+# **sitios distintos** a los de entrenamiento.
+
+# %%
+# 7b. Evaluación con fotos fuera de clase -----------------------------------------------------------
+FUERA_DIR = RAIZ / "dataset_fuera_de_clase"
+
+
+def generar_fuera_de_clase(carpeta, cantidad=6):
+    """Solo para la prueba automática: ruido de un color que ninguna clase usa."""
+    from PIL import Image
+
+    carpeta.mkdir(parents=True, exist_ok=True)
+    rng = np.random.default_rng(SEMILLA + 1)
+    for n in range(cantidad):
+        pixeles = np.clip(rng.normal([200, 200, 60], 40, size=(64, 64, 3)), 0, 255).astype("uint8")
+        Image.fromarray(pixeles).save(carpeta / f"fuera_{n:02d}.jpg")
+
+
+def evaluar_fuera_de_clase(carpeta, umbral):
+    """Devuelve None si no hay fotos. Si las hay, cuántas superan el umbral (= la app sugeriría una clase
+    equivocada con seguridad aparente) y cuáles son los peores casos."""
+    candidatas = sorted(p for p in carpeta.glob("*") if p.suffix.lower() in EXTENSIONES) if carpeta.exists() else []
+    rutas = [p for p in candidatas if es_decodificable(p)]
+    if not rutas:
+        return None
+    filas = []
+    for ruta in rutas:
+        imagen, _ = _cargar(str(ruta), 0)
+        probabilidades = modelo(tf.expand_dims(imagen, 0), training=False).numpy()[0]
+        filas.append((ruta.name, CLASES[int(probabilidades.argmax())], float(probabilidades.max())))
+    sobre = [f for f in filas if f[2] >= umbral]
+    return {
+        "n": len(filas),
+        "umbral": umbral,
+        "con_confianza_sobre_umbral": len(sobre),
+        "tasa": len(sobre) / len(filas),
+        "por_clase_predicha_sobre_umbral": dict(collections.Counter(f[1] for f in sobre)),
+        "peores_casos": [
+            {"archivo": nombre, "clase": clase, "confianza": round(confianza, 3)}
+            for nombre, clase, confianza in sorted(filas, key=lambda f: -f[2])[:10]
+        ],
+    }
+
+
+if SMOKE:
+    generar_fuera_de_clase(FUERA_DIR)
+FUERA_DE_CLASE = evaluar_fuera_de_clase(FUERA_DIR, UMBRAL_SUGERIDO)
+if FUERA_DE_CLASE is None:
+    print(
+        f"AVISO: no hay fotos en {FUERA_DIR}. Sin ellas NO se sabe cuánto se equivocaría el modelo con escombros, "
+        "muros o suelo. Agrégalas y vuelve a ejecutar esta celda (y las siguientes)."
+    )
+else:
+    print(
+        f"{FUERA_DE_CLASE['n']} fotos fuera de clase; {FUERA_DE_CLASE['con_confianza_sobre_umbral']} "
+        f"({FUERA_DE_CLASE['tasa']:.0%}) superan el umbral {UMBRAL_SUGERIDO}: la app sugeriría una categoría "
+        f"equivocada con seguridad aparente. Por clase: {FUERA_DE_CLASE['por_clase_predicha_sobre_umbral']}"
+    )
+    for caso in FUERA_DE_CLASE["peores_casos"][:5]:
+        print("  más seguro:", caso)
 
 # %%
 # 8. EXPORTAR A TFLITE (float16) ------------------------------------------------------------------
@@ -605,6 +685,7 @@ metadata = {
     },
     "salida": {"forma": [1, len(CLASES)], "tipo": "float32", "descripcion": "probabilidades softmax, mismo orden que labels.txt"},
     "clases": CLASES,
+    "categorias_manuales": CATEGORIAS_MANUALES,
     "umbral_confianza_sugerido": UMBRAL_SUGERIDO,
     "umbral_alcanza_precision_objetivo": UMBRAL_CUMPLE_OBJETIVO,
     "precision_objetivo_umbral": PRECISION_OBJETIVO_UMBRAL,
@@ -626,6 +707,7 @@ metricas = {
     "por_clase": {c: REPORTE[c] for c in CLASES},
     "macro_f1": REPORTE["macro avg"]["f1-score"],
     "concordancia_keras_vs_tflite": CONCORDANCIA,
+    "fuera_de_clase": FUERA_DE_CLASE,  # None si no se aportaron fotos: entonces el riesgo NO está medido
     "tabla_umbrales_validacion": TABLA_UMBRALES,
 }
 (SALIDA_DIR / "metricas.json").write_text(json.dumps(metricas, ensure_ascii=False, indent=2), encoding="utf-8")

@@ -80,10 +80,15 @@ class PruebaDeHumoDelCuaderno(unittest.TestCase):
         """El contrato más frágil: si el orden difiere, la app etiquetaría mal TODAS las predicciones."""
         cuerpo = ENUM_KOTLIN.read_text(encoding="utf-8").split("enum class CategoriaResiduo {")[1].split("}")[0]
         valores = re.findall(r"^\s*([A-Z_]+),?\s*$", cuerpo, flags=re.MULTILINE)
-        # MIXTO no es una clase del modelo: es el "no sé" al que la app recurre con poca confianza.
-        clases_del_modelo = [v.lower() for v in valores if v != "MIXTO"]
+        # El modelo NO predice ESCOMBROS (decisión 2026-09-18) ni MIXTO (el "no sé" al que la app recurre con poca
+        # confianza): ambas son de elección manual. El resto, en el mismo orden que el enum, es la salida del modelo.
+        manuales = {"ESCOMBROS", "MIXTO"}
+        clases_del_modelo = [v.lower() for v in valores if v not in manuales]
         labels = (self.salida / "labels.txt").read_text(encoding="utf-8").split()
         self.assertEqual(labels, clases_del_modelo)
+        meta = json.loads((self.salida / "metadata.json").read_text(encoding="utf-8"))
+        self.assertEqual(sorted(meta["categorias_manuales"]), sorted(v.lower() for v in manuales))
+        self.assertTrue(set(labels).isdisjoint(meta["categorias_manuales"]), "una categoría no puede ser a la vez del modelo y manual")
 
     def test_la_siembra_de_trashnet_mapea_las_carpetas_y_descarta_la_basura(self):
         """Zip falso: plastic 12, cardboard 8, paper 8, glass 12, metal 5, trash 5 (+ basura de __MACOSX).
@@ -91,8 +96,8 @@ class PruebaDeHumoDelCuaderno(unittest.TestCase):
         conteo = json.loads((self.salida / "metadata.json").read_text(encoding="utf-8"))["dataset"]["conteo_por_clase"]
         de_trashnet = {clase: datos["de_trashnet"] for clase, datos in conteo.items()}
         total = {clase: datos["total"] for clase, datos in conteo.items()}
-        self.assertEqual(de_trashnet, {"plastico": 12, "carton": 15, "vidrio": 12, "organico": 0, "escombros": 0})
-        self.assertEqual(total, {"plastico": 12, "carton": 15, "vidrio": 12, "organico": 15, "escombros": 15})
+        self.assertEqual(de_trashnet, {"plastico": 12, "carton": 15, "vidrio": 12, "organico": 0})
+        self.assertEqual(total, {"plastico": 12, "carton": 15, "vidrio": 12, "organico": 15})
 
     def test_un_archivo_corrupto_se_descarta_y_se_informa_y_un_formato_no_soportado_se_avisa(self):
         """El dataset trae `corrupta.jpg` (bytes que no son imagen) y `foto.heic` (formato que TensorFlow no lee).
@@ -100,6 +105,19 @@ class PruebaDeHumoDelCuaderno(unittest.TestCase):
         meta = json.loads((self.salida / "metadata.json").read_text(encoding="utf-8"))
         self.assertEqual(meta["dataset"]["archivos_descartados"], ["organico/corrupta.jpg"])
         self.assertIn("foto.heic", self.proceso.stdout, "el formato no soportado debe avisarse por consola")
+
+    def test_la_evaluacion_fuera_de_clase_se_ejecuta_y_se_registra(self):
+        """Sin escombros como clase, lo que protege a la app es que la confianza quede bajo el umbral. La celda 7b
+        lo mide con fotos que no son de ninguna clase. En la prueba hay 6 (ruido); debe quedar registrado en
+        metricas.json con una tasa válida y con los peores casos listados."""
+        fuera = json.loads((self.salida / "metricas.json").read_text(encoding="utf-8"))["fuera_de_clase"]
+        self.assertIsNotNone(fuera, "la evaluación fuera de clase no se ejecutó")
+        self.assertEqual(fuera["n"], 6)
+        self.assertTrue(0.0 <= fuera["tasa"] <= 1.0)
+        self.assertEqual(fuera["con_confianza_sobre_umbral"], round(fuera["tasa"] * fuera["n"]))
+        self.assertEqual(len(fuera["peores_casos"]), 6)
+        confianzas = [caso["confianza"] for caso in fuera["peores_casos"]]
+        self.assertEqual(confianzas, sorted(confianzas, reverse=True), "los peores casos deben ir del más al menos seguro")
 
     def test_los_json_son_json_estandar(self):
         """Python escribe NaN/Infinity sin quejarse, pero no son JSON válido: un lector estricto (p. ej. el
@@ -138,7 +156,7 @@ class PruebaDeHumoDelCuaderno(unittest.TestCase):
         salida = interprete.get_output_details()[0]
         self.assertEqual(list(entrada["shape"]), [1, 224, 224, 3])
         self.assertEqual(entrada["dtype"], np.float32)
-        self.assertEqual(list(salida["shape"]), [1, 5])
+        self.assertEqual(list(salida["shape"]), [1, 4])  # plastico, carton, vidrio, organico
 
         # Un gradiente de 0..255: el rango de píxeles que la app entrega (la normalización va dentro).
         imagen = np.linspace(0, 255, 224 * 224 * 3, dtype=np.float32).reshape(1, 224, 224, 3)

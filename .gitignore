@@ -18,3 +18,4 @@ local.properties
 /ml/**/wanchaq_limpio_ml/
 __pycache__/
 *.pyc
+/ml/**/dataset_fuera_de_clase/
