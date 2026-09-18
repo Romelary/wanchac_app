@@ -55,8 +55,8 @@ No se agregaron pruebas de negocio propias; se usó el test placeholder del wiza
 | | `reporte a menos de 20 metros y 30 minutos del mismo dispositivo es duplicado` | Filtro de duplicados por cercanía + tiempo | RNF-07, criterio de exclusión de duplicados (§3.2 del documento) |
 | | `mismo lugar pero despues de 30 minutos no es duplicado` | El límite temporal del filtro de duplicados se aplica correctamente | RNF-07 |
 | | `dentro de la ventana de tiempo pero a mas de 20 metros no es duplicado` | El límite espacial del filtro de duplicados se aplica correctamente (no solo el temporal) | RNF-07 |
-| `ReporteRepositoryImplTest.kt` (Robolectric, Room en memoria) | `un reporte valido se guarda como PENDIENTE y aparece al observar` | Persistencia offline-first real (no solo la regla de validación en aislado) | RF-03, RNF-01 |
-| | `un reporte rechazado no se persiste` | Un reporte inválido no llega a la base de datos | Integridad del filtro antes de guardar |
+| `ReporteRepositoryImplTest.kt` (Robolectric, Room en memoria) | `un reporte valido se guarda como PENDIENTE y aparece al observar` | Persistencia offline-first real, y que se encola la sincronización (Módulo 4) tras guardar | RF-03, RNF-01 |
+| | `un reporte rechazado no se persiste` | Un reporte inválido no llega a la base de datos ni se encola sincronización | Integridad del filtro antes de guardar |
 | | `un segundo reporte del mismo dispositivo cerca y rapido se detecta como duplicado y no se guarda` | La regla de duplicados funciona integrada con datos reales ya persistidos, no solo con una lista en memoria pasada a mano | RNF-07 |
 | `ReporteViewModelTest.kt` (dependencias falsas) | `estado inicial es Capturando` | Estado inicial correcto de la máquina de estados | — |
 | | `al capturar una foto valida el estado termina en Guardado` | Flujo feliz completo: foto → ubicación → validación → guardado | RF-02, RF-03 |
@@ -68,6 +68,21 @@ No se agregaron pruebas de negocio propias; se usó el test placeholder del wiza
 | | `estadoProcesandoUbicacionMuestraElTextoDeCarga` | Estado de carga visible mientras se obtiene el GPS | Usabilidad percibida |
 
 **Estado**: 15 pruebas unitarias en verde (`ValidarNuevoReporteTest` 7, `ReporteRepositoryImplTest` 3, `ReporteViewModelTest` 5). 3 pruebas de UI (`ReporteEstadoContentTest`) compilan pero no se ejecutaron por no haber emulador disponible. **No se prueba automáticamente** la captura real de cámara (CameraX) ni la obtención real de GPS (`ProveedorUbicacionFused`) — son wrappers delgados sobre hardware/Google Play Services, por diseño se dejan para prueba manual en dispositivo real (ver la nota de "qué se prueba y qué no" al inicio de este archivo). **Esa prueba manual todavía no se ha hecho** en ningún dispositivo/emulador — pendiente antes de dar el Módulo 2 por verificado end-to-end (ver `progreso.md`, pendientes). Lo que sí queda exhaustivamente probado en automático es toda la lógica de negocio que consume esos datos (validación, persistencia, máquina de estados).
+
+## Módulo 4 — Sincronización diferida
+
+Alcance: solo el cliente Android, contra un backend simulado (`MockWebServer3`, ver `plan.md` §4) — el backend real todavía no existe.
+
+| Archivo | Caso de prueba | Qué verifica | Requisito / dimensión relacionada |
+|---|---|---|---|
+| `GeoJsonMapperTest.kt` | `el feature usa el orden longitud, latitud exigido por GeoJSON` | El orden de coordenadas es `[lon, lat]`, al revés del orden habitual — error clásico y fácil de cometer sin esta prueba | RFC 7946, diseno.md §3.6.4 |
+| | `las propiedades reflejan idAnonimo, categoria y fecha del reporte` | El resto del payload GeoJSON se arma correctamente | RF-03 |
+| `SyncWorkerTest.kt` (Robolectric + `MockWebServer3` + Room en memoria) | `sin reportes pendientes el worker termina exitoso sin llamar a la red` | No se hacen peticiones innecesarias cuando no hay nada que sincronizar | RNF-06 (rendimiento) |
+| | `un reporte pendiente que el servidor acepta queda SINCRONIZADO` | Camino feliz completo: Room → GeoJSON multipart → servidor → actualización de estado | RF-03, RNF-01 |
+| | `si el servidor falla el reporte queda PENDIENTE y el worker pide reintentar` | El reporte no se pierde ni se marca falsamente como sincronizado ante un error del servidor (500) | RNF-01 (disponibilidad operativa) |
+| | `si la foto ya no existe en disco se pide reintentar - limitacion conocida, ver progreso md` | Documenta el comportamiento actual (no ideal) ante un archivo de foto borrado: se reintenta indefinidamente en vez de marcarse como fallo permanente | Ver `progreso.md`, pendientes — limitación conocida, no arreglada en este módulo |
+
+**Estado**: 6 pruebas unitarias en verde. No hay prueba de integración contra un backend real (todavía no existe) ni prueba manual de comportamiento de red real (avión, wifi inestable, etc.) — queda pendiente para cuando el backend esté desplegado.
 
 ---
 

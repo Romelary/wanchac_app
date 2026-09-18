@@ -1,5 +1,6 @@
 package com.wanchaqlimpio.app.data.repository
 
+import com.wanchaqlimpio.app.core.sync.ProgramadorSincronizacion
 import com.wanchaqlimpio.app.data.local.db.ReporteDao
 import com.wanchaqlimpio.app.data.mapper.aDominio
 import com.wanchaqlimpio.app.data.mapper.aEntity
@@ -19,6 +20,7 @@ class ReporteRepositoryImpl
     constructor(
         private val dao: ReporteDao,
         private val validar: ValidarNuevoReporte,
+        private val programadorSincronizacion: ProgramadorSincronizacion,
     ) : ReporteRepository {
         override suspend fun crearReporte(
             idAnonimo: String,
@@ -43,6 +45,10 @@ class ReporteRepositoryImpl
                         fechaHoraEpochMillis = ahoraEpochMillis,
                     )
                 dao.insertar(reporte.aEntity())
+                // Encola la sincronización; WorkManager espera a que haya red
+                // (Módulo 4). Si ya está encolada, no se duplica (ver
+                // ProgramadorSincronizacionWorkManager).
+                programadorSincronizacion.programarSincronizacion()
             }
             return resultado
         }

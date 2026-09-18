@@ -1,6 +1,8 @@
 package com.wanchaqlimpio.app.core.di
 
+import com.google.gson.Gson
 import com.wanchaqlimpio.app.BuildConfig
+import com.wanchaqlimpio.app.data.remote.api.ReportesApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,6 +16,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+    @Provides
+    @Singleton
+    fun provideGson(): Gson = Gson()
+
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
@@ -34,11 +40,18 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        gson: Gson,
+    ): Retrofit =
         Retrofit
             .Builder()
             .baseUrl(BuildConfig.BASE_URL)
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
+
+    @Provides
+    @Singleton
+    fun provideReportesApi(retrofit: Retrofit): ReportesApi = retrofit.create(ReportesApi::class.java)
 }

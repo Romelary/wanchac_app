@@ -2,6 +2,7 @@ package com.wanchaqlimpio.app.data.repository
 
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.wanchaqlimpio.app.core.sync.ProgramadorSincronizacion
 import com.wanchaqlimpio.app.data.local.db.AppDatabase
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.EstadoReporte
@@ -20,11 +21,21 @@ import org.robolectric.RobolectricTestRunner
 private const val LATITUD_DENTRO = -13.530
 private const val LONGITUD_DENTRO = -71.950
 
+private class ProgramadorSincronizacionFalso : ProgramadorSincronizacion {
+    var vecesLlamado = 0
+        private set
+
+    override fun programarSincronizacion() {
+        vecesLlamado++
+    }
+}
+
 /** Room en memoria vía Robolectric (mismo motivo que ConsentimientoRepositoryImplTest, ver pruebas.md). */
 @RunWith(RobolectricTestRunner::class)
 class ReporteRepositoryImplTest {
     private lateinit var db: AppDatabase
     private lateinit var repositorio: ReporteRepositoryImpl
+    private lateinit var programadorSincronizacion: ProgramadorSincronizacionFalso
 
     @Before
     fun crearBaseDeDatos() {
@@ -33,7 +44,8 @@ class ReporteRepositoryImplTest {
                 .inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), AppDatabase::class.java)
                 .allowMainThreadQueries()
                 .build()
-        repositorio = ReporteRepositoryImpl(db.reporteDao(), ValidarNuevoReporte())
+        programadorSincronizacion = ProgramadorSincronizacionFalso()
+        repositorio = ReporteRepositoryImpl(db.reporteDao(), ValidarNuevoReporte(), programadorSincronizacion)
     }
 
     @After
@@ -57,6 +69,7 @@ class ReporteRepositoryImplTest {
             val guardados = repositorio.observarReportesDe("device-1").first()
             assertEquals(1, guardados.size)
             assertEquals(EstadoReporte.PENDIENTE, guardados.first().estado)
+            assertEquals(1, programadorSincronizacion.vecesLlamado)
         }
 
     @Test
@@ -74,6 +87,7 @@ class ReporteRepositoryImplTest {
             assert(resultado is ResultadoValidacionReporte.PrecisionInsuficiente)
             val guardados = repositorio.observarReportesDe("device-1").first()
             assertEquals(0, guardados.size)
+            assertEquals(0, programadorSincronizacion.vecesLlamado)
         }
 
     @Test

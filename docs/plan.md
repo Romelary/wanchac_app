@@ -268,7 +268,7 @@ Al terminar cada módulo, antes de pasar al siguiente:
 | 1. Onboarding y consentimiento | ✅ Completado (2026-09-17) |
 | 2. Captura y almacenamiento offline-first | ✅ Completado (2026-09-17) |
 | 3. Clasificación IA on-device | ⏳ No iniciado (bloqueado por pipeline de Colab) |
-| 4. Sincronización diferida | ⏳ No iniciado (bloqueado por backend) |
+| 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17); backend real sigue pendiente |
 | 5. Mapa público | ⏳ No iniciado (bloqueado por backend) |
 | 6. Mis reportes | ⏳ No iniciado |
 | 7. Ajustes | ⏳ No iniciado |

@@ -121,6 +121,14 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
 - Pruebas: 15 unitarias en verde + 3 de UI que compilan pero no corrieron (sin emulador). Detalle completo en [`pruebas.md`](./pruebas.md). Se documentó ahí mismo que la captura real de cámara y el GPS real no tienen prueba automatizada por ser wrappers de hardware — falta probarlos manualmente en un dispositivo real, todavía no se ha hecho.
 - Se creó `docs/plan.md` → Módulo 2 marcado como completado.
 
+### 2026-09-17 — Sesión 12: Módulo 4 (sincronización diferida)
+- **Alcance confirmado con el usuario antes de empezar**: solo el cliente Android, contra un backend simulado (`MockWebServer3`) — el backend real (Django/Neon/Cloudinary) queda para una sesión aparte, ya que requiere que el usuario cree primero la cuenta en Neon (no puedo crear cuentas de terceros por él).
+- **Entregables**: `GeoJsonFeatureDto`/`GeoJsonMapper` (Reporte → GeoJSON RFC 7946, con el orden `[longitud, latitud]` que exige el estándar); `ReportesApi` (Retrofit, `POST /reportes` multipart: foto + metadata GeoJSON); `SyncWorker` (`@HiltWorker`, `CoroutineWorker`: sube los reportes `PENDIENTE`, marca `SINCRONIZADO` los que el servidor acepta, pide reintento si falla); `ProgramadorSincronizacion`/`ProgramadorSincronizacionWorkManager` (encola el `SyncWorker` con restricción de red y backoff exponencial tras cada `crearReporte()` exitoso); `WanchaqLimpioApp` ahora implementa `Configuration.Provider` para que WorkManager use el `HiltWorkerFactory`.
+- Se verificó la API real de `mockwebserver3` (el artefacto de OkHttp 5.x, distinto del clásico `okhttp3.mockwebserver`) antes de escribir las pruebas, en vez de asumir la API antigua de memoria — evitó código incorrecto.
+- **Limitación conocida, documentada y no resuelta en este módulo**: si el archivo de foto de un reporte ya no existe en disco al momento de sincronizar, el worker pide reintento indefinidamente en vez de marcarlo como fallo permanente (no hay un estado "fallo permanente" en `EstadoReporte` distinto de `DESCARTADO`, que ya tiene otro significado en el pipeline). Queda como pendiente para una futura mejora (ver Pendientes).
+- Pruebas: 6 unitarias nuevas en verde (`GeoJsonMapperTest` 2, `SyncWorkerTest` 4). Detalle completo en [`pruebas.md`](./pruebas.md). No hay prueba de integración contra un backend real (no existe todavía).
+- Se creó `docs/plan.md` → Módulo 4 marcado como completado (con la salvedad explícita de que es solo la parte cliente).
+
 ## Pendientes / decisiones abiertas
 
 - [x] Definir `applicationId` definitivo → `com.wanchaqlimpio.app` (2026-09-17)
@@ -138,6 +146,8 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
 - [ ] Correr `OnboardingContentTest` y `ReporteEstadoContentTest` (androidTest) en un emulador/dispositivo real al menos una vez — compilan pero no se ejecutaron en este entorno por no haber emulador disponible
 - [ ] Probar manualmente en un dispositivo real la captura de cámara (CameraX) y la obtención de ubicación (`ProveedorUbicacionFused`) — son wrappers de hardware sin prueba automatizada, ver `pruebas.md`
 - [ ] Reemplazar el bounding box aproximado de `LimiteDistritalWanchaq` por el polígono oficial del distrito de Wanchaq (catastro municipal/INEI) antes de la ventana de observación real; idealmente mover la validación definitiva al backend con PostGIS (`ST_Within`)
+- [ ] Construir el backend real (Django + PostgreSQL/PostGIS en Neon + Cloudinary + Render) — bloquea probar el Módulo 4 contra un servidor real y bloquea también el Módulo 5 (Mapa). Requiere que el usuario cree primero la cuenta en Neon.
+- [ ] Manejar el caso de foto faltante en `SyncWorker` como fallo permanente en vez de reintento infinito (hoy reintenta para siempre si el archivo se borró del dispositivo) — ver `pruebas.md`, Módulo 4
 
 ## Cómo usar este archivo
 

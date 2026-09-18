@@ -106,6 +106,12 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.play.services.location)
 
+    // Sincronización diferida (Módulo 4)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
+    implementation(libs.gson)
+    ksp(libs.androidx.hilt.compiler)
+
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
@@ -114,6 +120,8 @@ dependencies {
     testImplementation(libs.robolectric)
     // ApplicationProvider (necesario para Room in-memory con Robolectric)
     testImplementation(libs.androidx.junit)
+    testImplementation(libs.androidx.work.testing)
+    testImplementation(libs.okhttp.mockwebserver3)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
