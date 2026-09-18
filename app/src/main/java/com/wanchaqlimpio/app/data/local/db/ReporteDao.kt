@@ -18,6 +18,12 @@ interface ReporteDao {
     @Query("SELECT * FROM reporte WHERE idAnonimo = :idAnonimo ORDER BY fechaHoraEpochMillis DESC")
     suspend fun obtenerPorDispositivo(idAnonimo: String): List<ReporteEntity>
 
+    @Query("SELECT * FROM reporte WHERE id = :id")
+    suspend fun obtenerPorId(id: Long): ReporteEntity?
+
+    @Query("DELETE FROM reporte WHERE id = :id")
+    suspend fun eliminar(id: Long)
+
     @Query("SELECT * FROM reporte WHERE estado = :estado")
     suspend fun obtenerPorEstado(estado: EstadoReporte): List<ReporteEntity>
 

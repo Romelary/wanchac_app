@@ -76,13 +76,34 @@ Alcance: solo el cliente Android, contra un backend simulado (`MockWebServer3`, 
 | Archivo | Caso de prueba | Qué verifica | Requisito / dimensión relacionada |
 |---|---|---|---|
 | `GeoJsonMapperTest.kt` | `el feature usa el orden longitud, latitud exigido por GeoJSON` | El orden de coordenadas es `[lon, lat]`, al revés del orden habitual — error clásico y fácil de cometer sin esta prueba | RFC 7946, diseno.md §3.6.4 |
-| | `las propiedades reflejan idAnonimo, categoria y fecha del reporte` | El resto del payload GeoJSON se arma correctamente | RF-03 |
+| | `las propiedades reflejan idAnonimo, idLocal, categoria y fecha del reporte` | El resto del payload GeoJSON se arma correctamente; desde el Módulo 6 incluye `idLocal`, clave con la que el servidor identifica el reporte para la baja y para no duplicarlo en un reenvío | RF-03, diseno.md §4.2 |
 | `SyncWorkerTest.kt` (Robolectric + `MockWebServer3` + Room en memoria) | `sin reportes pendientes el worker termina exitoso sin llamar a la red` | No se hacen peticiones innecesarias cuando no hay nada que sincronizar | RNF-06 (rendimiento) |
 | | `un reporte pendiente que el servidor acepta queda SINCRONIZADO` | Camino feliz completo: Room → GeoJSON multipart → servidor → actualización de estado | RF-03, RNF-01 |
 | | `si el servidor falla el reporte queda PENDIENTE y el worker pide reintentar` | El reporte no se pierde ni se marca falsamente como sincronizado ante un error del servidor (500) | RNF-01 (disponibilidad operativa) |
 | | `si la foto ya no existe en disco se pide reintentar - limitacion conocida, ver progreso md` | Documenta el comportamiento actual (no ideal) ante un archivo de foto borrado: se reintenta indefinidamente en vez de marcarse como fallo permanente | Ver `progreso.md`, pendientes — limitación conocida, no arreglada en este módulo |
 
 **Estado**: 6 pruebas unitarias en verde. No hay prueba de integración contra un backend real (todavía no existe) ni prueba manual de comportamiento de red real (avión, wifi inestable, etc.) — queda pendiente para cuando el backend esté desplegado.
+
+## Módulo 6 — Mis reportes (con eliminación, ADR-0002)
+
+| Archivo | Caso de prueba | Qué verifica | Requisito / dimensión relacionada |
+|---|---|---|---|
+| `ReporteRepositoryImplTest.kt` (Robolectric, Room en memoria) | `eliminar borra el reporte, su foto del disco y solicita la baja remota` | Las tres consecuencias de eliminar: fila borrada, **foto borrada del almacenamiento de la app** y solicitud de baja con la clave `(idAnonimo, idLocal)` correcta | RNF-05, ADR-0002, Ley N.º 29733 (derecho de cancelación) |
+| | `eliminar solicita la baja remota tambien si el reporte figuraba como PENDIENTE` | Cierra el hueco "el servidor lo recibió pero la respuesta se perdió": el cliente no puede saberlo, así que la baja se pide siempre | RNF-05, RNF-01 |
+| | `eliminar un reporte que no existe no hace nada` | Idempotencia local: no falla ni encola una baja fantasma | Robustez |
+| | `eliminar tolera que la foto ya no exista en disco` | Un archivo ya borrado no impide eliminar el registro ni pedir la baja | Robustez |
+| `EliminarReporteWorkerTest.kt` (Robolectric + `MockWebServer3`) | `envia un DELETE a reportes idAnonimo idLocal y termina exitoso si el servidor confirma` | Contrato de la API: método `DELETE` y ruta `/reportes/{idAnonimo}/{idLocal}` exactos (verificados sobre la petición real recibida, no solo el resultado) | diseno.md §4.2 |
+| | `un 404 cuenta como exito porque el dato ya no existe en el servidor` | Idempotencia remota: si el servidor no tiene el reporte, el objetivo (que no exista) ya se cumple | diseno.md §4.2 |
+| | `si el servidor falla se pide reintentar para no perder la solicitud de baja` | Un error `500` no descarta la baja: WorkManager la reintenta con backoff | RNF-05, RNF-01 |
+| | `una solicitud sin datos de entrada falla sin llamar a la red` | Una solicitud mal formada no se reintenta indefinidamente ni toca la red | Robustez |
+| `MisReportesViewModelTest.kt` (fakes + Turbine) | `muestra los reportes del dispositivo identificado por su id anonimo` | La lista se consulta por `id_anonimo`, no por una cuenta | ADR-0001 |
+| | `sin consentimiento aceptado no hay reportes que mostrar ni se consulta el repositorio` | Sin `id_anonimo` no se consulta nada (no se filtra información de otro dispositivo) | ADR-0001, RNF-04 |
+| | `eliminar delega en el repositorio y el reporte desaparece de la lista` | Flujo completo del ViewModel: eliminar → repositorio → la lista se actualiza sola (flujo reactivo de Room) | RNF-05 |
+| `MisReportesContentTest.kt` (androidTest, Compose UI Testing) | `sinReportesSeMuestraElMensajeVacio` | Estado vacío visible | Usabilidad percibida |
+| | `eliminarPideConfirmacionYSoloAlConfirmarSeInvocaElCallback` | Eliminar exige confirmación explícita: nada se borra al primer toque | RNF-05, prevención de borrado accidental |
+| | `cancelarElDialogoNoEliminaNada` | Cancelar no elimina | RNF-05 |
+
+**Estado**: 11 pruebas unitarias nuevas en verde (4 en `ReporteRepositoryImplTest`, 4 en `EliminarReporteWorkerTest`, 3 en `MisReportesViewModelTest`). **Total del proyecto: 37 pruebas unitarias** en verde (36 propias + el `ExampleUnitTest` del wizard). Las 3 pruebas de UI (`MisReportesContentTest`) compilan pero no se ejecutaron por no haber emulador — se suman a las pendientes de correr en un dispositivo real (`OnboardingContentTest`, `ReporteEstadoContentTest`). **No hay prueba contra un backend real**: la eliminación remota solo se verificó contra `MockWebServer3`, así que el comportamiento real (lápida, `410 Gone`, etc.) depende de que el backend implemente `diseno.md` §4.2.
 
 ---
 

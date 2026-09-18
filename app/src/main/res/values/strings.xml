@@ -25,6 +25,19 @@
     <string name="reporte_permisos_boton">Conceder permisos</string>
     <string name="reporte_categoria_titulo">Tipo de residuo</string>
 
+    <string name="mis_reportes_vacio">Aún no has hecho ningún reporte.</string>
+    <string name="mis_reportes_boton_eliminar">Eliminar</string>
+    <string name="mis_reportes_dialogo_titulo">¿Eliminar este reporte?</string>
+    <string name="mis_reportes_dialogo_texto">Se borrará de tu teléfono junto con su foto y se solicitará su eliminación del servidor. Esta acción no se puede deshacer.</string>
+    <string name="mis_reportes_dialogo_confirmar">Eliminar</string>
+    <string name="mis_reportes_dialogo_cancelar">Cancelar</string>
+
+    <string name="estado_pendiente">Pendiente de envío</string>
+    <string name="estado_sincronizado">Enviado</string>
+    <string name="estado_agrupado">En análisis</string>
+    <string name="estado_verificado">Verificado en campo</string>
+    <string name="estado_descartado">No confirmado</string>
+
     <string name="categoria_plastico">Plástico</string>
     <string name="categoria_carton">Cartón</string>
     <string name="categoria_vidrio">Vidrio</string>

@@ -12,6 +12,7 @@ fun Reporte.aGeoJsonFeature(): GeoJsonFeatureDto =
         properties =
             ReportePropertiesDto(
                 idAnonimo = idAnonimo,
+                idLocal = id,
                 categoria = categoria.name,
                 fechaHoraEpochMillis = fechaHoraEpochMillis,
             ),

@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wanchaqlimpio.app.ui.misreportes.MisReportesScreen
 import com.wanchaqlimpio.app.ui.onboarding.OnboardingScreen
 import com.wanchaqlimpio.app.ui.onboarding.OnboardingViewModel
 import com.wanchaqlimpio.app.ui.reporte.ReporteScreen
@@ -96,7 +97,8 @@ fun HomePlaceholder() {
     ) {
         when (currentDestination) {
             AppDestinations.REPORTAR -> ReporteScreen()
-            AppDestinations.FAVORITES, AppDestinations.PROFILE ->
+            AppDestinations.MIS_REPORTES -> MisReportesScreen()
+            AppDestinations.PROFILE ->
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
                         name = "Android",
@@ -107,14 +109,14 @@ fun HomePlaceholder() {
     }
 }
 
-// FAVORITES y PROFILE siguen siendo placeholders del wizard hasta los
-// Módulos 5-7 (Mapa, Mis reportes, Ajustes).
+// PROFILE sigue siendo un placeholder del wizard hasta los Módulos 5 y 7 (Mapa,
+// Ajustes); los íconos y etiquetas de esta barra son temporales.
 enum class AppDestinations(
     val label: String,
     val icon: Int,
 ) {
     REPORTAR("Reportar", R.drawable.ic_home),
-    FAVORITES("Favorites", R.drawable.ic_favorite),
+    MIS_REPORTES("Mis reportes", R.drawable.ic_favorite),
     PROFILE("Profile", R.drawable.ic_account_box),
 }
 

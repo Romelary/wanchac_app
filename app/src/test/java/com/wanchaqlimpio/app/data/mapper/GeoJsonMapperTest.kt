@@ -28,9 +28,10 @@ class GeoJsonMapperTest {
     }
 
     @Test
-    fun `las propiedades reflejan idAnonimo, categoria y fecha del reporte`() {
+    fun `las propiedades reflejan idAnonimo, idLocal, categoria y fecha del reporte`() {
         val reporte =
             Reporte(
+                id = 7L,
                 idAnonimo = "device-1",
                 categoria = CategoriaResiduo.ESCOMBROS,
                 estado = EstadoReporte.PENDIENTE,
@@ -43,6 +44,7 @@ class GeoJsonMapperTest {
         val propiedades = reporte.aGeoJsonFeature().properties
 
         assertEquals("device-1", propiedades.idAnonimo)
+        assertEquals(7L, propiedades.idLocal)
         assertEquals("ESCOMBROS", propiedades.categoria)
         assertEquals(123L, propiedades.fechaHoraEpochMillis)
     }

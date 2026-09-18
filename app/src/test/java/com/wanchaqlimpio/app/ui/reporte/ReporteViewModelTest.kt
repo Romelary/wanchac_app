@@ -35,6 +35,8 @@ private class ReporteRepositoryFalso(
     ): ResultadoValidacionReporte = resultado
 
     override fun observarReportesDe(idAnonimo: String): Flow<List<Reporte>> = flowOf(emptyList())
+
+    override suspend fun eliminarReporte(id: Long) = Unit
 }
 
 private class ConsentimientoRepositoryFalso(

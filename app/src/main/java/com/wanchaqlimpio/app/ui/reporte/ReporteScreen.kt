@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanchaqlimpio.app.R
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
+import com.wanchaqlimpio.app.ui.common.etiqueta
 import java.io.File
 
 private const val ETIQUETA_LOG = "ReporteScreen"
@@ -191,20 +192,9 @@ private fun SelectorCategoria(
                 FilterChip(
                     selected = categoria == seleccionada,
                     onClick = { onSeleccionar(categoria) },
-                    label = { Text(etiquetaCategoria(categoria)) },
+                    label = { Text(categoria.etiqueta()) },
                 )
             }
         }
     }
 }
-
-@Composable
-private fun etiquetaCategoria(categoria: CategoriaResiduo): String =
-    when (categoria) {
-        CategoriaResiduo.PLASTICO -> stringResource(R.string.categoria_plastico)
-        CategoriaResiduo.CARTON -> stringResource(R.string.categoria_carton)
-        CategoriaResiduo.VIDRIO -> stringResource(R.string.categoria_vidrio)
-        CategoriaResiduo.ORGANICO -> stringResource(R.string.categoria_organico)
-        CategoriaResiduo.ESCOMBROS -> stringResource(R.string.categoria_escombros)
-        CategoriaResiduo.MIXTO -> stringResource(R.string.categoria_mixto)
-    }

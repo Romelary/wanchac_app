@@ -270,7 +270,7 @@ Al terminar cada módulo, antes de pasar al siguiente:
 | 3. Clasificación IA on-device | ⏳ No iniciado (bloqueado por pipeline de Colab) |
 | 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17); backend real sigue pendiente |
 | 5. Mapa público | ⏳ No iniciado (bloqueado por backend) |
-| 6. Mis reportes | ⏳ No iniciado |
+| 6. Mis reportes | ✅ Completado (2026-09-18) — con eliminación, ver ADR-0002 |
 | 7. Ajustes | ⏳ No iniciado |
 | 8. Pulido y QA final | ⏳ No iniciado |
 | 9. Publicación en Play Store | ⏳ No iniciado (`applicationId` ya fijado: `com.wanchaqlimpio.app`) |

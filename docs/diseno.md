@@ -143,6 +143,21 @@ flowchart TB
 - Esta decisión se documenta explícitamente en la metodología (limitaciones) para que, si igualmente ocurre algún cold start, quede claro que es un artefacto de infraestructura y no del sistema evaluado.
 - Alternativa sin workaround si el pinger no resulta suficientemente confiable: subir el plan de Render a Starter (~US$7/mes) solo durante esas 8 semanas.
 
+### 4.2 Contrato de la API REST (cliente ↔ backend)
+
+Definido por el cliente (Módulos 4 y 6) antes de que exista el backend, para que este se construya contra un contrato explícito. Las pruebas del cliente lo simulan con `MockWebServer3`.
+
+| Operación | Petición | Respuestas esperadas | Garantías que debe dar el backend |
+|---|---|---|---|
+| Subir un reporte | `POST /reportes` · `multipart/form-data`: parte `foto` (JPEG) + parte `geojson` (Feature RFC 7946, ver abajo) | `2xx` = recibido | **Idempotente por `(idAnonimo, idLocal)`**: un reenvío del mismo reporte no crea un duplicado (el cliente reintenta si la respuesta se pierde) |
+| Dar de baja un reporte | `DELETE /reportes/{idAnonimo}/{idLocal}` | `204` = borrado · `404` = no existía | **Idempotente**. El cliente trata `2xx` y `404` como éxito. **Debe registrar una lápida** de `(idAnonimo, idLocal)` para rechazar (`410 Gone`) un `POST` tardío posterior: cierra las carreras "respuesta perdida" y "subida en vuelo mientras el usuario borra" |
+
+**Payload `geojson`**: `Feature` con `geometry.Point` en orden `[longitud, latitud]` y `properties = { idAnonimo, idLocal, categoria, fechaHoraEpochMillis }`. `idLocal` es el id del reporte en la base local del dispositivo; junto con `idAnonimo` es la clave natural del reporte en el servidor.
+
+**Seguridad (limitación asumida, ADR-0002)**: al no haber login, `(idAnonimo, idLocal)` funciona como credencial de capacidad para la baja. Es aceptable porque `idAnonimo` es un UUID aleatorio que no se expone públicamente (el mapa público solo muestra `Punto_critico`), pero el backend **no debe** devolverlo en ninguna respuesta pública ni registrarlo en logs de acceso abiertos.
+
+**Política pendiente**: qué ocurre con un `Punto_critico` cuando se da de baja un reporte que lo integraba (recalcular la agrupación, marcarlo, o congelar tras la ventana de observación). A definir con el asesor; ver ADR-0002.
+
 ## 5. Arquitectura interna del cliente Android (MVVM + Repository, offline-first)
 
 ```mermaid

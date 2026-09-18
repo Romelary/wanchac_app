@@ -21,4 +21,10 @@ interface ReporteRepository {
     ): ResultadoValidacionReporte
 
     fun observarReportesDe(idAnonimo: String): Flow<List<Reporte>>
+
+    /**
+     * Elimina el reporte y su foto del dispositivo y encola la solicitud de baja
+     * en el backend (RNF-05, ADR-0002). No hace nada si el reporte no existe.
+     */
+    suspend fun eliminarReporte(id: Long)
 }

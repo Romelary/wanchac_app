@@ -129,6 +129,16 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
 - Pruebas: 6 unitarias nuevas en verde (`GeoJsonMapperTest` 2, `SyncWorkerTest` 4). Detalle completo en [`pruebas.md`](./pruebas.md). No hay prueba de integración contra un backend real (no existe todavía).
 - Se creó `docs/plan.md` → Módulo 4 marcado como completado (con la salvedad explícita de que es solo la parte cliente).
 
+### 2026-09-18 — Sesión 13: Módulo 6 (Mis reportes) y decisión sobre la eliminación
+- **Decisión previa (ADR-0002)**: el usuario propuso quitar la opción de eliminar reportes porque, al no haber login, "el dato queda completamente anónimo". Se le expuso que (1) la app ya promete la eliminación en el consentimiento validado (Anexo 9, implementado en el Módulo 1) y quitarla contradiría su propio consentimiento, y (2) los datos son **seudónimos, no anónimos** (GPS preciso + fecha + foto + `id_anonimo` persistente que enlaza reportes). Se presentaron tres opciones y el usuario eligió **mantenerla, versión mínima**. Razonamiento completo y límites asumidos en [`adr/0002-se-mantiene-la-eliminacion-de-reportes.md`](./adr/0002-se-mantiene-la-eliminacion-de-reportes.md).
+- **Entregables**: `MisReportesScreen`/`MisReportesContent` (lista + confirmación antes de eliminar; patrón stateless de siempre), `MisReportesViewModel`; `ReporteRepository.eliminarReporte()` (borra la fila **y la foto del almacenamiento de la app**, y encola la baja remota); `EliminarReporteWorker` + `ProgramadorEliminacion` (WorkManager: `DELETE /reportes/{idAnonimo}/{idLocal}`, con reintento y backoff; `404` cuenta como éxito); `idLocal` agregado al GeoJSON de subida para que el servidor pueda identificar el reporte; etiquetas de categoría/estado y formato de fecha movidos a `ui/common/Etiquetas.kt` (compartidos entre pantallas); la navegación temporal reemplaza el placeholder `FAVORITES` por `MIS_REPORTES`.
+- **Refinamiento sobre lo acordado**: la baja remota se solicita *siempre*, no solo si el reporte ya figura como sincronizado. Motivo: si el servidor recibió el reporte pero la respuesta se perdió (red inestable, el escenario habitual en Cusco), el cliente lo ve como `PENDIENTE` y, de no pedir la baja, quedaría un dato huérfano en el servidor — justo lo que la función debe evitar. Cuesta una llamada extra inocua (el servidor responde `404`).
+- **Contrato de la API documentado** en `diseno.md` §4.2 antes de que exista el backend: baja idempotente y **lápida** en el servidor (rechaza con `410` un `POST` tardío de un reporte ya dado de baja, cerrando las carreras "respuesta perdida" y "subida en vuelo").
+- **Observación para la tesis** (`correcciones-documento.md`): el documento llama "anónimo" al `id_anonimo`; técnicamente es un seudónimo. No se edita el Anexo 9 (instrumento validado) — se deja anotado para el asesor.
+- Pruebas: 11 unitarias nuevas + 3 de UI (compilan, sin emulador). Total del proyecto: **37 unitarias en verde**. Detalle en [`pruebas.md`](./pruebas.md).
+- **Módulo 7 (Ajustes)** ya no necesita diseño propio para "borrar todos mis datos": reutilizará `eliminarReporte()` / `ProgramadorEliminacion` para cada reporte más `revocarConsentimiento()`.
+- Se creó `docs/plan.md` → Módulo 6 marcado como completado.
+
 ## Pendientes / decisiones abiertas
 
 - [x] Definir `applicationId` definitivo → `com.wanchaqlimpio.app` (2026-09-17)
@@ -148,6 +158,10 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
 - [ ] Reemplazar el bounding box aproximado de `LimiteDistritalWanchaq` por el polígono oficial del distrito de Wanchaq (catastro municipal/INEI) antes de la ventana de observación real; idealmente mover la validación definitiva al backend con PostGIS (`ST_Within`)
 - [ ] Construir el backend real (Django + PostgreSQL/PostGIS en Neon + Cloudinary + Render) — bloquea probar el Módulo 4 contra un servidor real y bloquea también el Módulo 5 (Mapa). Requiere que el usuario cree primero la cuenta en Neon.
 - [ ] Manejar el caso de foto faltante en `SyncWorker` como fallo permanente en vez de reintento infinito (hoy reintenta para siempre si el archivo se borró del dispositivo) — ver `pruebas.md`, Módulo 4
+- [ ] Definir con el asesor la **política de eliminación tras el agrupamiento/verificación**: qué pasa con un `Punto_critico` cuando se da de baja un reporte que lo integraba (recalcular, marcar, o congelar tras la ventana de observación) — ver ADR-0002 y `diseno.md` §4.2
+- [ ] Consultar al asesor la redacción "anónimo" → "seudónimo" (Ética 3.4 / Anexo 9 / Cap. IV) y que la tesis reconozca los límites de la eliminación sin login (reinstalación, datos ya agrupados) — ver `correcciones-documento.md`
+- [ ] Al construir el backend: implementar el contrato de `diseno.md` §4.2 (POST idempotente por `(idAnonimo, idLocal)`, DELETE idempotente con lápida, `idAnonimo` nunca en respuestas públicas ni logs abiertos)
+- [ ] "Mis reportes" no muestra la miniatura de la foto (para no sumar una librería de imágenes en una versión mínima) — considerar agregarla si las pruebas de usabilidad (SUS) lo piden
 
 ## Cómo usar este archivo
 
