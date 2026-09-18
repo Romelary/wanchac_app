@@ -72,6 +72,8 @@ class ReporteRepositoryImplTest {
                 ValidarNuevoReporte(),
                 programadorSincronizacion,
                 programadorEliminacion,
+                // Almacén real (no un fake): así se comprueba que la foto se borra del disco de verdad.
+                AlmacenFotosImpl(contexto),
             )
         carpetaFotos = File(contexto.cacheDir, "repo-test").apply { mkdirs() }
     }

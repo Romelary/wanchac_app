@@ -25,6 +25,9 @@ android {
         // Backend aun no desplegado (ver docs/plan.md #4). Apunta a un servidor
         // mock local (json-server o similar) corriendo en el host de desarrollo.
         buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8000/\"")
+
+        // Correo de contacto público que se muestra en Ajustes (definido en gradle.properties).
+        buildConfigField("String", "CONTACT_EMAIL", "\"${providers.gradleProperty("contactEmail").getOrElse("")}\"")
     }
 
     buildTypes {
@@ -140,3 +143,21 @@ detekt {
     parallel = true
     config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
 }
+
+// Guardia de publicación: el consentimiento (Anexo 9) promete un "correo de contacto" para
+// que el usuario ejerza sus derechos sobre sus datos (Ley N.º 29733). Publicar sin él
+// dejaría esa promesa vacía, así que la compilación release falla hasta que se defina
+// contactEmail en gradle.properties. Las compilaciones debug no se ven afectadas.
+val verificarCorreoContacto by tasks.registering {
+    val correo = providers.gradleProperty("contactEmail").orElse("")
+    doLast {
+        check(correo.get().isNotBlank()) {
+            "Falta 'contactEmail' en gradle.properties: no se puede compilar release sin el correo " +
+                "de contacto que promete el consentimiento informado (Anexo 9)."
+        }
+    }
+}
+
+tasks
+    .matching { it.name == "assembleRelease" || it.name == "bundleRelease" }
+    .configureEach { dependsOn(verificarCorreoContacto) }

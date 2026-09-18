@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wanchaqlimpio.app.core.location.ProveedorUbicacion
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
+import com.wanchaqlimpio.app.domain.repository.AlmacenFotos
 import com.wanchaqlimpio.app.domain.repository.ConsentimientoRepository
 import com.wanchaqlimpio.app.domain.repository.ReporteRepository
 import com.wanchaqlimpio.app.domain.usecase.ResultadoValidacionReporte
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,6 +24,7 @@ class ReporteViewModel
         private val reporteRepository: ReporteRepository,
         private val consentimientoRepository: ConsentimientoRepository,
         private val proveedorUbicacion: ProveedorUbicacion,
+        private val almacenFotos: AlmacenFotos,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow<ReporteUiState>(ReporteUiState.Capturando)
         val uiState: StateFlow<ReporteUiState> = _uiState.asStateFlow()
@@ -34,40 +37,47 @@ class ReporteViewModel
             categoriaSeleccionada = categoria
         }
 
+        /** Archivo donde la pantalla debe escribir la próxima foto. */
+        fun crearArchivoFoto(): File = almacenFotos.nuevaFoto()
+
         fun onFotoCapturada(fotoPath: String) {
             viewModelScope.launch {
                 _uiState.value = ReporteUiState.ProcesandoUbicacion
 
-                val idAnonimo = consentimientoRepository.estado.first().idAnonimo
-                if (idAnonimo == null) {
-                    _uiState.value = ReporteUiState.Rechazado("Falta aceptar el consentimiento informado.")
-                    return@launch
-                }
+                val estadoFinal = procesarFoto(fotoPath)
 
-                val ubicacion = proveedorUbicacion.obtenerUbicacionActual()
-                if (ubicacion == null) {
-                    _uiState.value =
-                        ReporteUiState.Rechazado(
-                            "No se pudo obtener tu ubicación. Verifica que el GPS esté activado e intenta de nuevo.",
-                        )
-                    return@launch
-                }
+                // Si el reporte no se guardó, la foto no debe quedar en el almacenamiento:
+                // puede contener rostros o placas (Ética, Cap. I) y nadie la volvería a usar.
+                if (estadoFinal !is ReporteUiState.Guardado) almacenFotos.borrar(fotoPath)
 
-                val resultado =
-                    reporteRepository.crearReporte(
-                        idAnonimo = idAnonimo,
-                        categoria = categoriaSeleccionada,
-                        ubicacion = ubicacion,
-                        fotoPath = fotoPath,
-                        ahoraEpochMillis = System.currentTimeMillis(),
-                    )
-
-                _uiState.value = resultado.aEstadoUi()
+                _uiState.value = estadoFinal
             }
         }
 
         fun reintentar() {
             _uiState.value = ReporteUiState.Capturando
+        }
+
+        private suspend fun procesarFoto(fotoPath: String): ReporteUiState {
+            val idAnonimo = consentimientoRepository.estado.first().idAnonimo
+            val ubicacion = if (idAnonimo != null) proveedorUbicacion.obtenerUbicacionActual() else null
+
+            return when {
+                idAnonimo == null -> ReporteUiState.Rechazado("Falta aceptar el consentimiento informado.")
+                ubicacion == null ->
+                    ReporteUiState.Rechazado(
+                        "No se pudo obtener tu ubicación. Verifica que el GPS esté activado e intenta de nuevo.",
+                    )
+                else ->
+                    reporteRepository
+                        .crearReporte(
+                            idAnonimo = idAnonimo,
+                            categoria = categoriaSeleccionada,
+                            ubicacion = ubicacion,
+                            fotoPath = fotoPath,
+                            ahoraEpochMillis = System.currentTimeMillis(),
+                        ).aEstadoUi()
+            }
         }
 
         private fun ResultadoValidacionReporte.aEstadoUi(): ReporteUiState =

@@ -15,7 +15,7 @@
 
 ## Estado de la auditoría
 
-**Auditoría completa del Capítulo IV realizada el 2026-09-17**, incluyendo el contenido real de las Tablas 6 a 13 (antes no visible, solo se tenía el texto de párrafos). Resultado: 8 correcciones (CORR-001 a CORR-008). No se han aplicado cambios al `.docx` todavía — todas están `pendiente de aplicar`.
+**Auditoría completa del Capítulo IV realizada el 2026-09-17**, incluyendo el contenido real de las Tablas 6 a 13 (antes no visible, solo se tenía el texto de párrafos). Resultado: 8 correcciones (CORR-001 a CORR-008), más CORR-009 (idioma) detectada el 2026-09-18 durante el Módulo 7. No se han aplicado cambios al `.docx` todavía — todas están `pendiente de aplicar`.
 
 ---
 
@@ -109,6 +109,17 @@
 - **Corrección propuesta**: usar los estados `pendiente, sincronizado, agrupado, verificado, descartado`. Ya reflejado en `diseno.md` §6 y §7 (diagrama de estados).
 - **Estado**: `pendiente de aplicar`
 - **Detectado**: 2026-09-17
+
+---
+
+### CORR-009 — "Cambio de idioma" descrito en el Cap. IV pero no implementado
+
+- **Sección afectada**: Capítulo IV — "Pantalla de perfil" (*"...el cambio de idioma y cerrar sesión"*).
+- **Tipo de contenido**: Flexible.
+- **Divergencia**: el Cap. IV describe que la app permite cambiar de idioma. La versión implementada es **solo en español**. Decisión del usuario (2026-09-18, Módulo 7): el cambio de idioma no es parte de ningún indicador de la investigación, exige traducciones ya revisadas (incluido el texto del Anexo 9, instrumento validado) y, en Android < 13, requiere infraestructura adicional de AppCompat.
+- **Corrección propuesta**: retirar la mención del "cambio de idioma" del Cap. IV (o declararla explícitamente como trabajo futuro). Si más adelante se implementa, el idioma pertinente para Cusco (quechua) necesitaría traducción revisada por un hablante, y cualquier traducción del consentimiento debería pasar por el asesor. Ya reflejado en `diseno.md` §9.
+- **Estado**: `pendiente de aplicar`
+- **Detectado**: 2026-09-18
 
 ---
 

@@ -32,6 +32,24 @@
     <string name="mis_reportes_dialogo_confirmar">Eliminar</string>
     <string name="mis_reportes_dialogo_cancelar">Cancelar</string>
 
+    <string name="ajustes_acerca_titulo">Acerca de Wanchaq Limpio</string>
+    <string name="ajustes_acerca_texto">Wanchaq Limpio permite a los vecinos reportar puntos de acumulación de residuos sólidos en el distrito de Wanchaq. Es parte de un proyecto de investigación de la Universidad Continental: los reportes se usan para elaborar un mapa de puntos críticos que se pondrá a disposición de la Municipalidad Distrital de Wanchaq.</string>
+    <string name="ajustes_version">Versión %1$s</string>
+    <string name="ajustes_codigo_titulo">Tu código anónimo</string>
+    <string name="ajustes_codigo_texto">Identifica este teléfono sin usar datos personales. Si nos escribes por tus datos, indícalo en el mensaje.</string>
+    <string name="ajustes_contacto_titulo">Contacto</string>
+    <string name="ajustes_contacto_texto">Para solicitar el acceso, la rectificación o la cancelación de tus datos, escríbenos a:</string>
+    <string name="ajustes_contacto_boton">Escribir un correo</string>
+    <string name="ajustes_contacto_sin_configurar">Correo de contacto sin configurar: falta definirlo antes de publicar la app.</string>
+    <string name="ajustes_datos_titulo">Tus datos</string>
+    <string name="ajustes_datos_texto">Elimina de este teléfono todos tus reportes y sus fotos, solicita su eliminación del servidor y revoca tu consentimiento.</string>
+    <string name="ajustes_borrar_boton">Borrar todos mis datos</string>
+    <string name="ajustes_borrando">Borrando…</string>
+    <string name="ajustes_borrar_dialogo_titulo">¿Borrar todos tus datos?</string>
+    <string name="ajustes_borrar_dialogo_texto">Se eliminarán todos tus reportes y sus fotos de este teléfono, se solicitará su eliminación del servidor y se revocará tu consentimiento. Para volver a reportar tendrás que aceptarlo de nuevo. Esta acción no se puede deshacer.</string>
+    <string name="ajustes_borrar_dialogo_confirmar">Borrar todo</string>
+    <string name="ajustes_borrar_dialogo_cancelar">Cancelar</string>
+
     <string name="estado_pendiente">Pendiente de envío</string>
     <string name="estado_sincronizado">Enviado</string>
     <string name="estado_agrupado">En análisis</string>

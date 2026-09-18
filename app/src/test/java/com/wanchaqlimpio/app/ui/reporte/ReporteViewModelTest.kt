@@ -5,6 +5,7 @@ import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.ConsentimientoEstado
 import com.wanchaqlimpio.app.domain.model.Reporte
 import com.wanchaqlimpio.app.domain.model.Ubicacion
+import com.wanchaqlimpio.app.domain.repository.AlmacenFotos
 import com.wanchaqlimpio.app.domain.repository.ConsentimientoRepository
 import com.wanchaqlimpio.app.domain.repository.ReporteRepository
 import com.wanchaqlimpio.app.domain.usecase.ResultadoValidacionReporte
@@ -20,6 +21,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 
 private const val ID_ANONIMO = "device-1"
 
@@ -56,7 +58,21 @@ private class ProveedorUbicacionFalso(
     override suspend fun obtenerUbicacionActual(): Ubicacion? = ubicacion
 }
 
+private class AlmacenFotosFalso : AlmacenFotos {
+    val borradas = mutableListOf<String>()
+
+    override fun nuevaFoto(): File = File("nueva.jpg")
+
+    override suspend fun borrar(fotoPath: String) {
+        borradas += fotoPath
+    }
+
+    override suspend fun borrarTodas() = Unit
+}
+
 class ReporteViewModelTest {
+    private val almacenFotos = AlmacenFotosFalso()
+
     // viewModelScope usa Dispatchers.Main; en un test JVM puro no existe un
     // Main real, así que se reemplaza por uno de prueba (ver kotlinx-coroutines-test).
     @Before
@@ -133,6 +149,48 @@ class ReporteViewModelTest {
             assertTrue(viewModel.uiState.value is ReporteUiState.Rechazado)
         }
 
+    @Test
+    fun `un reporte guardado conserva su foto`() =
+        runTest {
+            val viewModel = crearViewModel(resultado = ResultadoValidacionReporte.Valido)
+
+            viewModel.onFotoCapturada("foto.jpg")
+
+            assertEquals(ReporteUiState.Guardado, viewModel.uiState.value)
+            assertEquals(emptyList<String>(), almacenFotos.borradas)
+        }
+
+    @Test
+    fun `si el reporte es rechazado por la validacion su foto se borra del almacenamiento`() =
+        runTest {
+            val viewModel = crearViewModel(resultado = ResultadoValidacionReporte.FueraDelLimiteDistrital)
+
+            viewModel.onFotoCapturada("foto.jpg")
+
+            assertTrue(viewModel.uiState.value is ReporteUiState.Rechazado)
+            assertEquals(listOf("foto.jpg"), almacenFotos.borradas)
+        }
+
+    @Test
+    fun `si no hay GPS la foto tambien se borra en vez de quedar huerfana`() =
+        runTest {
+            val viewModel = crearViewModel(ubicacion = null)
+
+            viewModel.onFotoCapturada("foto.jpg")
+
+            assertEquals(listOf("foto.jpg"), almacenFotos.borradas)
+        }
+
+    @Test
+    fun `si falta el consentimiento la foto tambien se borra`() =
+        runTest {
+            val viewModel = crearViewModel(idAnonimo = null)
+
+            viewModel.onFotoCapturada("foto.jpg")
+
+            assertEquals(listOf("foto.jpg"), almacenFotos.borradas)
+        }
+
     private fun crearViewModel(
         resultado: ResultadoValidacionReporte = ResultadoValidacionReporte.Valido,
         ubicacion: Ubicacion? = Ubicacion(-13.530, -71.950, precisionMetros = 5f),
@@ -141,5 +199,6 @@ class ReporteViewModelTest {
         reporteRepository = ReporteRepositoryFalso(resultado),
         consentimientoRepository = ConsentimientoRepositoryFalso(idAnonimo),
         proveedorUbicacion = ProveedorUbicacionFalso(ubicacion),
+        almacenFotos = almacenFotos,
     )
 }

@@ -218,7 +218,7 @@ flowchart TD
   - ~~`applicationId` definitivo fijado~~ → hecho, `com.wanchaqlimpio.app` — **no se puede cambiar después de publicar**
   - Cuenta de desarrollador de Google Play (pago único de US$25)
   - Keystore de firma configurado (Play App Signing)
-  - Política de privacidad pública, derivada del texto ya validado del Anexo 9 (consentimiento informado)
+  - Política de privacidad pública, derivada del texto ya validado del Anexo 9 (consentimiento informado). **Requiere el correo de contacto** (`contactEmail` en `gradle.properties`, hoy vacío y bloqueante — ver `progreso.md`)
   - Formulario de Data Safety completado (declara ubicación y fotos como datos recogidos; confirma opción de eliminación, ya cubierta por RNF-05)
   - Ficha de clasificación de contenido
   - Assets de tienda: ícono, capturas de pantalla, descripción corta y larga
@@ -271,6 +271,6 @@ Al terminar cada módulo, antes de pasar al siguiente:
 | 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17); backend real sigue pendiente |
 | 5. Mapa público | ⏳ No iniciado (bloqueado por backend) |
 | 6. Mis reportes | ✅ Completado (2026-09-18) — con eliminación, ver ADR-0002 |
-| 7. Ajustes | ⏳ No iniciado |
+| 7. Ajustes | ✅ Completado (2026-09-18) — idioma diferido (CORR-009); correo de contacto pendiente y bloquea la publicación |
 | 8. Pulido y QA final | ⏳ No iniciado |
 | 9. Publicación en Play Store | ⏳ No iniciado (`applicationId` ya fijado: `com.wanchaqlimpio.app`) |

@@ -52,6 +52,7 @@ fun ReporteScreen(viewModel: ReporteViewModel = hiltViewModel()) {
 
     if (uiState is ReporteUiState.Capturando) {
         CapturaScreen(
+            crearArchivoFoto = viewModel::crearArchivoFoto,
             onFotoCapturada = viewModel::onFotoCapturada,
             onCategoriaSeleccionada = viewModel::seleccionarCategoria,
         )
@@ -62,6 +63,7 @@ fun ReporteScreen(viewModel: ReporteViewModel = hiltViewModel()) {
 
 @Composable
 private fun CapturaScreen(
+    crearArchivoFoto: () -> File,
     onFotoCapturada: (String) -> Unit,
     onCategoriaSeleccionada: (CategoriaResiduo) -> Unit,
 ) {
@@ -105,7 +107,7 @@ private fun CapturaScreen(
                     },
                 )
                 Button(
-                    onClick = { capturarFoto(context, imageCapture, onFotoCapturada) },
+                    onClick = { capturarFoto(context, imageCapture, crearArchivoFoto(), onFotoCapturada) },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(stringResource(R.string.reporte_boton_capturar))
@@ -142,10 +144,9 @@ private fun crearVistaPrevia(
 private fun capturarFoto(
     context: Context,
     imageCapture: ImageCapture,
+    archivo: File,
     onFotoCapturada: (String) -> Unit,
 ) {
-    val carpeta = File(context.filesDir, "reportes").apply { mkdirs() }
-    val archivo = File(carpeta, "reporte_${System.currentTimeMillis()}.jpg")
     val opciones = ImageCapture.OutputFileOptions.Builder(archivo).build()
 
     imageCapture.takePicture(

@@ -103,7 +103,30 @@ Alcance: solo el cliente Android, contra un backend simulado (`MockWebServer3`, 
 | | `eliminarPideConfirmacionYSoloAlConfirmarSeInvocaElCallback` | Eliminar exige confirmación explícita: nada se borra al primer toque | RNF-05, prevención de borrado accidental |
 | | `cancelarElDialogoNoEliminaNada` | Cancelar no elimina | RNF-05 |
 
-**Estado**: 11 pruebas unitarias nuevas en verde (4 en `ReporteRepositoryImplTest`, 4 en `EliminarReporteWorkerTest`, 3 en `MisReportesViewModelTest`). **Total del proyecto: 37 pruebas unitarias** en verde (36 propias + el `ExampleUnitTest` del wizard). Las 3 pruebas de UI (`MisReportesContentTest`) compilan pero no se ejecutaron por no haber emulador — se suman a las pendientes de correr en un dispositivo real (`OnboardingContentTest`, `ReporteEstadoContentTest`). **No hay prueba contra un backend real**: la eliminación remota solo se verificó contra `MockWebServer3`, así que el comportamiento real (lápida, `410 Gone`, etc.) depende de que el backend implemente `diseno.md` §4.2.
+**Estado**: 11 pruebas unitarias nuevas en verde (4 en `ReporteRepositoryImplTest`, 4 en `EliminarReporteWorkerTest`, 3 en `MisReportesViewModelTest`). Las 3 pruebas de UI (`MisReportesContentTest`) compilan pero no se ejecutaron por no haber emulador — se suman a las pendientes de correr en un dispositivo real (`OnboardingContentTest`, `ReporteEstadoContentTest`). **No hay prueba contra un backend real**: la eliminación remota solo se verificó contra `MockWebServer3`, así que el comportamiento real (lápida, `410 Gone`, etc.) depende de que el backend implemente `diseno.md` §4.2.
+
+## Módulo 7 — Ajustes y "borrar todos mis datos"
+
+| Archivo | Caso de prueba | Qué verifica | Requisito / dimensión relacionada |
+|---|---|---|---|
+| `BorrarTodosMisDatosTest.kt` (fakes que anotan en una lista común, para verificar el **orden**) | `elimina cada reporte, limpia las fotos y revoca el consentimiento al final` | Secuencia exacta: listar → eliminar cada reporte → borrar fotos sueltas → **revocar al final** | RNF-05, ADR-0002 |
+| | `sin id anonimo no lista reportes pero igual limpia fotos y revoca` | Caso sin consentimiento previo: no falla y deja el dispositivo limpio | Robustez |
+| | `si eliminar un reporte falla no se revoca el consentimiento para poder reintentar` | Si el borrado se interrumpe, el `id_anonimo` sigue existiendo y el usuario puede repetir la acción (no queda a medias y sin forma de reintentar); el error se propaga, no se silencia | RNF-05 |
+| `AlmacenFotosImplTest.kt` (Robolectric, `filesDir` real) | `nuevaFoto devuelve un archivo dentro de la carpeta privada de la app y crea la carpeta` | Las fotos viven en almacenamiento privado (no en la galería/almacenamiento compartido) | Ética (fotos con rostros/placas) |
+| | `borrar elimina la foto` · `borrar tolera que el archivo ya no exista` | Borrado individual, idempotente | RNF-05 |
+| | `borrarTodas elimina las fotos, incluidas las huerfanas, y no toca otros archivos de la app` | El borrado total llega a fotos sin reporte asociado y no daña el resto de la app | RNF-05, ADR-0002 |
+| `AjustesViewModelTest.kt` (fakes + Turbine, con una "compuerta" que mantiene el borrado en curso) | `muestra el codigo anonimo del consentimiento` | Ajustes expone el código que el usuario citará al escribir por sus datos | ADR-0002 (límite: reinstalación) |
+| | `borrarTodo ejecuta el borrado completo y no queda en estado borrando` | Flujo completo y el estado vuelve a la normalidad | RNF-05 |
+| | `mientras borra queda en estado borrando, un segundo toque se ignora y al terminar vuelve a false` | Protección contra doble toque: un solo borrado, botón bloqueado mientras dura | RNF-05, prevención de errores |
+| `ReporteViewModelTest.kt` *(Módulo 2, ampliado en este módulo)* | `un reporte guardado conserva su foto` · `si el reporte es rechazado por la validacion su foto se borra del almacenamiento` · `si no hay GPS la foto tambien se borra...` · `si falta el consentimiento la foto tambien se borra` | **Corrige un hueco del Módulo 2**: la foto se guardaba en disco *antes* de validar, y si el reporte se rechazaba quedaba huérfana en el almacenamiento para siempre. Ahora se borra en todo camino que no termine en "Guardado" | Ética (rostros/placas), Ley N.º 29733 |
+| `AjustesContentTest.kt` (androidTest, Compose UI Testing) | `muestraElCodigoAnonimoYElCorreoDeContacto` | Se ven el código y el correo | ADR-0002 |
+| | `sinCorreoConfiguradoSeAvisaEnVezDeMostrarUnaDireccionVacia` | Estado sin correo definido: aviso visible (solo alcanzable en debug; ver guardia abajo) | Anexo 9 |
+| | `borrarTodoPideConfirmacionYSoloAlConfirmarSeInvocaElCallback` · `cancelarElDialogoNoBorraNada` | Confirmación explícita antes de una acción irreversible | RNF-05 |
+| | `mientrasSeBorraElBotonQuedaDeshabilitado` | Estado "borrando" visible y bloqueado en la UI | RNF-05 |
+
+**Verificación adicional, no automatizada en JUnit — guardia de publicación del correo de contacto** (`verificarCorreoContacto` en `app/build.gradle.kts`): se comprobó manualmente con Gradle que (1) con `contactEmail` vacío la tarea **falla** con un mensaje explicativo, (2) con `-PcontactEmail=...` **pasa**, y (3) `assembleRelease`/`bundleRelease` dependen de ella (`--dry-run`). Así el pendiente "definir el correo de contacto" no puede olvidarse: publicar sin él es imposible.
+
+**Estado**: 14 pruebas unitarias nuevas en verde (4 `AlmacenFotosImplTest`, 3 `BorrarTodosMisDatosTest`, 3 `AjustesViewModelTest`, 4 nuevas en `ReporteViewModelTest`). **Total del proyecto: 51 pruebas unitarias** en verde (50 propias + el `ExampleUnitTest` del wizard). Las 5 pruebas de UI de `AjustesContentTest` compilan pero no se ejecutaron (sin emulador). En total hay **4 clases de prueba de UI pendientes de correr en un dispositivo real**: `OnboardingContentTest`, `ReporteEstadoContentTest`, `MisReportesContentTest` y `AjustesContentTest`. Lo que **no** se puede verificar en automático es que el borrado remoto llegue a un servidor real (no existe todavía) ni el envío del correo (`Intent` a una app de correo real).
 
 ---
 

@@ -337,7 +337,7 @@ sequenceDiagram
 | **Mapa** | Solo lectura. Muestra `Punto_critico` con `estado_verificacion = confirmado`. Sin edición | Ya no muestra reportes crudos individuales; evita exponer datos no verificados |
 | **Reportar foco** | Cámara (RF-08), GPS automático con validación de precisión (RF-02), categoría sugerida por IA editable (RF-04), botón confirmar/reintentar | Se mantiene del Cap. IV, es consistente con Cap. I–III |
 | **Mis reportes** | Lista de reportes hechos desde este dispositivo (por `id_anonimo`), con opción de eliminar | Reemplaza el concepto de "perfil de cuenta"; implementa RNF-05 |
-| **Acerca de / Ajustes** | Propósito de la app, idioma, enlace para revocar consentimiento y borrar todos los datos locales | Se mantiene del Cap. IV, sin el ítem "cerrar sesión" |
+| **Ajustes** *(implementado en el Módulo 7)* | Propósito de la app y versión; código anónimo del dispositivo (seleccionable, para citarlo al pedir acceso/rectificación/cancelación por correo); correo de contacto público con botón para escribir; **"Borrar todos mis datos"** (elimina reportes y fotos, solicita su baja en el backend y revoca el consentimiento; con confirmación explícita) | Se mantiene del Cap. IV sin el ítem "cerrar sesión" (ADR-0001) y **sin el "cambio de idioma"**, diferido por decisión del usuario (CORR-009). "Revocar consentimiento" y "borrar datos" se fusionan en una sola acción porque una sin la otra dejaría datos huérfanos (ADR-0002) |
 
 ---
 
