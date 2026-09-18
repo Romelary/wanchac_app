@@ -59,6 +59,8 @@ El proyecto ya trae escafoldado por el wizard: JUnit4, AndroidX Test (`androidx.
 
 **Definition of Done de pruebas**: no se marca un módulo como cerrado sin al menos una prueba unitaria del `Repository`/`ViewModel` involucrado y una prueba de UI del flujo principal.
 
+**Documentación de pruebas**: cada caso de prueba escrito se registra en [`pruebas.md`](./pruebas.md) (qué verifica, requisito/dimensión relacionada) — no en `progreso.md`, que solo referencia ese archivo. `pruebas.md` también acumula notas técnicas de testing (configuración necesaria, bugs de entorno ya diagnosticados) para no repetir el mismo diagnóstico dos veces.
+
 ---
 
 ## 2. Estructura de carpetas propuesta
@@ -251,9 +253,10 @@ Al terminar cada módulo, antes de pasar al siguiente:
 
 - [ ] Código pasa `ktlint` + `detekt` sin advertencias nuevas
 - [ ] Pruebas mínimas del módulo (sección 1.5) están escritas y en verde
+- [ ] `pruebas.md` actualizado con la tabla de trazabilidad del módulo (qué verifica cada caso y a qué requisito/dimensión se conecta)
 - [ ] KDoc agregado a las clases públicas nuevas
 - [ ] Commit(s) siguen Conventional Commits, mergeados a `main` vía PR (aunque sea de un solo revisor)
-- [ ] `progreso.md` actualizado con una entrada de sesión
+- [ ] `progreso.md` actualizado con una entrada de sesión (breve, referenciando `pruebas.md` para el detalle de pruebas)
 - [ ] `diseno.md` actualizado si algo del diseño cambió durante la construcción
 - [ ] Este archivo (`plan.md`): módulo marcado como completado abajo
 
