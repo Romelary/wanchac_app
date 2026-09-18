@@ -14,12 +14,10 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,8 +37,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanchaqlimpio.app.R
-import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
-import com.wanchaqlimpio.app.ui.common.etiqueta
 import java.io.File
 
 private const val ETIQUETA_LOG = "ReporteScreen"
@@ -50,14 +46,20 @@ private val PERMISOS_REQUERIDOS = arrayOf(Manifest.permission.CAMERA, Manifest.p
 fun ReporteScreen(viewModel: ReporteViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    if (uiState is ReporteUiState.Capturando) {
-        CapturaScreen(
-            crearArchivoFoto = viewModel::crearArchivoFoto,
-            onFotoCapturada = viewModel::onFotoCapturada,
-            onCategoriaSeleccionada = viewModel::seleccionarCategoria,
-        )
-    } else {
-        ReporteEstadoContent(uiState = uiState, onReintentar = viewModel::reintentar)
+    when (val estado = uiState) {
+        ReporteUiState.Capturando ->
+            CapturaScreen(
+                crearArchivoFoto = viewModel::crearArchivoFoto,
+                onFotoCapturada = viewModel::onFotoCapturada,
+            )
+        is ReporteUiState.Confirmando ->
+            ReporteConfirmacionContent(
+                estado = estado,
+                onSeleccionar = viewModel::seleccionarCategoria,
+                onGuardar = viewModel::confirmar,
+                onDescartar = viewModel::descartarFoto,
+            )
+        else -> ReporteEstadoContent(uiState = uiState, onReintentar = viewModel::reintentar)
     }
 }
 
@@ -65,7 +67,6 @@ fun ReporteScreen(viewModel: ReporteViewModel = hiltViewModel()) {
 private fun CapturaScreen(
     crearArchivoFoto: () -> File,
     onFotoCapturada: (String) -> Unit,
-    onCategoriaSeleccionada: (CategoriaResiduo) -> Unit,
 ) {
     val context = LocalContext.current
     var permisosOtorgados by remember { mutableStateOf(tienePermisos(context)) }
@@ -79,7 +80,6 @@ private fun CapturaScreen(
         return
     }
 
-    var categoriaSeleccionada by remember { mutableStateOf(CategoriaResiduo.MIXTO) }
     val imageCapture = remember { ImageCapture.Builder().build() }
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -99,13 +99,6 @@ private fun CapturaScreen(
                         .fillMaxWidth()
                         .padding(16.dp),
             ) {
-                SelectorCategoria(
-                    seleccionada = categoriaSeleccionada,
-                    onSeleccionar = {
-                        categoriaSeleccionada = it
-                        onCategoriaSeleccionada(it)
-                    },
-                )
                 Button(
                     onClick = { capturarFoto(context, imageCapture, crearArchivoFoto(), onFotoCapturada) },
                     modifier = Modifier.fillMaxWidth(),
@@ -177,25 +170,6 @@ private fun PermisosRequeridosContent(onSolicitar: () -> Unit) {
         Text(stringResource(R.string.reporte_permisos_texto))
         Button(onClick = onSolicitar) {
             Text(stringResource(R.string.reporte_permisos_boton))
-        }
-    }
-}
-
-@Composable
-private fun SelectorCategoria(
-    seleccionada: CategoriaResiduo,
-    onSeleccionar: (CategoriaResiduo) -> Unit,
-) {
-    Column {
-        Text(stringResource(R.string.reporte_categoria_titulo))
-        Row {
-            CategoriaResiduo.entries.forEach { categoria ->
-                FilterChip(
-                    selected = categoria == seleccionada,
-                    onClick = { onSeleccionar(categoria) },
-                    label = { Text(categoria.etiqueta()) },
-                )
-            }
         }
     }
 }

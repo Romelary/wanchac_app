@@ -164,7 +164,7 @@ flowchart TD
 - **Requisitos que satisface**: RF-04.
 - **Se divide en dos partes** porque la primera depende de datos y de una sesión de Colab que corre el usuario:
   - **3a — Pipeline de entrenamiento** (carpeta [`ml/`](../ml/README.md)) — ✅ preparado, **falta ejecutarlo en Colab**. Entregables: cuaderno `clasificador_residuos.ipynb` (generado desde el `.py`), prueba de humo `probar_notebook.py` y el contrato modelo↔app (entrada/salida/orden de clases/umbral) documentado en `ml/README.md`. Salida esperada: `clasificador_residuos.tflite`, `labels.txt`, `metadata.json`, `metricas.json`. **Alcance (2026-09-18): el modelo predice 4 clases (`plastico, carton, vidrio, organico`); `escombros` y `mixto` son de elección manual.** Se midió, con fotos "fuera de clase", qué tanto se equivoca el modelo con escombros o muros (celda 7b).
-  - **3b — Integración Android** — ⏳ bloqueada hasta tener el `.tflite`. Entregables:
+  - **3b — Integración Android** — ✅ **implementada el 2026-09-18 con el modelo v1 provisional** (código y pruebas de JVM en verde; **sin ejecutar en un dispositivo**, ver `pruebas.md`). Entregables:
     - Modelo `.tflite` + `labels.txt` + `metadata.json` copiados a `app/src/main/assets/`
     - `ClasificadorResiduo` (wrapper del intérprete TFLite/LiteRT; verificar el artefacto y la versión antes de agregar la dependencia)
     - UI de categoría sugerida + selector manual de corrección; si la confianza queda bajo `umbral_confianza_sugerido` se propone `MIXTO`. El selector sigue ofreciendo `ESCOMBROS` (el modelo nunca lo sugiere): leer `categorias_manuales` de `metadata.json` en vez de suponerlo
@@ -271,7 +271,7 @@ Al terminar cada módulo, antes de pasar al siguiente:
 | 0. Fundamentos del proyecto | ✅ Completado (2026-09-17) |
 | 1. Onboarding y consentimiento | ✅ Completado (2026-09-17) |
 | 2. Captura y almacenamiento offline-first | ✅ Completado (2026-09-17) |
-| 3. Clasificación IA on-device | 🔶 3a: **ejecutado en Colab el 2026-09-18** (modelo v1 provisional de **4 clases**, exactitud de prueba 0,89 sobre un dataset fácil; `escombros` manual). **Sin medir aún con fotos de calle ni "fuera de clase"**; 7 fotos de `organico` sin declarar; 3b (integración Android): bloqueada hasta tener el `.tflite` |
+| 3. Clasificación IA on-device | 🔶 **3b integrada en la app (2026-09-18) con el modelo v1 provisional, sin ejecutar en dispositivo** (ADR-0003). 3a: **ejecutado en Colab el 2026-09-18** (modelo v1 provisional de **4 clases**, exactitud de prueba 0,89 sobre un dataset fácil; `escombros` manual). **Sin medir aún con fotos de calle ni "fuera de clase"**; 7 fotos de `organico` sin declarar; 3b (integración Android): bloqueada hasta tener el `.tflite` |
 | 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17); backend real sigue pendiente |
 | 5. Mapa público | ⏳ No iniciado (bloqueado por backend) |
 | 6. Mis reportes | ✅ Completado (2026-09-18) — con eliminación, ver ADR-0002 |

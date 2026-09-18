@@ -15,5 +15,7 @@ fun Reporte.aGeoJsonFeature(): GeoJsonFeatureDto =
                 idLocal = id,
                 categoria = categoria.name,
                 fechaHoraEpochMillis = fechaHoraEpochMillis,
+                categoriaIa = categoriaIa?.name,
+                confianzaIa = confianzaIa,
             ),
     )

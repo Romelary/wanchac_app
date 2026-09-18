@@ -8,6 +8,7 @@ import com.wanchaqlimpio.app.data.mapper.aEntity
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.EstadoReporte
 import com.wanchaqlimpio.app.domain.model.Reporte
+import com.wanchaqlimpio.app.domain.model.SugerenciaIa
 import com.wanchaqlimpio.app.domain.model.Ubicacion
 import com.wanchaqlimpio.app.domain.repository.AlmacenFotos
 import com.wanchaqlimpio.app.domain.repository.ReporteRepository
@@ -32,6 +33,7 @@ class ReporteRepositoryImpl
             ubicacion: Ubicacion,
             fotoPath: String,
             ahoraEpochMillis: Long,
+            sugerenciaIa: SugerenciaIa?,
         ): ResultadoValidacionReporte {
             val previos = dao.obtenerPorDispositivo(idAnonimo).map { it.aDominio() }
             val resultado = validar(ubicacion, previos, ahoraEpochMillis)
@@ -47,6 +49,8 @@ class ReporteRepositoryImpl
                         longitud = ubicacion.longitud,
                         fotoPath = fotoPath,
                         fechaHoraEpochMillis = ahoraEpochMillis,
+                        categoriaIa = sugerenciaIa?.categoria,
+                        confianzaIa = sugerenciaIa?.confianza,
                     )
                 dao.insertar(reporte.aEntity())
                 // Encola la sincronización; WorkManager espera a que haya red

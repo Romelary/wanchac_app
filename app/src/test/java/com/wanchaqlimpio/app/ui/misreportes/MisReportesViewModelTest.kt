@@ -5,6 +5,7 @@ import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.ConsentimientoEstado
 import com.wanchaqlimpio.app.domain.model.EstadoReporte
 import com.wanchaqlimpio.app.domain.model.Reporte
+import com.wanchaqlimpio.app.domain.model.SugerenciaIa
 import com.wanchaqlimpio.app.domain.model.Ubicacion
 import com.wanchaqlimpio.app.domain.repository.ConsentimientoRepository
 import com.wanchaqlimpio.app.domain.repository.ReporteRepository
@@ -36,6 +37,7 @@ private class ReporteRepositoryFalso(
         ubicacion: Ubicacion,
         fotoPath: String,
         ahoraEpochMillis: Long,
+        sugerenciaIa: SugerenciaIa?,
     ): ResultadoValidacionReporte = ResultadoValidacionReporte.Valido
 
     override fun observarReportesDe(idAnonimo: String): Flow<List<Reporte>> {

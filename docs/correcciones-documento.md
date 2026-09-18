@@ -15,7 +15,7 @@
 
 ## Estado de la auditoría
 
-**Auditoría completa del Capítulo IV realizada el 2026-09-17**, incluyendo el contenido real de las Tablas 6 a 13 (antes no visible, solo se tenía el texto de párrafos). Resultado: 8 correcciones (CORR-001 a CORR-008), más CORR-009 (idioma) detectada el 2026-09-18 durante el Módulo 7. No se han aplicado cambios al `.docx` todavía — todas están `pendiente de aplicar`.
+**Auditoría completa del Capítulo IV realizada el 2026-09-17**, incluyendo el contenido real de las Tablas 6 a 13 (antes no visible, solo se tenía el texto de párrafos). Resultado: 8 correcciones (CORR-001 a CORR-008), más CORR-009 (idioma, Módulo 7) y CORR-010 (sugerencia de la IA vs. categoría confirmada, Módulo 3b), ambas detectadas el 2026-09-18. No se han aplicado cambios al `.docx` todavía — todas están `pendiente de aplicar`.
 
 ---
 
@@ -123,6 +123,17 @@
 
 ---
 
+### CORR-010 — La entidad `Reporte` no puede separar lo que dijo la IA de lo que confirmó el ciudadano
+
+- **Sección afectada**: Capítulo IV, entidad `Reporte` (con una sola categoría) y RF-04 / CU-06 (*"Categorizar punto de acumulación"*, actor "Sistema").
+- **Tipo de contenido**: Flexible.
+- **Divergencia**: el indicador *Exactitud de clasificación IA* (Anexo 2) mide la coincidencia entre **la categoría que asigna el sistema** y la que registra el observador de campo. Pero RF-04 también exige "opción de corrección manual": si el ciudadano puede corregir la sugerencia y solo se guarda **una** categoría, lo que se compara con el observador ya no es lo que dijo la IA sino lo que decidió la persona, y el indicador mediría a los ciudadanos, no al modelo. Además se perdería la evidencia gratuita de cuánto y hacia dónde corrige la gente.
+- **Corrección propuesta**: la entidad `Reporte` guarda, además de la categoría **confirmada**, la respuesta **cruda** del modelo: `categoria_ia` y `confianza_ia` (opcionales: nulos si el modelo no estuvo disponible). Ya reflejado en `diseno.md` §4.2, §6 y §8, y implementado en el Módulo 3b. Además el flujo cambia: la categoría se confirma **después** de tomar la foto (paso de confirmación con la sugerencia visible), no antes.
+- **Estado**: `pendiente de aplicar`
+- **Detectado**: 2026-09-18
+
+---
+
 ## Observaciones adicionales (no son correcciones formales)
 
 - **RNF-02** (*"la base de datos debe estar disponible el 99% del tiempo"*) no está respaldado por ningún indicador del Anexo 2, y es un compromiso de infraestructura poco realista para el alcance y presupuesto de un proyecto de tesis (la propia Delimitación del estudio reconoce restricciones de tiempo y presupuesto). No se recomienda tratarlo como corrección formal, pero sí evaluar si conviene suavizar la redacción antes de la sustentación.
@@ -137,6 +148,8 @@
 - **Categorías de la Ficha de Observación de Campo (bloque D) vs. las del sistema** *(detectada 2026-09-18, Módulo 3)*: el observador elige entre *Orgánico o restos de alimentos, Papel y cartón, Plástico y PET, Vidrio, **Desmonte y escombros**, Mixto* y **Otro**; la "categoría predominante asignada por el sistema" ofrece *Orgánico, Papel y cartón, Plástico y PET, Vidrio, **Desmonte**, Mixto* — sin "Otro" y con "Desmonte" a secas. Para que la *coincidencia IA–observador* (indicador "Exactitud de clasificación IA") compare lo mismo, ambas listas deberían usar los mismos nombres y decidir qué pasa con "Otro" (el modelo no tiene esa salida; hoy caería en `MIXTO` o en la corrección manual). Si la ficha es un instrumento ya validado, **no se edita en silencio**: consultarlo con el asesor.
 - **La clase es "desmonte y escombros", no solo "restos de concreto"** *(detectada 2026-09-18)*: la categoría del documento incluye el desmonte (material de excavación: tierra, grava), lo que amplía las confusiones posibles del clasificador (suelo desnudo, caminos de tierra, muros, veredas) y obliga a **definir por escrito qué fotos cuentan como esa clase** antes de etiquetar el dataset. Propuesta de definición y guía de fotos en [`ml/README.md`](../ml/README.md).
 - **El indicador compara categorías predominantes por agrupación, no foto por foto** *(detectada 2026-09-18)*: los errores aleatorios de una foto se diluyen con varios reportes, los **sistemáticos no** (un muro que el modelo siempre llama "escombros" seguirá ganando la mayoría). Y para medir la IA, no a los ciudadanos, hay que guardar **por separado** la sugerencia del modelo y la categoría final elegida (hoy `Reporte` guarda una sola `categoria`): ver `plan.md`, Módulo 3b.
+
+- **"TensorFlow Lite" ahora se llama LiteRT** *(detectada 2026-09-18, Módulo 3b)*: el documento habla de TensorFlow Lite. Ese runtime pasó a llamarse LiteRT: TensorFlow avisa que `tf.lite.Interpreter` está en desuso a favor de LiteRT y la documentación oficial ya está bajo ese nombre. La app usa `com.google.ai.edge.litert:litert:1.4.2` (ver ADR-0003). Conviene mencionar el runtime como LiteRT (antes TensorFlow Lite) para que el documento no quede desactualizado.
 
 ## Próxima revisión pendiente
 

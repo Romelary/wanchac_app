@@ -9,6 +9,7 @@ import com.wanchaqlimpio.app.data.local.db.AppDatabase
 import com.wanchaqlimpio.app.data.local.entity.ReporteEntity
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.EstadoReporte
+import com.wanchaqlimpio.app.domain.model.SugerenciaIa
 import com.wanchaqlimpio.app.domain.model.Ubicacion
 import com.wanchaqlimpio.app.domain.usecase.ResultadoValidacionReporte
 import com.wanchaqlimpio.app.domain.usecase.ValidarNuevoReporte
@@ -161,6 +162,41 @@ class ReporteRepositoryImplTest {
             assertEquals(1, guardados.size)
             assertEquals(EstadoReporte.PENDIENTE, guardados.first().estado)
             assertEquals(1, programadorSincronizacion.vecesLlamado)
+        }
+
+    @Test
+    fun `la sugerencia cruda de la IA se guarda aparte de la categoria que confirmo el ciudadano`() =
+        runTest {
+            repositorio.crearReporte(
+                idAnonimo = "device-1",
+                categoria = CategoriaResiduo.VIDRIO, // el ciudadano corrigió al modelo
+                ubicacion = Ubicacion(LATITUD_DENTRO, LONGITUD_DENTRO, precisionMetros = 5f),
+                fotoPath = "foto.jpg",
+                ahoraEpochMillis = 0L,
+                sugerenciaIa =
+                    SugerenciaIa(CategoriaResiduo.PLASTICO, confianza = 0.87f, propuesta = CategoriaResiduo.PLASTICO),
+            )
+
+            val guardado = repositorio.observarReportesDe("device-1").first().single()
+            assertEquals(CategoriaResiduo.VIDRIO, guardado.categoria)
+            assertEquals(CategoriaResiduo.PLASTICO, guardado.categoriaIa)
+            assertEquals(0.87f, guardado.confianzaIa)
+        }
+
+    @Test
+    fun `sin sugerencia de la IA el reporte se guarda con esos campos vacios`() =
+        runTest {
+            repositorio.crearReporte(
+                idAnonimo = "device-1",
+                categoria = CategoriaResiduo.ORGANICO,
+                ubicacion = Ubicacion(LATITUD_DENTRO, LONGITUD_DENTRO, precisionMetros = 5f),
+                fotoPath = "foto.jpg",
+                ahoraEpochMillis = 0L,
+            )
+
+            val guardado = repositorio.observarReportesDe("device-1").first().single()
+            assertNull(guardado.categoriaIa)
+            assertNull(guardado.confianzaIa)
         }
 
     @Test

@@ -19,4 +19,7 @@ data class ReporteEntity(
     val longitud: Double,
     val fotoPath: String,
     val fechaHoraEpochMillis: Long,
+    // Añadidas en la versión 2 de la base (ver Migraciones.kt): la sugerencia CRUDA del modelo de IA.
+    val categoriaIa: CategoriaResiduo? = null,
+    val confianzaIa: Float? = null,
 )

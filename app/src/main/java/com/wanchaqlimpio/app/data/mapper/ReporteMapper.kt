@@ -13,6 +13,8 @@ fun ReporteEntity.aDominio(): Reporte =
         longitud = longitud,
         fotoPath = fotoPath,
         fechaHoraEpochMillis = fechaHoraEpochMillis,
+        categoriaIa = categoriaIa,
+        confianzaIa = confianzaIa,
     )
 
 fun Reporte.aEntity(): ReporteEntity =
@@ -25,4 +27,6 @@ fun Reporte.aEntity(): ReporteEntity =
         longitud = longitud,
         fotoPath = fotoPath,
         fechaHoraEpochMillis = fechaHoraEpochMillis,
+        categoriaIa = categoriaIa,
+        confianzaIa = confianzaIa,
     )

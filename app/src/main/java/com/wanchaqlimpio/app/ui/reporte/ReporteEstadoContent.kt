@@ -16,10 +16,11 @@ import com.wanchaqlimpio.app.R
 
 /**
  * Contenido "stateless" de los estados posteriores a la captura de la foto
- * (procesando, rechazado, guardado). No incluye el estado `Capturando`
+ * (clasificando, procesando, rechazado, guardado). No incluye `Capturando`
  * porque ese requiere la cámara real (CameraX) y no es practico de probar
  * con Compose UI Testing — ver `ReporteScreen` para ese caso y `pruebas.md`
- * para el criterio de qué se prueba y qué no.
+ * para el criterio de qué se prueba y qué no. Tampoco `Confirmando`, que tiene
+ * su propio contenido: [ReporteConfirmacionContent].
  */
 @Composable
 fun ReporteEstadoContent(
@@ -32,7 +33,11 @@ fun ReporteEstadoContent(
         verticalArrangement = Arrangement.Center,
     ) {
         when (uiState) {
-            ReporteUiState.Capturando -> Unit
+            ReporteUiState.Capturando, is ReporteUiState.Confirmando -> Unit
+            ReporteUiState.Clasificando -> {
+                CircularProgressIndicator()
+                Text(stringResource(R.string.reporte_clasificando))
+            }
             ReporteUiState.ProcesandoUbicacion -> {
                 CircularProgressIndicator()
                 Text(stringResource(R.string.reporte_procesando_ubicacion))

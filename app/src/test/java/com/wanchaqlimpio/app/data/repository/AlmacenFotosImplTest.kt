@@ -68,4 +68,28 @@ class AlmacenFotosImplTest {
             assertFalse(foto2.exists())
             assertTrue("solo se borra la carpeta de fotos", ajeno.exists())
         }
+
+    @Test
+    fun `borrarHuerfanas borra solo las fotos sin reporte y anteriores al limite`() =
+        runTest {
+            val enUso = almacen.nuevaFoto().apply { writeBytes(byteArrayOf(1)) }
+            val huerfanaVieja = File(enUso.parentFile, "huerfana-vieja.jpg").apply { writeBytes(byteArrayOf(2)) }
+            val huerfanaReciente = File(enUso.parentFile, "huerfana-reciente.jpg").apply { writeBytes(byteArrayOf(3)) }
+            val limite = 1_000_000L
+            enUso.setLastModified(limite - 10)
+            huerfanaVieja.setLastModified(limite - 10)
+            huerfanaReciente.setLastModified(limite + 10) // tomada mientras corría la limpieza
+
+            almacen.borrarHuerfanas(conservar = setOf(enUso.absolutePath), modificadasAntesDeEpochMillis = limite)
+
+            assertTrue("una foto que un reporte usa NUNCA se borra", enUso.exists())
+            assertFalse("la huérfana anterior al límite se borra", huerfanaVieja.exists())
+            assertTrue("una foto posterior al límite podría estar a mitad de un reporte", huerfanaReciente.exists())
+        }
+
+    @Test
+    fun `borrarHuerfanas tolera que la carpeta de fotos aun no exista`() =
+        runTest {
+            almacen.borrarHuerfanas(conservar = emptySet(), modificadasAntesDeEpochMillis = Long.MAX_VALUE)
+        }
 }

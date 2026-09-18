@@ -18,4 +18,14 @@ interface AlmacenFotos {
 
     /** Borra todas las fotos, incluidas las que ya no tienen un reporte asociado. */
     suspend fun borrarTodas()
+
+    /**
+     * Borra las fotos que NO están en [conservar] y que se modificaron antes de [modificadasAntesDeEpochMillis].
+     * Sirve para limpiar las que quedaron sin confirmar si la app se cerró en medio de un reporte. El límite de
+     * tiempo evita borrar una foto tomada mientras esta limpieza corría.
+     */
+    suspend fun borrarHuerfanas(
+        conservar: Set<String>,
+        modificadasAntesDeEpochMillis: Long,
+    )
 }

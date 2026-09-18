@@ -4,6 +4,7 @@ import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.ConsentimientoEstado
 import com.wanchaqlimpio.app.domain.model.EstadoReporte
 import com.wanchaqlimpio.app.domain.model.Reporte
+import com.wanchaqlimpio.app.domain.model.SugerenciaIa
 import com.wanchaqlimpio.app.domain.model.Ubicacion
 import com.wanchaqlimpio.app.domain.repository.AlmacenFotos
 import com.wanchaqlimpio.app.domain.repository.ConsentimientoRepository
@@ -29,6 +30,7 @@ private class ReporteRepositoryFalso(
         ubicacion: Ubicacion,
         fotoPath: String,
         ahoraEpochMillis: Long,
+        sugerenciaIa: SugerenciaIa?,
     ): ResultadoValidacionReporte = ResultadoValidacionReporte.Valido
 
     override fun observarReportesDe(idAnonimo: String): Flow<List<Reporte>> {
@@ -66,6 +68,11 @@ private class AlmacenFotosFalso(
     override suspend fun borrarTodas() {
         eventos += "borrarTodasLasFotos"
     }
+
+    override suspend fun borrarHuerfanas(
+        conservar: Set<String>,
+        modificadasAntesDeEpochMillis: Long,
+    ) = Unit
 }
 
 private fun reporte(id: Long) =

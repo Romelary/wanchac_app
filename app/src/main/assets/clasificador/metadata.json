@@ -1,0 +1,115 @@
+{
+  "modelo": "MobileNetV2 (transfer learning desde ImageNet)",
+  "fecha": "2026-09-18T22:23:16",
+  "tensorflow": "2.20.0",
+  "semilla": 42,
+  "cuantizacion": "float16",
+  "sha256_tflite": "201484af0bfd699ce4effe8432da034bb69bda41a9a1bd95165ed32942c7a9d1",
+  "entrada": {
+    "forma": [
+      1,
+      224,
+      224,
+      3
+    ],
+    "tipo": "float32",
+    "rango": "0..255 (píxeles tal cual; la normalización está dentro del modelo)",
+    "orden_canales": "RGB"
+  },
+  "salida": {
+    "forma": [
+      1,
+      4
+    ],
+    "tipo": "float32",
+    "descripcion": "probabilidades softmax, mismo orden que labels.txt"
+  },
+  "clases": [
+    "plastico",
+    "carton",
+    "vidrio",
+    "organico"
+  ],
+  "categorias_manuales": [
+    "escombros",
+    "mixto"
+  ],
+  "umbral_confianza_sugerido": 0.5,
+  "umbral_alcanza_precision_objetivo": true,
+  "precision_objetivo_umbral": 0.85,
+  "dataset": {
+    "conteo_por_clase": {
+      "plastico": {
+        "total": 400,
+        "de_trashnet": 400
+      },
+      "carton": {
+        "total": 400,
+        "de_trashnet": 400
+      },
+      "vidrio": {
+        "total": 400,
+        "de_trashnet": 400
+      },
+      "organico": {
+        "total": 104,
+        "de_trashnet": 0
+      }
+    },
+    "archivos_descartados": [],
+    "particion": {
+      "train": 912,
+      "val": 196,
+      "test": 196
+    },
+    "fuentes": [
+      {
+        "clases": [
+          "organico"
+        ],
+        "fuente": "Kaggle, 'Waste Classification Dataset' de PhenomSG (kaggle.com/datasets/phenomsg/waste-classification), solo la carpeta Organic",
+        "licencia": "MIT según la página de Kaggle PhenomSG; las imágenes provienen de búsquedas web y sus derechos no se verificaron",
+        "version": "1 (última actualización 2023-07-28)",
+        "descargado": "2026-09-18",
+        "n_original": 677,
+        "n_usadas": 104,
+        "filtrado": "seleccionadas manualmente una por una desde Organic; criterio del equipo: se excluyeron las ilustraciones, las miniaturas y las que no eran comida ni hojas"
+      },
+      {
+        "clases": [
+          "plastico",
+          "carton",
+          "vidrio"
+        ],
+        "fuente": "TrashNet, dataset-resized.zip (huggingface.co/datasets/garythung/trashnet; github.com/garythung/trashnet)",
+        "licencia": "MIT"
+      }
+    ]
+  },
+  "advertencia": "Las métricas se miden sobre fotos del mismo dataset de entrenamiento y sobreestiman el desempeño en calle. El indicador de la tesis (coincidencia IA-observador) se mide en campo.",
+  "umbral_confianza_app": 0.7,
+  "correcciones_manuales": [
+    {
+      "fecha": "2026-09-18",
+      "campo": "dataset.fuentes[Kaggle].n_usadas",
+      "antes": 97,
+      "despues": 104,
+      "motivo": "Las 7 fotos restantes de organico (104 en total) tambien son de Kaggle; se olvido actualizar la cantidad (aclarado por el usuario)."
+    },
+    {
+      "fecha": "2026-09-18",
+      "campo": "dataset.fuentes[Kaggle].filtrado",
+      "antes": "descartadas a mano las ilustraciones, las miniaturas y las que no eran comida ni hojas",
+      "despues": "seleccionadas manualmente una por una desde Organic; criterio del equipo: se excluyeron las ilustraciones, las miniaturas y las que no eran comida ni hojas",
+      "motivo": "Las fotos se eligieron una a una, no se descartaron en bloque (aclarado por el usuario)."
+    },
+    {
+      "fecha": "2026-09-18",
+      "campo": "umbral_confianza_app",
+      "antes": null,
+      "despues": 0.7,
+      "motivo": "Umbral PROVISIONAL que aplica la app (el del cuaderno, 0.50, es el piso). 0.70 es el codo de la curva de validacion, pero esa validacion usa el mismo tipo de fotos del entrenamiento: recalibrar con fotos de calle (ml/entrenamiento/probar_modelo.py)."
+    }
+  ],
+  "nota_correcciones": "Copia de ml/resultados/v1/metadata.json con correcciones a mano; el original (evidencia) no se modifica. El modelo y sus metricas no cambian: sha256_tflite sigue siendo el mismo."
+}

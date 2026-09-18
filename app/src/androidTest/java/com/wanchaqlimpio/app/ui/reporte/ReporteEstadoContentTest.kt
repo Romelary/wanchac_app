@@ -44,6 +44,17 @@ class ReporteEstadoContentTest {
     }
 
     @Test
+    fun estadoClasificandoMuestraQueSeEstaAnalizandoLaFoto() {
+        composeTestRule.setContent {
+            WanchaqLimpioTheme {
+                ReporteEstadoContent(uiState = ReporteUiState.Clasificando, onReintentar = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("Analizando la foto…").assertIsDisplayed()
+    }
+
+    @Test
     fun estadoProcesandoUbicacionMuestraElTextoDeCarga() {
         composeTestRule.setContent {
             WanchaqLimpioTheme {

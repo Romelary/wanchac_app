@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.ConsentimientoEstado
 import com.wanchaqlimpio.app.domain.model.Reporte
+import com.wanchaqlimpio.app.domain.model.SugerenciaIa
 import com.wanchaqlimpio.app.domain.model.Ubicacion
 import com.wanchaqlimpio.app.domain.repository.AlmacenFotos
 import com.wanchaqlimpio.app.domain.repository.ConsentimientoRepository
@@ -33,6 +34,7 @@ private class ReporteRepositoryFalso : ReporteRepository {
         ubicacion: Ubicacion,
         fotoPath: String,
         ahoraEpochMillis: Long,
+        sugerenciaIa: SugerenciaIa?,
     ): ResultadoValidacionReporte = ResultadoValidacionReporte.Valido
 
     override fun observarReportesDe(idAnonimo: String): Flow<List<Reporte>> = flowOf(emptyList())
@@ -65,6 +67,11 @@ private class AlmacenFotosFalso : AlmacenFotos {
     override suspend fun borrar(fotoPath: String) = Unit
 
     override suspend fun borrarTodas() = Unit
+
+    override suspend fun borrarHuerfanas(
+        conservar: Set<String>,
+        modificadasAntesDeEpochMillis: Long,
+    ) = Unit
 }
 
 class AjustesViewModelTest {

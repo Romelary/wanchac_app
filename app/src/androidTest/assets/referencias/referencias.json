@@ -1,0 +1,56 @@
+{
+  "clases": [
+    "plastico",
+    "carton",
+    "vidrio",
+    "organico"
+  ],
+  "modelo_sha256": "201484af0bfd699ce4effe8432da034bb69bda41a9a1bd95165ed32942c7a9d1",
+  "tolerancia_sugerida": 0.05,
+  "referencias": {
+    "degradado_rojo_azul.jpg": {
+      "exif_orientacion": null,
+      "probabilidades": [
+        0.17353,
+        0.144,
+        0.68051,
+        0.00196
+      ],
+      "top1": "vidrio",
+      "confianza": 0.68051
+    },
+    "bloques_de_color.jpg": {
+      "exif_orientacion": null,
+      "probabilidades": [
+        0.08109,
+        0.71592,
+        0.19898,
+        0.00401
+      ],
+      "top1": "carton",
+      "confianza": 0.71592
+    },
+    "franjas_marron_beige.jpg": {
+      "exif_orientacion": null,
+      "probabilidades": [
+        0.02874,
+        0.95697,
+        0.00078,
+        0.0135
+      ],
+      "top1": "carton",
+      "confianza": 0.95697
+    },
+    "izquierda_roja_derecha_azul_exif6.jpg": {
+      "exif_orientacion": 6,
+      "probabilidades": [
+        0.09088,
+        0.86099,
+        0.04728,
+        0.00084
+      ],
+      "top1": "carton",
+      "confianza": 0.86099
+    }
+  }
+}

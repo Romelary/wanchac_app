@@ -24,6 +24,13 @@
     <string name="reporte_permisos_texto">Para reportar un foco de residuos, la app necesita acceso a la cámara y a tu ubicación.</string>
     <string name="reporte_permisos_boton">Conceder permisos</string>
     <string name="reporte_categoria_titulo">Tipo de residuo</string>
+    <string name="reporte_clasificando">Analizando la foto…</string>
+    <string name="reporte_confirmar_titulo">Confirma el tipo de residuo</string>
+    <string name="reporte_sugerencia_ia">Sugerencia automática: %1$s. Cámbiala si no es correcta.</string>
+    <string name="reporte_sin_sugerencia">No pude sugerir un tipo con seguridad. Elige el que corresponda.</string>
+    <string name="reporte_boton_guardar">Guardar reporte</string>
+    <string name="reporte_boton_otra_foto">Tomar otra foto</string>
+    <string name="reporte_foto_descripcion">Foto que acabas de tomar</string>
 
     <string name="mis_reportes_vacio">Aún no has hecho ningún reporte.</string>
     <string name="mis_reportes_boton_eliminar">Eliminar</string>

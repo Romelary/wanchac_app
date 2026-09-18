@@ -19,6 +19,7 @@ archivo `.tflite` que se copia a la app y se ejecuta **en el teléfono, sin inte
 | `entrenamiento/construir_notebook.py` | Convierte el `.py` en `.ipynb` (y lo valida con `nbformat`). |
 | `entrenamiento/probar_notebook.py` | Prueba de humo: ejecuta el cuaderno sin GPU ni internet y verifica el contrato con la app. |
 | `entrenamiento/probar_modelo.py` | Prueba el `.tflite` con **fotos reales de calle**, sin Colab, y ayuda a elegir el umbral de confianza. |
+| `entrenamiento/generar_referencias.py` | Genera las imágenes de referencia y las probabilidades esperadas para `ClasificadorResiduoReferenciaTest` (prueba en dispositivo de la app). |
 | `resultados/v1/` | `metadata.json` y `metricas.json` **originales** de la primera corrida en Colab (evidencia; no se editan). |
 
 ## Cómo entrenar (Colab)
@@ -46,8 +47,7 @@ archivo `.tflite` que se copia a la app y se ejecuta **en el teléfono, sin inte
 4. **Entorno de ejecución → Ejecutar todo.** Acepta el permiso para montar Drive.
 5. Al terminar se descargan `clasificador_residuos.tflite`, `labels.txt`, `metadata.json` y
    `metricas.json`; todo queda también en `Mi unidad/wanchaq_limpio_ml/salida/` junto con las gráficas.
-6. Copia `clasificador_residuos.tflite`, `labels.txt` y `metadata.json` a `app/src/main/assets/` y avisa:
-   el siguiente paso (integrar el modelo en la app) lo hace el código del Módulo 3.
+6. Copia `clasificador_residuos.tflite`, `labels.txt` y `metadata.json` a **`app/src/main/assets/clasificador/`** (la app los lee de ahí; la prueba `ContratoModeloAssetsTest` verifica que el par sea consistente). Si corriges algo a mano en `metadata.json`, **regístralo en `correcciones_manuales` dentro del propio archivo** y no toques el original en `ml/resultados/`. Tras cambiar el modelo, regenera las referencias de la prueba de dispositivo con `python generar_referencias.py`. La integración ya está hecha (Módulo 3b): ver [`docs/adr/0003`](../docs/adr/0003-litert-interpreter-como-runtime-de-ia.md).
 
 ### ¿Sirve Google One?
 

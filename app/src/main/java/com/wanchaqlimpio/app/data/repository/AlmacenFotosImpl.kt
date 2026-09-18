@@ -33,6 +33,19 @@ class AlmacenFotosImpl
             }
         }
 
+        override suspend fun borrarHuerfanas(
+            conservar: Set<String>,
+            modificadasAntesDeEpochMillis: Long,
+        ) {
+            withContext(Dispatchers.IO) {
+                carpeta
+                    .listFiles()
+                    .orEmpty()
+                    .filter { it.absolutePath !in conservar && it.lastModified() < modificadasAntesDeEpochMillis }
+                    .forEach { if (!it.delete()) Log.w(ETIQUETA_LOG, "No se pudo borrar una foto huérfana") }
+            }
+        }
+
         override suspend fun borrarTodas() {
             withContext(Dispatchers.IO) {
                 if (carpeta.exists() && !carpeta.deleteRecursively()) {

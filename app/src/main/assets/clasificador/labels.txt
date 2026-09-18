@@ -1,0 +1,4 @@
+plastico
+carton
+vidrio
+organico

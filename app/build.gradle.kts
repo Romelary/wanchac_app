@@ -43,6 +43,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    // El modelo .tflite se lee con memoria mapeada (mmap): no debe comprimirse dentro del APK.
+    androidResources {
+        noCompress += "tflite"
+    }
     buildFeatures {
         compose = true
         buildConfig = true
@@ -108,6 +112,9 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.play.services.location)
+
+    // Clasificación de residuos on-device (Módulo 3b, ver ADR-0003)
+    implementation(libs.litert)
 
     // Sincronización diferida (Módulo 4)
     implementation(libs.androidx.work.runtime.ktx)

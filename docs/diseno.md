@@ -152,7 +152,9 @@ Definido por el cliente (Módulos 4 y 6) antes de que exista el backend, para qu
 | Subir un reporte | `POST /reportes` · `multipart/form-data`: parte `foto` (JPEG) + parte `geojson` (Feature RFC 7946, ver abajo) | `2xx` = recibido | **Idempotente por `(idAnonimo, idLocal)`**: un reenvío del mismo reporte no crea un duplicado (el cliente reintenta si la respuesta se pierde) |
 | Dar de baja un reporte | `DELETE /reportes/{idAnonimo}/{idLocal}` | `204` = borrado · `404` = no existía | **Idempotente**. El cliente trata `2xx` y `404` como éxito. **Debe registrar una lápida** de `(idAnonimo, idLocal)` para rechazar (`410 Gone`) un `POST` tardío posterior: cierra las carreras "respuesta perdida" y "subida en vuelo mientras el usuario borra" |
 
-**Payload `geojson`**: `Feature` con `geometry.Point` en orden `[longitud, latitud]` y `properties = { idAnonimo, idLocal, categoria, fechaHoraEpochMillis }`. `idLocal` es el id del reporte en la base local del dispositivo; junto con `idAnonimo` es la clave natural del reporte en el servidor.
+**Payload `geojson`**: `Feature` con `geometry.Point` en orden `[longitud, latitud]` y `properties = { idAnonimo, idLocal, categoria, fechaHoraEpochMillis, categoriaIa?, confianzaIa? }`. `idLocal` es el id del reporte en la base local del dispositivo; junto con `idAnonimo` es la clave natural del reporte en el servidor.
+
+**`categoria` vs. `categoriaIa` (Módulo 3b)**: `categoria` es la que el **ciudadano confirmó** (puede haber corregido al modelo). `categoriaIa` y `confianzaIa` son la respuesta **cruda** del modelo (la clase más probable y su probabilidad, sin umbral) y se **omiten** si el modelo no estuvo disponible. Se guardan aparte porque el indicador *Exactitud de clasificación IA* (Anexo 2) compara la categoría **del sistema** con la del observador de campo: si solo existiera la categoría final, mediría también las correcciones humanas. Además permiten recalibrar el umbral con datos de campo. `categoriaIa` es siempre una de las 4 clases del modelo (`PLASTICO, CARTON, VIDRIO, ORGANICO`), nunca `ESCOMBROS` ni `MIXTO`. El backend debe aceptar ambos campos como opcionales.
 
 **Seguridad (limitación asumida, ADR-0002)**: al no haber login, `(idAnonimo, idLocal)` funciona como credencial de capacidad para la baja. Es aceptable porque `idAnonimo` es un UUID aleatorio que no se expone públicamente (el mapa público solo muestra `Punto_critico`), pero el backend **no debe** devolverlo en ninguna respuesta pública ni registrarlo en logs de acceso abiertos.
 
@@ -249,7 +251,9 @@ erDiagram
     REPORTE {
         int id PK
         uuid id_anonimo FK
-        int categoria_id FK
+        int categoria_id FK "la que confirmó el ciudadano"
+        int categoria_ia_id FK "cruda del modelo; nula si no hubo modelo"
+        float confianza_ia "0 a 1; nula si no hubo modelo"
         int estado_id FK
         float latitud
         float longitud
@@ -310,12 +314,15 @@ sequenceDiagram
     participant DBSCAN as Job DBSCAN
     actor O as Observador de campo
 
-    C->>UI: Toma foto + activa GPS
-    UI->>VM: capturarUbicacion(), capturarFoto()
+    C->>UI: Toma foto
+    UI->>VM: onFotoCapturada(foto)
     VM->>IA: clasificar(foto)
-    IA-->>VM: categoría sugerida
-    VM->>VM: validar error posición <= 15 m (RF-02)
-    VM->>REPO: guardarReporte(reporte)
+    IA-->>VM: sugerencia (clase cruda + confianza; null si el modelo no está)
+    VM-->>UI: Confirmando(foto, sugerencia, categoría preseleccionada)
+    C->>UI: confirma o corrige la categoría, y guarda
+    UI->>VM: confirmar()
+    VM->>VM: obtener GPS y validar error posición <= 15 m (RF-02)
+    VM->>REPO: guardarReporte(categoría del ciudadano + sugerencia cruda de la IA)
     alt hay conexión
         REPO->>API: POST /reportes (GeoJSON)
         API->>DB: INSERT válido tras validar imagen+coords
@@ -345,7 +352,7 @@ sequenceDiagram
 |---|---|---|
 | **Onboarding + Consentimiento** | Texto del Anexo 9, checkbox de aceptación, genera `id_anonimo` local | Reemplaza a la pantalla de login (sin correo/contraseña) |
 | **Mapa** | Solo lectura. Muestra `Punto_critico` con `estado_verificacion = confirmado`. Sin edición | Ya no muestra reportes crudos individuales; evita exponer datos no verificados |
-| **Reportar foco** | Cámara (RF-08), GPS automático con validación de precisión (RF-02), categoría sugerida por IA editable (RF-04), botón confirmar/reintentar | Se mantiene del Cap. IV, es consistente con Cap. I–III |
+| **Reportar foco** | Cámara (RF-08) → **paso de confirmación** con la foto, la categoría sugerida por la IA (RF-04) y las 6 categorías para corregirla → GPS automático con validación de precisión (RF-02) → guardado, con botón reintentar si se rechaza | Se mantiene del Cap. IV en lo esencial; el paso de confirmación es nuevo (antes la categoría se elegía *antes* de tomar la foto, sin poder ver la sugerencia). Si el modelo duda, propone «Mixto» y lo dice; si no está disponible, se elige a mano. No se muestra el porcentaje de confianza (falsa precisión) |
 | **Mis reportes** | Lista de reportes hechos desde este dispositivo (por `id_anonimo`), con opción de eliminar | Reemplaza el concepto de "perfil de cuenta"; implementa RNF-05 |
 | **Ajustes** *(implementado en el Módulo 7)* | Propósito de la app y versión; código anónimo del dispositivo (seleccionable, para citarlo al pedir acceso/rectificación/cancelación por correo); correo de contacto público con botón para escribir; **"Borrar todos mis datos"** (elimina reportes y fotos, solicita su baja en el backend y revoca el consentimiento; con confirmación explícita) | Se mantiene del Cap. IV sin el ítem "cerrar sesión" (ADR-0001) y **sin el "cambio de idioma"**, diferido por decisión del usuario (CORR-009). "Revocar consentimiento" y "borrar datos" se fusionan en una sola acción porque una sin la otra dejaría datos huérfanos (ADR-0002) |
 

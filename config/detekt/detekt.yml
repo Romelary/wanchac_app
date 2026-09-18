@@ -6,3 +6,8 @@ naming:
 style:
   MagicNumber:
     active: false
+
+complexity:
+  LongParameterList:
+    # Un parámetro con valor por defecto no complica la llamada: quien no lo necesita no lo escribe.
+    ignoreDefaultParameters: true

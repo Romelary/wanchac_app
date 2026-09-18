@@ -1,9 +1,13 @@
 package com.wanchaqlimpio.app.data.mapper
 
+import com.google.gson.Gson
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.EstadoReporte
 import com.wanchaqlimpio.app.domain.model.Reporte
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class GeoJsonMapperTest {
@@ -47,5 +51,51 @@ class GeoJsonMapperTest {
         assertEquals(7L, propiedades.idLocal)
         assertEquals("ESCOMBROS", propiedades.categoria)
         assertEquals(123L, propiedades.fechaHoraEpochMillis)
+    }
+
+    @Test
+    fun `la sugerencia cruda de la IA viaja aparte de la categoria confirmada`() {
+        val reporte =
+            Reporte(
+                idAnonimo = "device-1",
+                categoria = CategoriaResiduo.VIDRIO,
+                estado = EstadoReporte.PENDIENTE,
+                latitud = -13.530,
+                longitud = -71.950,
+                fotoPath = "foto.jpg",
+                fechaHoraEpochMillis = 123L,
+                categoriaIa = CategoriaResiduo.PLASTICO,
+                confianzaIa = 0.87f,
+            )
+
+        val propiedades = reporte.aGeoJsonFeature().properties
+
+        assertEquals("VIDRIO", propiedades.categoria)
+        assertEquals("PLASTICO", propiedades.categoriaIa)
+        assertEquals(0.87f, propiedades.confianzaIa)
+    }
+
+    @Test
+    fun `sin sugerencia de la IA esos campos no se envian`() {
+        val reporte =
+            Reporte(
+                idAnonimo = "device-1",
+                categoria = CategoriaResiduo.ORGANICO,
+                estado = EstadoReporte.PENDIENTE,
+                latitud = -13.530,
+                longitud = -71.950,
+                fotoPath = "foto.jpg",
+                fechaHoraEpochMillis = 123L,
+            )
+
+        val feature = reporte.aGeoJsonFeature()
+        val json = Gson().toJson(feature)
+
+        assertNull(feature.properties.categoriaIa)
+        assertNull(feature.properties.confianzaIa)
+        // Gson omite los nulos: al backend le llega un JSON sin esos campos, no con "null".
+        assertFalse(json.contains("categoriaIa"))
+        assertFalse(json.contains("confianzaIa"))
+        assertTrue(json.contains("\"categoria\":\"ORGANICO\""))
     }
 }
