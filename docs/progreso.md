@@ -106,6 +106,17 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
   3. ktlint por defecto no reconoce la convención de nombres PascalCase de `@Composable` ni el mismo detekt — se agregó `.editorconfig` (`ktlint_function_naming_ignore_when_annotated_with = Composable`) y `config/detekt/detekt.yml` (mismo ignore para `FunctionNaming`, y se desactivó `MagicNumber` porque marcaba como error los literales de color hexadecimal del tema).
 - Segundo commit de git creado con todo el Módulo 0.
 
+### 2026-09-17 — Sesión 10: Módulo 1 (onboarding y consentimiento)
+- **Entregables**: `ConsentimientoEstado` (dominio), `ConsentimientoRepository`/`ConsentimientoRepositoryImpl` (DataStore Preferences, genera `id_anonimo` UUID v4 al aceptar), `OnboardingViewModel`, `OnboardingScreen`/`OnboardingContent` (texto completo del Anexo 9), y `MainActivity` ahora bloquea la navegación a la app hasta que se acepte el consentimiento (ver `diseno.md` §9 y ADR-0001).
+- Se separó `OnboardingContent` (stateless) de `OnboardingScreen` (conecta el ViewModel) específicamente para poder escribir la prueba de UI sin necesitar infraestructura de testing de Hilt.
+- Pruebas añadidas: `ConsentimientoRepositoryImplTest` (unitaria, 5 casos) y `OnboardingContentTest` (UI/Compose, 2 casos — compila y queda lista para `connectedAndroidTest`, no se ejecutó por no haber emulador en este entorno).
+- Se corrigió un choque de nombres real: la clase `Application` (`WanchaqLimpioApp`) y el composable placeholder del wizard tenían el mismo nombre en el mismo paquete — el composable se renombró a `HomePlaceholder`. De paso se limpiaron los nombres con guion bajo heredados del wizard (`Wanchaq_LimpioTheme` → `WanchaqLimpioTheme`).
+
+**Investigación no trivial: por qué fallaban 2 de 5 pruebas del repositorio (documentado para no repetir el diagnóstico)**
+El error era `IOException: Unable to rename ... This likely means that there are multiple instances of DataStore for this file`, pero solo en los tests que hacían una *segunda* escritura sobre el mismo DataStore. Se probaron y descartaron tres hipótesis (dispatcher `Unconfined`, confinamiento a un hilo, delay real entre operaciones) antes de decompilar el `.aar` de `datastore-core-android` para ver el bytecode real. Causa raíz encontrada: `FileMoves.android.kt` decide entre `Files.move()` (API ≥ 26) o el `File.renameTo()` heredado según `Build.VERSION.SDK_INT` — y en una prueba JVM pura (sin Robolectric) ese valor es **0**, así que siempre cae en `File.renameTo()`, el cual **en Windows retorna `false` si el archivo destino ya existe** (a diferencia de Linux/Android real). La primera escritura funciona porque el archivo aún no existe; la segunda falla siempre, de forma determinística, no por una condición de carrera.
+**Solución real**: se agregó Robolectric (`org.robolectric:robolectric:4.17`) y se anotó el test con `@RunWith(RobolectricTestRunner::class)`, para que `SDK_INT` refleje un valor real (≥ 26, igual que `minSdk`) y DataStore tome la misma rama de código que en un dispositivo real. Esto a su vez requirió agregar los flags `--add-opens` que Robolectric necesita en JDK 17+/21 (`testOptions.unitTests.all.jvmArgs` en `app/build.gradle.kts`) — sin ellos, Robolectric falla con `IllegalAccessException` al intentar acceder a `jdk.internal.access`.
+- Se creó `docs/plan.md` → Módulo 1 marcado como completado.
+
 ## Pendientes / decisiones abiertas
 
 - [x] Definir `applicationId` definitivo → `com.wanchaqlimpio.app` (2026-09-17)
@@ -119,6 +130,8 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
 - [ ] Decidir si se actualiza el `.docx` de la tesis para reflejar el ADR-0001 (login eliminado)
 - [ ] Decidir cuándo aplicar el primer lote de las 8 correcciones (CORR-001 a CORR-008) al `.docx`, y si las Ilustraciones 1, 2 y 6 (diagramas de casos de uso, arquitectura y entidad-relación) deben rehacerse en consecuencia
 - [ ] Configurar el pinger anti-cold-start (cron-job.org → endpoint `/health` del backend) antes de iniciar la ventana de observación de 8 semanas
+- [ ] `hiltViewModel()` (usado en `MainActivity.kt` y `OnboardingScreen.kt`) está deprecado en favor de un nuevo paquete `androidx.hilt.lifecycle.viewmodel.compose` — es solo un warning, no bloquea, pero conviene migrar cuando se estabilice esa API
+- [ ] Correr `OnboardingContentTest` (androidTest) en un emulador/dispositivo real al menos una vez — se verificó que compila pero no se ejecutó en este entorno por no haber emulador disponible
 
 ## Cómo usar este archivo
 

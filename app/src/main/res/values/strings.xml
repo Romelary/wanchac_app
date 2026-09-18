@@ -1,3 +1,17 @@
 <resources>
-    <string name="app_name">Wanchaq_Limpio</string>
+    <string name="app_name">Wanchaq Limpio</string>
+
+    <string name="onboarding_titulo">Consentimiento informado</string>
+    <string name="onboarding_intro">Wanchaq Limpio es una aplicación desarrollada por estudiantes de la Escuela Profesional de Ingeniería de Sistemas e Informática de la Universidad Continental, en el marco de un proyecto de investigación académica sobre el monitoreo de focos de acumulación de residuos sólidos en el distrito.</string>
+    <string name="onboarding_que_se_registra_titulo">Qué se registra</string>
+    <string name="onboarding_que_se_registra_texto">La fotografía que usted tome del punto de acumulación, las coordenadas de ese punto, la fecha y hora del reporte, y un código anónimo generado en su teléfono. No se solicita su nombre, su documento de identidad ni su número telefónico, y no se registra su recorrido.</string>
+    <string name="onboarding_para_que_se_usa_titulo">Para qué se usa</string>
+    <string name="onboarding_para_que_se_usa_texto">Elaborar un mapa de puntos críticos del distrito con fines de investigación, y ponerlo a disposición de la Municipalidad Distrital de Wanchaq.</string>
+    <string name="onboarding_que_se_pide_titulo">Qué se le pide</string>
+    <string name="onboarding_que_se_pide_texto">No fotografiar personas, rostros, placas de vehículos ni interiores de viviendas. Las imágenes que incumplan esta condición se eliminan.</string>
+    <string name="onboarding_derechos_titulo">Sus derechos</string>
+    <string name="onboarding_derechos_texto">Puede eliminar sus reportes desde la aplicación en cualquier momento y solicitar el acceso, la rectificación o la cancelación de sus datos escribiendo al correo de contacto, conforme a la Ley N.º 29733, Ley de Protección de Datos Personales.</string>
+    <string name="onboarding_voluntaria_texto">Su participación es voluntaria y puede retirarse cuando lo decida, sin consecuencia alguna.</string>
+    <string name="onboarding_checkbox_texto">He leído esta información y acepto participar.</string>
+    <string name="onboarding_boton_continuar">Aceptar y continuar</string>
 </resources>

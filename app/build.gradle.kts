@@ -44,6 +44,26 @@ android {
         compose = true
         buildConfig = true
     }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            all {
+                // Robolectric (usado por ConsentimientoRepositoryImplTest) necesita
+                // acceso a internos del JDK que estan cerrados por defecto desde Java 17+.
+                it.jvmArgs(
+                    "--add-opens=java.base/java.lang=ALL-UNNAMED",
+                    "--add-opens=java.base/java.util=ALL-UNNAMED",
+                    "--add-opens=java.base/java.io=ALL-UNNAMED",
+                    "--add-opens=java.base/java.net=ALL-UNNAMED",
+                    "--add-opens=java.base/java.security=ALL-UNNAMED",
+                    "--add-opens=java.base/java.text=ALL-UNNAMED",
+                    "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+                    "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
+                    "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                )
+            }
+        }
+    }
 }
 
 dependencies {
@@ -74,11 +94,17 @@ dependencies {
     // Corrutinas
     implementation(libs.kotlinx.coroutines.android)
 
+    // Onboarding / consentimiento (Módulo 1)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.room.testing)
+    testImplementation(libs.robolectric)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
