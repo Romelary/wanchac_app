@@ -3,6 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Solo ubicación en primer plano y bajo demanda: la Ética (Anexo 9) exige
+         que la app "no registre su recorrido", por eso no se pide
+         ACCESS_BACKGROUND_LOCATION ni se rastrea continuamente. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
 
     <application
         android:name=".WanchaqLimpioApp"

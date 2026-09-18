@@ -113,6 +113,14 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
 - Se corrigió un choque de nombres real: la clase `Application` (`WanchaqLimpioApp`) y el composable placeholder del wizard tenían el mismo nombre en el mismo paquete — el composable se renombró a `HomePlaceholder`. De paso se limpiaron los nombres con guion bajo heredados del wizard (`Wanchaq_LimpioTheme` → `WanchaqLimpioTheme`).
 - Se creó `docs/plan.md` → Módulo 1 marcado como completado.
 
+### 2026-09-17 — Sesión 11: Módulo 2 (captura y almacenamiento offline-first)
+- **Entregables**: entidad Room `ReporteEntity` (reemplaza el placeholder `PruebaEntity` del Módulo 0) + `Converters` para los enums `CategoriaResiduo`/`EstadoReporte`; `ValidarNuevoReporte` (regla de negocio pura: precisión ≤ 15 m, límite distrital de Wanchaq, duplicados < 20 m y < 30 min); `ReporteRepository`/`ReporteRepositoryImpl` (offline-first: siempre guarda local con estado `PENDIENTE`, la sincronización es del Módulo 4); `ProveedorUbicacion`/`ProveedorUbicacionFused` (envoltorio de `FusedLocationProviderClient`); `ReporteViewModel` (máquina de estados: Capturando → ProcesandoUbicacion → Rechazado/Guardado); `ReporteScreen` con cámara real (CameraX: preview + captura a archivo) y manejo de permisos (CÁMARA + ubicación).
+- `CategoriaResiduo` y `EstadoReporte`, que en el Cap. IV original eran tablas de catálogo con FK, se modelaron como **enums** en el cliente (simplificación deliberada y documentada: el conjunto es fijo y pequeño; la normalización completa sí tiene sentido en el backend/PostgreSQL, no en la caché local).
+- Se conectó `ReporteScreen` en la navegación temporal del wizard (`AppDestinations.HOME` → `REPORTAR`) para que el flujo sea alcanzable de verdad, no código huérfano — placeholder hasta la navegación real del Módulo 5.
+- **`LimiteDistritalWanchaq` usa un bounding box aproximado, no el polígono oficial del distrito** — está documentado explícitamente en el código y aquí como pendiente: hay que reemplazarlo por el polígono real (catastro municipal/INEI) antes de la ventana de observación real, e idealmente mover la validación definitiva al backend con PostGIS (`ST_Within`), dejando el chequeo del cliente solo como pre-filtro rápido.
+- Pruebas: 15 unitarias en verde + 3 de UI que compilan pero no corrieron (sin emulador). Detalle completo en [`pruebas.md`](./pruebas.md). Se documentó ahí mismo que la captura real de cámara y el GPS real no tienen prueba automatizada por ser wrappers de hardware — falta probarlos manualmente en un dispositivo real, todavía no se ha hecho.
+- Se creó `docs/plan.md` → Módulo 2 marcado como completado.
+
 ## Pendientes / decisiones abiertas
 
 - [x] Definir `applicationId` definitivo → `com.wanchaqlimpio.app` (2026-09-17)
@@ -120,14 +128,16 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
 - [x] Inicializar git en el proyecto → hecho, Módulo 0
 - [x] Crear la estructura de paquetes definida en `plan.md` §2 → hecho, Módulo 0
 - [x] Configurar Hilt, Retrofit, Room base, ktlint/detekt → hecho, Módulo 0
-- [ ] Implementar el modelo de datos Room real (`Reporte`, `CategoriaResiduo`, `EstadoReporte`) según `diseno.md` §6, reemplazando `PruebaEntity` (Módulo 2)
+- [x] Implementar el modelo de datos Room real (`Reporte`, `CategoriaResiduo`, `EstadoReporte`) según `diseno.md` §6, reemplazando `PruebaEntity` → hecho, Módulo 2
 - [ ] Iniciar pipeline de entrenamiento del modelo MobileNetV2 en Colab (bloquea Módulo 3)
 - [ ] Validar el diseño corregido con el asesor de tesis antes de avanzar en código, dado que se aparta del Capítulo IV del documento entregado
 - [ ] Decidir si se actualiza el `.docx` de la tesis para reflejar el ADR-0001 (login eliminado)
 - [ ] Decidir cuándo aplicar el primer lote de las 8 correcciones (CORR-001 a CORR-008) al `.docx`, y si las Ilustraciones 1, 2 y 6 (diagramas de casos de uso, arquitectura y entidad-relación) deben rehacerse en consecuencia
 - [ ] Configurar el pinger anti-cold-start (cron-job.org → endpoint `/health` del backend) antes de iniciar la ventana de observación de 8 semanas
 - [ ] `hiltViewModel()` (usado en `MainActivity.kt` y `OnboardingScreen.kt`) está deprecado en favor de un nuevo paquete `androidx.hilt.lifecycle.viewmodel.compose` — es solo un warning, no bloquea, pero conviene migrar cuando se estabilice esa API
-- [ ] Correr `OnboardingContentTest` (androidTest) en un emulador/dispositivo real al menos una vez — se verificó que compila pero no se ejecutó en este entorno por no haber emulador disponible
+- [ ] Correr `OnboardingContentTest` y `ReporteEstadoContentTest` (androidTest) en un emulador/dispositivo real al menos una vez — compilan pero no se ejecutaron en este entorno por no haber emulador disponible
+- [ ] Probar manualmente en un dispositivo real la captura de cámara (CameraX) y la obtención de ubicación (`ProveedorUbicacionFused`) — son wrappers de hardware sin prueba automatizada, ver `pruebas.md`
+- [ ] Reemplazar el bounding box aproximado de `LimiteDistritalWanchaq` por el polígono oficial del distrito de Wanchaq (catastro municipal/INEI) antes de la ventana de observación real; idealmente mover la validación definitiva al backend con PostGIS (`ST_Within`)
 
 ## Cómo usar este archivo
 

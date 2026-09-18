@@ -14,4 +14,21 @@
     <string name="onboarding_voluntaria_texto">Su participación es voluntaria y puede retirarse cuando lo decida, sin consecuencia alguna.</string>
     <string name="onboarding_checkbox_texto">He leído esta información y acepto participar.</string>
     <string name="onboarding_boton_continuar">Aceptar y continuar</string>
+
+    <string name="reporte_procesando_ubicacion">Obteniendo tu ubicación…</string>
+    <string name="reporte_guardado">¡Reporte guardado! Gracias por colaborar con la limpieza de Wanchaq.</string>
+    <string name="reporte_boton_reintentar">Reintentar</string>
+    <string name="reporte_boton_otro">Reportar otro punto</string>
+    <string name="reporte_boton_capturar">Capturar</string>
+    <string name="reporte_permisos_titulo">Permisos necesarios</string>
+    <string name="reporte_permisos_texto">Para reportar un foco de residuos, la app necesita acceso a la cámara y a tu ubicación.</string>
+    <string name="reporte_permisos_boton">Conceder permisos</string>
+    <string name="reporte_categoria_titulo">Tipo de residuo</string>
+
+    <string name="categoria_plastico">Plástico</string>
+    <string name="categoria_carton">Cartón</string>
+    <string name="categoria_vidrio">Vidrio</string>
+    <string name="categoria_organico">Orgánico</string>
+    <string name="categoria_escombros">Escombros</string>
+    <string name="categoria_mixto">Mixto</string>
 </resources>

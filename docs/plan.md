@@ -266,7 +266,7 @@ Al terminar cada módulo, antes de pasar al siguiente:
 |---|---|
 | 0. Fundamentos del proyecto | ✅ Completado (2026-09-17) |
 | 1. Onboarding y consentimiento | ✅ Completado (2026-09-17) |
-| 2. Captura y almacenamiento offline-first | ⏳ No iniciado |
+| 2. Captura y almacenamiento offline-first | ✅ Completado (2026-09-17) |
 | 3. Clasificación IA on-device | ⏳ No iniciado (bloqueado por pipeline de Colab) |
 | 4. Sincronización diferida | ⏳ No iniciado (bloqueado por backend) |
 | 5. Mapa público | ⏳ No iniciado (bloqueado por backend) |

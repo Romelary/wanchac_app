@@ -2,13 +2,12 @@ package com.wanchaqlimpio.app.data.local.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.wanchaqlimpio.app.data.local.entity.PruebaEntity
+import androidx.room.TypeConverters
+import com.wanchaqlimpio.app.data.local.entity.ReporteEntity
 
-/**
- * Base de datos local (offline-first, ver docs/diseno.md §5).
- * La entidad PruebaEntity es temporal (Módulo 0); se reemplaza en el Módulo 2.
- */
-@Database(entities = [PruebaEntity::class], version = 1, exportSchema = false)
+/** Base de datos local (offline-first, ver docs/diseno.md §5). */
+@Database(entities = [ReporteEntity::class], version = 1, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun pruebaDao(): PruebaDao
+    abstract fun reporteDao(): ReporteDao
 }

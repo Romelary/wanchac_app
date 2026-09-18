@@ -3,7 +3,7 @@ package com.wanchaqlimpio.app.core.di
 import android.content.Context
 import androidx.room.Room
 import com.wanchaqlimpio.app.data.local.db.AppDatabase
-import com.wanchaqlimpio.app.data.local.db.PruebaDao
+import com.wanchaqlimpio.app.data.local.db.ReporteDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,5 +23,5 @@ object DatabaseModule {
     ): AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME).build()
 
     @Provides
-    fun providePruebaDao(database: AppDatabase): PruebaDao = database.pruebaDao()
+    fun provideReporteDao(database: AppDatabase): ReporteDao = database.reporteDao()
 }

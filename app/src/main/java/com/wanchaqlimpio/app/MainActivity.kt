@@ -26,6 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanchaqlimpio.app.ui.onboarding.OnboardingScreen
 import com.wanchaqlimpio.app.ui.onboarding.OnboardingViewModel
+import com.wanchaqlimpio.app.ui.reporte.ReporteScreen
 import com.wanchaqlimpio.app.ui.theme.WanchaqLimpioTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -74,7 +75,7 @@ private fun LoadingScreen() {
 @PreviewScreenSizes
 @Composable
 fun HomePlaceholder() {
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.REPORTAR) }
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -93,20 +94,26 @@ fun HomePlaceholder() {
             }
         },
     ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Greeting(
-                name = "Android",
-                modifier = Modifier.padding(innerPadding),
-            )
+        when (currentDestination) {
+            AppDestinations.REPORTAR -> ReporteScreen()
+            AppDestinations.FAVORITES, AppDestinations.PROFILE ->
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    Greeting(
+                        name = "Android",
+                        modifier = Modifier.padding(innerPadding),
+                    )
+                }
         }
     }
 }
 
+// FAVORITES y PROFILE siguen siendo placeholders del wizard hasta los
+// Módulos 5-7 (Mapa, Mis reportes, Ajustes).
 enum class AppDestinations(
     val label: String,
     val icon: Int,
 ) {
-    HOME("Home", R.drawable.ic_home),
+    REPORTAR("Reportar", R.drawable.ic_home),
     FAVORITES("Favorites", R.drawable.ic_favorite),
     PROFILE("Profile", R.drawable.ic_account_box),
 }

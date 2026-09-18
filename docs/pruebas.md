@@ -44,6 +44,31 @@ No se agregaron pruebas de negocio propias; se usó el test placeholder del wiza
 
 **Estado**: 4 pruebas unitarias (`ConsentimientoRepositoryImplTest`) en verde vía `testDebugUnitTest`. 2 pruebas de UI (`OnboardingContentTest`) compilan (`assembleDebugAndroidTest`) pero **no se han ejecutado** en este entorno por no haber emulador/dispositivo disponible — pendiente correrlas al menos una vez (ver `progreso.md`, pendientes).
 
+## Módulo 2 — Captura y almacenamiento offline-first
+
+| Archivo | Caso de prueba | Qué verifica | Requisito / dimensión relacionada |
+|---|---|---|---|
+| `ValidarNuevoReporteTest.kt` | `ubicacion dentro del limite y sin previos es valida` | Caso feliz: dentro de Wanchaq, sin duplicados | RF-02 |
+| | `precision mayor a 15 metros se rechaza` | Filtro de precisión geoespacial | RF-02, indicador "reportes aceptados por el filtro de 15 m" (Anexo 2) |
+| | `precision de exactamente 15 metros se acepta` | Caso límite del umbral (≤ 15 m, no < 15 m) | RF-02 |
+| | `coordenada fuera del distrito de Wanchaq se rechaza` | Validación de límite distrital | CORR-007 (Wanchaq, no Cusco) |
+| | `reporte a menos de 20 metros y 30 minutos del mismo dispositivo es duplicado` | Filtro de duplicados por cercanía + tiempo | RNF-07, criterio de exclusión de duplicados (§3.2 del documento) |
+| | `mismo lugar pero despues de 30 minutos no es duplicado` | El límite temporal del filtro de duplicados se aplica correctamente | RNF-07 |
+| | `dentro de la ventana de tiempo pero a mas de 20 metros no es duplicado` | El límite espacial del filtro de duplicados se aplica correctamente (no solo el temporal) | RNF-07 |
+| `ReporteRepositoryImplTest.kt` (Robolectric, Room en memoria) | `un reporte valido se guarda como PENDIENTE y aparece al observar` | Persistencia offline-first real (no solo la regla de validación en aislado) | RF-03, RNF-01 |
+| | `un reporte rechazado no se persiste` | Un reporte inválido no llega a la base de datos | Integridad del filtro antes de guardar |
+| | `un segundo reporte del mismo dispositivo cerca y rapido se detecta como duplicado y no se guarda` | La regla de duplicados funciona integrada con datos reales ya persistidos, no solo con una lista en memoria pasada a mano | RNF-07 |
+| `ReporteViewModelTest.kt` (dependencias falsas) | `estado inicial es Capturando` | Estado inicial correcto de la máquina de estados | — |
+| | `al capturar una foto valida el estado termina en Guardado` | Flujo feliz completo: foto → ubicación → validación → guardado | RF-02, RF-03 |
+| | `GPS impreciso termina en Rechazado y reintentar vuelve a Capturando` | Caso "GPS impreciso, se reintenta" exigido por `plan.md` Módulo 2 | RF-02 |
+| | `sin senal de GPS termina en Rechazado sin llegar a validar en el repositorio` | Manejo del caso `ProveedorUbicacion` devuelve `null` (GPS apagado/sin señal) | RNF-01 (disponibilidad operativa) |
+| | `sin consentimiento aceptado no se intenta crear el reporte` | Guarda de seguridad: no se puede reportar sin `id_anonimo` | ADR-0001 |
+| `ReporteEstadoContentTest.kt` (androidTest, Compose UI Testing) | `estadoRechazadoMuestraElMensajeYElBotonReintentarFunciona` | El caso "GPS impreciso, se reintenta" también a nivel de UI | RF-02 |
+| | `estadoGuardadoMuestraElMensajeDeExito` | Confirmación visual tras guardar | Usabilidad percibida |
+| | `estadoProcesandoUbicacionMuestraElTextoDeCarga` | Estado de carga visible mientras se obtiene el GPS | Usabilidad percibida |
+
+**Estado**: 15 pruebas unitarias en verde (`ValidarNuevoReporteTest` 7, `ReporteRepositoryImplTest` 3, `ReporteViewModelTest` 5). 3 pruebas de UI (`ReporteEstadoContentTest`) compilan pero no se ejecutaron por no haber emulador disponible. **No se prueba automáticamente** la captura real de cámara (CameraX) ni la obtención real de GPS (`ProveedorUbicacionFused`) — son wrappers delgados sobre hardware/Google Play Services, por diseño se dejan para prueba manual en dispositivo real (ver la nota de "qué se prueba y qué no" al inicio de este archivo). **Esa prueba manual todavía no se ha hecho** en ningún dispositivo/emulador — pendiente antes de dar el Módulo 2 por verificado end-to-end (ver `progreso.md`, pendientes). Lo que sí queda exhaustivamente probado en automático es toda la lógica de negocio que consume esos datos (validación, persistencia, máquina de estados).
+
 ---
 
 ## Cómo usar este archivo
