@@ -106,6 +106,53 @@ Licencia y cita: TrashNet es MIT y su autor pide citar el repositorio
 (*Thung, G. y Yang, M. (2016), "Classification of Trash for Recyclability Status", Stanford CS229 —
 github.com/garythung/trashnet*). Queda registrado en `metadata.json` → `dataset.fuentes`.
 
+### Cómo declarar las fuentes (`FUENTES_DATASET`)
+
+El cuaderno copia `FUENTES_DATASET` (celda "1. CONFIGURACIÓN") tal cual a `metadata.json → dataset.fuentes`, que se versiona junto con el modelo: es la **constancia de procedencia** de los datos. Una entrada por *fuente*, aunque las fotos acaben mezcladas en la misma carpeta de clase, y da igual que las subas a Drive a mano: lo que importa es declarar de dónde salieron. Los campos son libres (el cuaderno no los valida); plantilla para `organico` con Kaggle + fotos propias:
+
+```python
+FUENTES_DATASET = [
+    {  # la de TrashNet ya viene escrita; déjala como está
+        "clases": ["plastico", "carton", "vidrio"],
+        "fuente": "TrashNet, dataset-resized.zip (huggingface.co/datasets/garythung/trashnet; github.com/garythung/trashnet)",
+        "licencia": "MIT",
+    },
+    {
+        "clases": ["organico"],
+        "fuente": "Kaggle, 'Waste Classification Dataset' de PhenomSG (kaggle.com/datasets/phenomsg/waste-classification), solo la carpeta Organic",
+        "licencia": "MIT según la página de Kaggle (declarada por quien lo subió); las imágenes provienen de búsquedas web y sus derechos no se verificaron",
+        "version": "1 (última actualización 2023-07-28)",
+        "descargado": "AAAA-MM-DD",  # tu fecha real de descarga
+        "n_original": 677,  # archivos en Organic/ según el listado de Kaggle
+        "n_usadas": 0,  # las que quedaron TRAS filtrar (ver el conteo abajo)
+        "filtrado": "descartadas a mano las ilustraciones, las miniaturas y las que no eran comida ni hojas",
+    },
+    {
+        "clases": ["plastico", "carton", "vidrio", "organico"],
+        "fuente": "Fotos propias del equipo, tomadas en el distrito de Wanchaq",
+        "licencia": "Propias del equipo (sin rostros, placas ni interiores de viviendas)",
+        "periodo": "AAAA-MM-DD a AAAA-MM-DD",
+        "n_usadas": 0,
+    },
+]
+```
+
+- **`conteo_por_clase` ya lo registra el cuaderno solo**; los `n_usadas` de cada fuente los pones tú, y hay que contarlos *después* de filtrar. Con el prefijo `kaggle_` (ver abajo), agrega una celda tras la 2b y ejecútala: `sum(p.name.startswith("kaggle_") for p in ARCHIVOS["organico"])`.
+- Si dejas algo en `COMPLETAR`, así quedará escrito en `metadata.json`: el cuaderno no lo impide.
+- **Guarda evidencia el día que descargas** (captura o PDF de la página de Kaggle con la licencia y la descripción): las páginas cambian.
+- Para la bibliografía de la tesis (formato APA 7): PhenomSG. (2023). *Waste Classification Dataset* [Conjunto de datos]. Kaggle. https://www.kaggle.com/datasets/phenomsg/waste-classification
+
+**Al subir `Organic` a mano, no copies las 5 subcarpetas a una sola sin renombrar:** hay **9 nombres repetidos** entre ellas (p. ej. `maxresdefault.jpg` ×4, `maxresdefault2.jpg` ×4) y un copiado a ciegas los pisaría. Antepón la subcarpeta al nombre; además deja el rastro `kaggle_` para contarlas después. En PowerShell, desde la carpeta que contiene `Organic\` (corre **una sola vez**):
+
+```powershell
+$dest = "$PWD\organico_kaggle"; New-Item -ItemType Directory -Force $dest | Out-Null
+Get-ChildItem -Recurse -File .\Organic | ForEach-Object {
+    Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $dest ("kaggle_" + $_.Directory.Name + "__" + $_.Name))
+}
+```
+
+Luego sube el contenido de `organico_kaggle` a `dataset/organico/`. Al filtrar: 18 de los 677 archivos son `.webp` (el cuaderno los ignora y los avisa por nombre), y los `maxresdefault*` parecen **miniaturas de YouTube** (inferencia por el nombre; suelen traer texto o personas): revísalos o bórralos, por la regla de no rostros.
+
 ## Datasets evaluados (y por qué no son la fuente principal)
 
 Verificados el 2026-09-18 leyendo **solo metadatos públicos** (listado de archivos, README, cuaderno del autor). No se descargó ninguna imagen: Kaggle exige iniciar sesión y las credenciales no las maneja Claude. Lo que sigue es lo comprobado; lo que no se pudo comprobar se dice como tal.
