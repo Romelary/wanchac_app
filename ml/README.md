@@ -142,7 +142,7 @@ FUENTES_DATASET = [
 - **Guarda evidencia el día que descargas** (captura o PDF de la página de Kaggle con la licencia y la descripción): las páginas cambian.
 - Para la bibliografía de la tesis (formato APA 7): PhenomSG. (2023). *Waste Classification Dataset* [Conjunto de datos]. Kaggle. https://www.kaggle.com/datasets/phenomsg/waste-classification
 
-**Al subir `Organic` a mano, no copies las 5 subcarpetas a una sola sin renombrar:** hay **9 nombres repetidos** entre ellas (p. ej. `maxresdefault.jpg` ×4, `maxresdefault2.jpg` ×4) y un copiado a ciegas los pisaría. Antepón la subcarpeta al nombre; además deja el rastro `kaggle_` para contarlas después. En PowerShell, desde la carpeta que contiene `Organic\` (corre **una sola vez**):
+**Al subir `Organic` a mano, no copies las 5 subcarpetas a una sola sin renombrar:** hay **9 nombres repetidos** entre ellas (p. ej. `maxresdefault.jpg` ×4, `maxresdefault2.jpg` ×4) y un copiado a ciegas los pisaría. Antepón la subcarpeta al nombre; además deja el rastro `kaggle_` para contarlas después. En PowerShell, desde la carpeta que contiene `Organic\` (probado el 2026-09-18 con nombres repetidos, guion inicial y corchetes; si lo repites no pasa nada, solo vuelve a copiar lo mismo):
 
 ```powershell
 $dest = "$PWD\organico_kaggle"; New-Item -ItemType Directory -Force $dest | Out-Null
