@@ -133,6 +133,63 @@ class CloudinaryTest(SimpleTestCase):
             self.assertIn("plantilla", r["detalle"])
             ping.assert_not_called()
 
+    # Valores FALSOS con la forma de un par real de Cloudinary (clave de 15 dígitos, secreto de 27 caracteres).
+    FORMA_REAL = {"api_key": "123456789012345", "api_secret": "abcdefghijklmnopqrstuvwxyz0"}
+
+    def _diagnosticar_401(self, mensaje, **campos):
+        from cloudinary.exceptions import AuthorizationRequired
+
+        configuracion = self._configuracion(**{**self.FORMA_REAL, **campos})
+        with mock.patch("cloudinary.config", return_value=configuracion), mock.patch(
+            "cloudinary.api.ping", side_effect=AuthorizationRequired(mensaje)
+        ):
+            return servicios.comprobar_cloudinary()
+
+    def test_cada_causa_de_401_tiene_su_explicacion_y_no_copia_el_mensaje(self):
+        # Los tres mensajes se MIDIERON contra Cloudinary con credenciales falsas (ver servicios.py).
+        casos = {
+            "Error 401 - unknown api_key": "no conoce esa clave",
+            "Error 401 - disabled api_key": "existe pero está desactivada",
+            "Error 401 - api_secret mismatch": "el SECRETO no le corresponde",
+        }
+        for mensaje, esperado in casos.items():
+            with self.subTest(mensaje=mensaje):
+                r = self._diagnosticar_401(mensaje)
+                self.assertFalse(r["ok"])
+                self.assertIn(esperado, r["detalle"])
+                self.assertNotIn(mensaje.split(" - ")[1], r["detalle"])  # el texto del SDK no se copia
+                self.assertNotIn("Pistas", r["detalle"])  # la forma del par es correcta: no hay nada que señalar
+
+    def test_una_causa_de_401_desconocida_no_afirma_nada_especifico(self):
+        r = self._diagnosticar_401("Error 401 - Invalid Signature")
+        self.assertFalse(r["ok"])
+        self.assertIn("no coinciden entre sí", r["detalle"])
+        for afirmacion in ("desactivada", "no conoce", "SECRETO no le corresponde"):
+            self.assertNotIn(afirmacion, r["detalle"])
+
+    def test_las_pistas_de_forma_no_incluyen_los_valores(self):
+        r = self._diagnosticar_401("Error 401 - api_secret mismatch", api_key="12345", api_secret="corto-secreto")
+        self.assertIn("15 dígitos", r["detalle"])
+        self.assertIn("27 caracteres", r["detalle"])
+        self.assertNotIn("12345", r["detalle"])
+        self.assertNotIn("corto-secreto", r["detalle"])
+
+    def test_pistas_de_forma_distinguen_simbolos_inesperados_y_claves_no_numericas(self):
+        r = self._diagnosticar_401("Error 401 - disabled api_key", api_key="12345678901234x", api_secret="a" * 26 + " ")
+        self.assertIn("no todos son dígitos", r["detalle"])
+        self.assertIn("símbolos o espacios inesperados", r["detalle"])
+
+    def test_secreto_oculto_con_asteriscos_falla_sin_llamar_a_la_red(self):
+        # Copiar el texto de la pantalla en vez de usar el botón de copiar da "*****": no puede ser válido.
+        for oculto in ("*" * 27, "•" * 27):
+            with self.subTest(oculto=oculto[:1]), mock.patch(
+                "cloudinary.config", return_value=self._configuracion(**{**self.FORMA_REAL, "api_secret": oculto})
+            ), mock.patch("cloudinary.api.ping") as ping:
+                r = servicios.comprobar_cloudinary()
+            self.assertFalse(r["ok"])
+            self.assertIn("OCULTO", r["detalle"])
+            ping.assert_not_called()
+
     def test_credenciales_aceptadas(self):
         with mock.patch("cloudinary.config", return_value=self._configuracion()), mock.patch(
             "cloudinary.api.ping", return_value={"status": "OK"}

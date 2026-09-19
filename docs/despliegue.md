@@ -2,7 +2,7 @@
 
 > Guía paso a paso para dejar funcionando la infraestructura del backend de Wanchaq Limpio: la base de datos (Neon), las fotos (Cloudinary) y el servidor (Render). Es también evidencia de tesis: registra **qué se configuró, por qué así y cómo se comprobó**. Decisiones técnicas: [ADR-0004](./adr/0004-backend-django-sin-geodjango.md). Diseño general: [`diseno.md`](./diseno.md) §4.1.
 >
-> Estado (2026-09-18): el **esqueleto** del backend existe y está probado (75 pruebas), pero **aún no se ha desplegado**: falta que tú crees los proyectos en cada panel y pegues tus claves. La lógica de reportes (Fase 1) viene después de que esto funcione.
+> Estado (2026-09-18): el **esqueleto** del backend existe y está probado (80 pruebas), pero **aún no se ha desplegado**: falta que tú crees los proyectos en cada panel y pegues tus claves. La lógica de reportes (Fase 1) viene después de que esto funcione.
 
 ## 0. Reglas de seguridad (léelas primero)
 
@@ -51,7 +51,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe manage.py test
 ```
 
-La última línea debe terminar en `OK` (75 pruebas; no usan red ni tus claves). Se usa siempre `.\.venv\Scripts\python.exe` para no tener que "activar" el entorno (PowerShell suele bloquear el script de activación).
+La última línea debe terminar en `OK` (80 pruebas; no usan red ni tus claves). Se usa siempre `.\.venv\Scripts\python.exe` para no tener que "activar" el entorno (PowerShell suele bloquear el script de activación).
 
 Luego crea tu archivo de variables:
 
@@ -196,7 +196,11 @@ No hace falta activarlo hasta que la app empiece a usarse de verdad; mientras de
 | `FALLO Cloudinary: CLOUDINARY_URL mal formada: debe empezar por cloudinary://` | La línea repite `CLOUDINARY_URL=` dentro del valor, empieza por `https://` o el valor incluye comillas. | En `.env` debe quedar `CLOUDINARY_URL=cloudinary://clave:secreto@nube`, con el nombre una sola vez y sin comillas (§5). |
 | `FALLO Cloudinary: CLOUDINARY_URL todavía tiene una plantilla` | Se dejó `<your_api_key>`/`<your_api_secret>` de la consola o los marcadores de `.env.example`. | Reemplázalos por los valores reales, **sin los símbolos `< >`** (§5). |
 | `FALLO Neon: DATABASE_URL todavía tiene los marcadores de .env.example` | Se dejó `USUARIO:CONTRASENA@HOST_DE_NEON…`. | Pega la cadena real de Neon (§4). |
-| `FALLO Cloudinary: … no aceptó las credenciales` | Clave o secreto incorrectos, o el par fue revocado. | Vuelve a copiarlos desde **Settings → API Keys**. |
+| `FALLO Cloudinary: … (401 AuthorizationRequired): Cloudinary no conoce esa clave de API` | La clave no existe: mal copiada, de otra cuenta, o del par que se borró. | Copia la **clave** entera desde **Settings → API Keys** (o genera un par nuevo) y actualiza `.env`. |
+| `FALLO Cloudinary: … (401 …): esa clave de API existe pero está desactivada` | El par está desactivado en la consola (¿el que desactivaste al rotar?). | Usa el par **nuevo y activo** en `.env`. |
+| `FALLO Cloudinary: … (401 …): la clave existe, pero el SECRETO no le corresponde` | El secreto está incompleto, es de otro par o tiene un carácter de más/de menos. | Copia el secreto con el **botón de copiar** de la consola (no seleccionando el texto). Las *Pistas sobre la forma* que acompañan al mensaje indican si su longitud es anómala. |
+| `FALLO Cloudinary: CLOUDINARY_URL lleva el secreto OCULTO (asteriscos)` | Se copió el texto enmascarado (`*****`) de la pantalla. | Usa el botón de copiar o revela el secreto y vuelve a pegarlo. |
+| `FALLO Cloudinary: … no aceptó las credenciales (OtraExcepcion)` | Fallo distinto de un 401 (red, servicio caído…). | Reintenta; si persiste, avísame con el nombre de la excepción. |
 | `FALLO la URL pública SÍ sirve la foto` | El recurso se subió como público. | **No sigas**: avísame; es un fallo de seguridad de la configuración. |
 | `FALLO /health no respondió 200 (código 0)` | Sin conexión, o Render aún está construyendo/arrancando. | Espera 1–2 min y reintenta; revisa **Logs** en Render. |
 | `FALLO token rechazado … no coincide` | El `HEALTH_TOKEN` de tu `.env` y el de Render son distintos. | Iguálalos (el de Render se edita en *Environment*). |
@@ -207,7 +211,7 @@ No hace falta activarlo hasta que la app empiece a usarse de verdad; mientras de
 
 | Qué | Cómo se comprobó | Resultado |
 |---|---|---|
-| El código del backend, la configuración y el script | `python manage.py test` (75 pruebas) + 46 mutaciones deliberadas | ✅ en verde (2026-09-18) |
+| El código del backend, la configuración y el script | `python manage.py test` (80 pruebas) + 61 mutaciones deliberadas | ✅ en verde (2026-09-18) |
 | La aplicación WSGI real (la que carga gunicorn) por HTTP | Script de una sola vez con `wsgiref`: `/health` 200, `/health/servicios` 401 sin token y 503 con la base inalcanzable, sin filtrar la cadena de conexión | ✅ 2026-09-18 |
 | Cuentas reales (Neon, Cloudinary, Render) | **Pendiente**: la ejecuta el usuario con `verificar_servicios.py` | ⏳ |
 | Comando de arranque `gunicorn …` | Sin comprobar localmente (gunicorn no corre en Windows); se comprobará en el primer despliegue | ⏳ |

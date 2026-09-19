@@ -8,7 +8,12 @@ Las usan dos consumidores:
 Regla de oro: el resultado es un texto corto y de una lista cerrada. NUNCA se copia el mensaje de una excepción, porque
 los mensajes de los clientes de base de datos y de red pueden incluir el host, el usuario o parte de la cadena de
 conexión, y esta salida se pega en chats y en documentos de tesis. De la excepción solo se informa su NOMBRE de clase.
+(Se puede INSPECCIONAR su mensaje para elegir entre textos fijos —p. ej. "disabled api_key"—, pero jamás se copia.)
+Tampoco se imprimen valores de claves: solo pistas sobre su FORMA (longitud, símbolos), que ayudan a encontrar un error
+de copiado sin exponer nada.
 """
+
+import re
 
 from django.db import connection
 
@@ -27,6 +32,31 @@ def _resultado(ok, detalle):
 
 def _contiene_alguna(valores, marcas):
     return any(marca in str(valor) for valor in valores for marca in marcas)
+
+
+_SECRETO_CLOUDINARY = re.compile(r"[A-Za-z0-9_-]+")
+
+
+def _secreto_enmascarado(secreto):
+    return "*" in str(secreto) or "•" in str(secreto)  # asteriscos o punto medio "•" que usa la consola
+
+
+def _observaciones_de_forma(configuracion):
+    """Pistas sobre la FORMA de la clave y del secreto (longitud, símbolos). Nunca se incluyen sus valores.
+
+    Las claves de Cloudinary tienen 15 dígitos y sus secretos 27 caracteres alfanuméricos (con - y _): así eran las del
+    par que tenía el usuario al configurar. Son pistas, no reglas: por eso dicen "suele", por si Cloudinary cambiara el
+    formato.
+    """
+    clave, secreto = str(configuracion.api_key), str(configuracion.api_secret)
+    pistas = []
+    if not (clave.isascii() and clave.isdigit() and len(clave) == 15):
+        extra = "" if clave.isdigit() else " y no todos son dígitos"
+        pistas.append(f"la clave de API suele ser de 15 dígitos (la tuya tiene {len(clave)} caracteres{extra})")
+    if not (len(secreto) == 27 and _SECRETO_CLOUDINARY.fullmatch(secreto)):
+        extra = "" if _SECRETO_CLOUDINARY.fullmatch(secreto) else ", con símbolos o espacios inesperados"
+        pistas.append(f"el secreto suele tener 27 caracteres alfanuméricos (el tuyo tiene {len(secreto)}{extra})")
+    return pistas
 
 
 def comprobar_base_de_datos():
@@ -79,10 +109,36 @@ def comprobar_cloudinary():
         return _resultado(
             False, "CLOUDINARY_URL todavía tiene una plantilla (p. ej. <your_api_key>): reemplaza clave y secreto por los reales, sin los símbolos < >"
         )
+    if _secreto_enmascarado(configuracion.api_secret):
+        return _resultado(
+            False,
+            "CLOUDINARY_URL lleva el secreto OCULTO (asteriscos): se copió el texto de la pantalla, no el secreto real; "
+            "usa el botón de copiar de la consola (o revélalo) y vuelve a pegarlo",
+        )
     try:
         cloudinary.api.ping()
-    except Exception as exc:  # noqa: BLE001 - solo el NOMBRE de la excepción
-        return _resultado(False, f"Cloudinary no aceptó las credenciales ({type(exc).__name__})")
+    except Exception as exc:  # noqa: BLE001 - se informa el NOMBRE de la excepción, nunca su mensaje
+        nombre = type(exc).__name__
+        if nombre != "AuthorizationRequired":
+            return _resultado(False, f"Cloudinary no aceptó las credenciales ({nombre})")
+        # 401. Cloudinary distingue tres causas en el mensaje (medido el 2026-09-18 con credenciales FALSAS contra su nube
+        # pública de demostración, sin tocar ninguna cuenta): "unknown api_key" (la clave no existe), "disabled api_key"
+        # (existe pero está desactivada) y "api_secret mismatch" (la clave existe pero el secreto no le corresponde).
+        # Se inspecciona el mensaje SOLO para elegir uno de estos textos fijos; nunca se copia.
+        mensaje = str(exc)
+        if "unknown api_key" in mensaje:
+            causa = "Cloudinary no conoce esa clave de API (¿mal copiada, de otra cuenta, o del par que se borró?)"
+        elif "disabled api_key" in mensaje:
+            causa = "esa clave de API existe pero está desactivada (¿el par que desactivaste?)"
+        elif "api_secret mismatch" in mensaje:
+            causa = "la clave existe, pero el SECRETO no le corresponde (¿copiado incompleto, o de otro par de claves?)"
+        else:
+            causa = "la clave, el secreto o el nombre de la nube no coinciden entre sí"
+        detalle = f"Cloudinary rechazó las credenciales (401 {nombre}): {causa}"
+        pistas = _observaciones_de_forma(configuracion)
+        if pistas:
+            detalle += ". Pistas sobre la forma: " + "; ".join(pistas)
+        return _resultado(False, detalle)
     return _resultado(True, "credenciales aceptadas")
 
 
