@@ -23,6 +23,7 @@ El comportamiento se cambia SIN reiniciar, escribiendo una palabra en `herramien
     perdida    RECIBE y GUARDA el reporte y cierra SIN responder (la respuesta se pierde: el reporte ya esta en el
                servidor pero la app cree que fallo; al reintentar con `ok` debe contestar 200 y NO duplicar)
     colgado    acepta y no responde nunca (para probar los tiempos de espera de la app: 90 s de lectura)
+    focos      GET /puntos-criticos devuelve 2 focos de PRUEBA (para ver los marcadores del mapa); POST se porta como `ok`
 
 Registra una linea por peticion (idLocal, categoria, tamano de la foto, codigo devuelto y cuantos reportes distintos
 lleva) y guarda las fotos recibidas en `herramientas/recibidas/`. NO imprime coordenadas ni el codigo anonimo
@@ -43,6 +44,17 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 RUTA_MODO = os.path.join(AQUI, "modo.txt")
 CARPETA_FOTOS = os.path.join(AQUI, "recibidas")
 PUERTO = int(os.environ.get("PUERTO", "8000"))
+
+def focos_de_prueba():
+    """Dos focos INVENTADOS dentro de Wanchaq (formato de GET /puntos-criticos, docs/diseno.md 4.2)."""
+    hace_dos_dias = int((time.time() - 2 * 86400) * 1000)
+    def foco(id_, lon, lat, n, categoria):
+        return {"type": "Feature", "geometry": {"type": "Point", "coordinates": [lon, lat]},
+                "properties": {"id": id_, "numReportes": n, "categoriaPredominante": categoria,
+                               "fechaDeteccionEpochMillis": hace_dos_dias}}
+    return {"type": "FeatureCollection", "features": [foco(1, -71.9475, -13.5300, 7, "PLASTICO"),
+                                                      foco(2, -71.9400, -13.5250, 4, "CARTON")]}
+
 
 vistos = {}  # (idAnonimo, idLocal) -> nombre de la foto guardada
 candado = threading.Lock()
@@ -116,8 +128,12 @@ class Manejador(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path.split("?")[0].rstrip("/") == "/puntos-criticos":
-            registrar("GET  /puntos-criticos -> 200 (vacio)")
-            self.responder(200, b'{"type":"FeatureCollection","features":[]}')
+            if modo_actual() == "focos":
+                registrar("GET  /puntos-criticos -> 200 (2 focos de prueba)")
+                self.responder(200, json.dumps(focos_de_prueba()).encode())
+            else:
+                registrar("GET  /puntos-criticos -> 200 (vacio)")
+                self.responder(200, b'{"type":"FeatureCollection","features":[]}')
         else:
             registrar(f"GET  {self.path} -> 404")
             self.responder(404, b'{"detail":"no existe"}')
@@ -137,6 +153,8 @@ class Manejador(http.server.BaseHTTPRequestHandler):
             self.responder(404, b'{"detail":"no existe"}')
             return
         modo = modo_actual()
+        if modo == "focos":
+            modo = "ok"
         inicio = time.monotonic()
         if modo == "corta":
             self.rfile.read(min(int(self.headers.get("Content-Length", "0")), 20000))
