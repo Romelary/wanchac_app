@@ -74,8 +74,8 @@ else:
 HEALTH_TOKEN = os.environ.get("HEALTH_TOKEN", "")
 
 # --- Django --------------------------------------------------------------------------------------------------------
-# Solo "api": aún no hay modelos, y no se instalan contrib.auth/admin/sessions porque la app no tiene login (ADR-0001)
-# y así `migrate` no crea en Neon tablas que nadie usa (0,5 GB de cuota).
+# Solo "api": no se instalan contrib.auth/admin/sessions porque la app no tiene login (ADR-0001), y así `migrate` solo
+# crea en Neon las tablas del proyecto (0,5 GB de cuota).
 INSTALLED_APPS = [
     "api",
 ]
@@ -89,6 +89,20 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Render termina el TLS en su proxy y reenvía por HTTP: sin esto Django creería que la petición no es segura.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Foto de un reporte: la cámara entrega JPEG de ~2–6 MB; 10 MB deja margen sin permitir abusos. Se comprueba ANTES de leer
+# el cuerpo (Content-Length) y de nuevo sobre el archivo recibido.
+MAX_FOTO_BYTES = 10 * 1024 * 1024
+
+# Los registros ocultan todo UUID: `idAnonimo` viaja en la URL del DELETE y es credencial de baja (wanchaq_limpio/logs.py).
+# Va en el handler de la raíz: los logs de Django ("Not Found: /reportes/…") llegan a ella por propagación.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {"sin_identificadores": {"()": "wanchaq_limpio.logs.OcultarIdentificadores"}},
+    "handlers": {"consola": {"class": "logging.StreamHandler", "filters": ["sin_identificadores"]}},
+    "root": {"handlers": ["consola"], "level": "WARNING"},
+}
 
 LANGUAGE_CODE = "es"
 TIME_ZONE = "America/Lima"

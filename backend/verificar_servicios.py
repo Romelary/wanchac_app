@@ -15,6 +15,10 @@ Uso, desde la carpeta `backend` y con el entorno virtual activado (ver docs/desp
         Verifica el servicio YA desplegado en Render (usa el HEALTH_TOKEN de backend/.env). La primera llamada puede
         tardar ~1 minuto: el plan gratuito de Render duerme el servicio tras 15 minutos sin tráfico.
 
+    python verificar_servicios.py --remoto https://... --reporte-de-prueba
+        Además ejecuta contra Render el contrato de la API (docs/diseno.md §4.2) con un reporte de prueba que se borra:
+        crear (201), reenviar (200), borrar (204), borrar otra vez (404), POST tras la baja (410) y fuera de Wanchaq (422).
+
 SEGURIDAD: imprime únicamente "OK"/"FALLO"/"AVISO"/"INFO" y textos fijos. Nunca imprime el valor de una variable ni
 el mensaje de error de un servicio (ver api/servicios.py), así que su salida completa se puede pegar en el chat. La
 única cifra parcial es, cuando Cloudinary falla, los 4 ÚLTIMOS dígitos de la clave de API (un identificador que sin el
@@ -34,12 +38,21 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import uuid
 import zlib
 from pathlib import Path
 from urllib.parse import urlparse
 
 BACKEND = Path(__file__).resolve().parent
 TIMEOUT_ARRANQUE_EN_FRIO_S = 120  # Render tarda ~1 min en despertar un servicio dormido; Neon unos segundos más.
+# JPEG válido de 8x8 px (286 bytes) para la prueba de contrato: el servidor exige JPEG y Cloudinary comprueba que la imagen
+# se pueda decodificar, así que no vale un archivo cualquiera con la firma FF D8 FF.
+JPEG_MINIMO_B64 = (
+    "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+g"
+    "Xz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAIAAgDASIAAhEBAx"
+    "EB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAP/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAgX/xAAUEQEAAAAAAAAAAAAAAAAA"
+    "AAAA/9oADAMBAAIRAxEAPwCIApL/2Q=="
+)
 VARIABLES_DEL_PROYECTO = ("DEBUG", "SECRET_KEY", "DATABASE_URL", "CLOUDINARY_URL", "HEALTH_TOKEN", "ALLOWED_HOSTS")
 # Zonas geográficas para comparar la región de Neon con la de Render SIN suponer a qué región de AWS equivale cada región
 # de Render (Render no lo documenta: render.com/docs/regions). Regiones de Neon: neon.com/docs/introduction/regions.
@@ -321,7 +334,108 @@ def _pedir(url, cabeceras=None):
     return codigo, datos, time.monotonic() - inicio
 
 
-def verificar_remoto(base):
+def _multipart(campo_json, archivo):
+    """Cuerpo multipart/form-data como el que envía Retrofit: un campo `geojson` (JSON) y un archivo `foto` (JPEG).
+
+    `campo_json` = (nombre, texto); `archivo` = (nombre_del_campo, nombre_del_archivo, bytes).
+    Devuelve (bytes_del_cuerpo, valor_de_la_cabecera_Content-Type).
+    """
+    frontera = "wanchaq" + secrets.token_hex(12)
+    nombre, texto = campo_json
+    campo_archivo, nombre_archivo, contenido = archivo
+    cuerpo = b"".join(
+        [
+            f'--{frontera}\r\nContent-Disposition: form-data; name="{nombre}"\r\n'
+            "Content-Type: application/json; charset=utf-8\r\n\r\n".encode(),
+            texto.encode(),
+            b"\r\n",
+            f'--{frontera}\r\nContent-Disposition: form-data; name="{campo_archivo}"; filename="{nombre_archivo}"\r\n'
+            "Content-Type: image/jpeg\r\n\r\n".encode(),
+            contenido,
+            b"\r\n",
+            f"--{frontera}--\r\n".encode(),
+        ]
+    )
+    return cuerpo, f"multipart/form-data; boundary={frontera}"
+
+
+def _enviar(metodo, url, cuerpo=None, cabeceras=None):
+    """Petición con cualquier método. Devuelve (codigo_http, json_o_None); el código es 0 si no hubo respuesta."""
+    peticion = urllib.request.Request(url, data=cuerpo, headers=cabeceras or {}, method=metodo)
+    try:
+        with urllib.request.urlopen(peticion, timeout=TIMEOUT_ARRANQUE_EN_FRIO_S) as respuesta:  # noqa: S310
+            codigo, datos = respuesta.status, respuesta.read()
+    except urllib.error.HTTPError as exc:
+        codigo, datos = exc.code, exc.read()
+    except OSError:
+        return 0, None
+    try:
+        return codigo, json.loads(datos)
+    except ValueError:
+        return codigo, None
+
+
+PISTAS_SI_FALLA_LA_CREACION = {
+    0: "no hubo respuesta del servicio",
+    404: "el servicio no tiene /reportes: ¿ya se desplegó la Fase 1 (¿subiste los cambios a GitHub?)",
+    500: "error interno: ¿se aplicaron las migraciones? Mira los registros de Render (el buildCommand debe ejecutar migrate)",
+    503: "la base de datos o Cloudinary fallaron: mira los registros de Render",
+}
+
+
+def _prueba_de_contrato(base):
+    """Ejecuta contra el servicio DESPLEGADO el contrato de docs/diseno.md §4.2 con un reporte de prueba que se borra.
+
+    POST → 201 · el mismo POST → 200 (idempotente) · DELETE → 204 · DELETE otra vez → 404 · POST tras la baja → 410
+    (lápida) · y un POST fuera de Wanchaq → 422. El id local (más de 9 000 millones) no puede coincidir con uno real: Room
+    autoincrementa desde 1. Nunca se imprime el identificador de la prueba.
+    """
+    id_anonimo = str(uuid.uuid4())
+    id_local = 9_000_000_000 + secrets.randbelow(10**9)
+    jpeg = base64.b64decode(JPEG_MINIMO_B64)
+
+    def subir(longitud=-71.9475, latitud=-13.53, id_del_reporte=id_local):
+        documento = {
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [longitud, latitud]},
+            "properties": {
+                "idAnonimo": id_anonimo,
+                "idLocal": id_del_reporte,
+                "categoria": "MIXTO",
+                "fechaHoraEpochMillis": int(time.time() * 1000),
+            },
+        }
+        cuerpo, tipo = _multipart(("geojson", json.dumps(documento)), ("foto", "prueba.jpg", jpeg))
+        return _enviar("POST", f"{base}/reportes", cuerpo, {"Content-Type": tipo})[0]
+
+    def borrar():
+        return _enviar("DELETE", f"{base}/reportes/{id_anonimo}/{id_local}")[0]
+
+    print()
+    primero = subir()
+    if primero != 201:
+        pista = PISTAS_SI_FALLA_LA_CREACION.get(primero, "el servidor rechazó la petición")
+        return fallo(f"POST /reportes debía dar 201 y dio {primero}: {pista}")
+    ok("POST /reportes crea el reporte (201) y guarda la foto en Cloudinary")
+    resultado, borrado = True, False
+    pasos = [
+        ("el mismo reporte reenviado no se duplica (200)", subir, 200),
+        ("DELETE borra el reporte y su foto (204)", borrar, 204),
+        ("borrar otra vez es idempotente (404)", borrar, 404),
+        ("un POST tardío tras la baja se rechaza (410, lápida)", subir, 410),
+        ("un reporte fuera de Wanchaq se rechaza (422)", lambda: subir(-70.0, -12.0, id_local + 1), 422),
+    ]
+    for texto, accion, esperado in pasos:
+        obtenido = accion()
+        resultado &= ok(texto) if obtenido == esperado else fallo(f"{texto}: se esperaba {esperado} y dio {obtenido}")
+        borrado = borrado or (accion is borrar and obtenido == 204)
+    if not borrado:  # limpieza: un paso fallido no debe dejar el reporte de prueba (ni su foto) en el servidor
+        _enviar("DELETE", f"{base}/reportes/{id_anonimo}/{id_local}")
+        aviso("se intentó borrar el reporte de prueba, porque la baja no se completó como se esperaba")
+    return resultado
+
+
+def verificar_remoto(base, con_reporte=False):
     if not _es_direccion_segura(base):
         return _resumen(fallo("la dirección debe empezar por https:// (el token no debe viajar sin cifrar)"))
     base = base.rstrip("/")
@@ -353,6 +467,11 @@ def verificar_remoto(base):
     for nombre, estado in datos["servicios"].items():
         texto = f"{nombre} (en Render): {estado.get('detalle', '')}"
         todo_ok &= ok(texto) if estado.get("ok") else fallo(texto)
+    if con_reporte:
+        if todo_ok:
+            todo_ok &= _prueba_de_contrato(base)
+        else:
+            aviso("se omite --reporte-de-prueba porque un servicio falló")
     return _resumen(todo_ok)
 
 
@@ -369,8 +488,15 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Verifica las cuentas de Neon y Cloudinary (y el servicio en Render).")
     parser.add_argument("--subida", action="store_true", help="prueba una subida PRIVADA de 1x1 px a Cloudinary")
     parser.add_argument("--remoto", metavar="URL", help="verifica el servicio desplegado en Render, p. ej. https://...")
+    parser.add_argument(
+        "--reporte-de-prueba",
+        action="store_true",
+        help="con --remoto: ejecuta el contrato completo (crear, reenviar, borrar, lápida) con un reporte de prueba que se borra",
+    )
     args = parser.parse_args(argv)
-    return verificar_remoto(args.remoto) if args.remoto else verificar_local(args.subida)
+    if args.reporte_de_prueba and not args.remoto:
+        parser.error("--reporte-de-prueba solo tiene sentido junto con --remoto URL")
+    return verificar_remoto(args.remoto, args.reporte_de_prueba) if args.remoto else verificar_local(args.subida)
 
 
 if __name__ == "__main__":

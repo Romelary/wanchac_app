@@ -4,6 +4,7 @@ Los ajustes se evalúan en un proceso hijo con un entorno controlado (no se lee 
 `settings.py` se ejecuta una sola vez al importarse y aquí hay que probar varias combinaciones de variables.
 """
 
+import io
 import os
 import re
 import shutil
@@ -11,7 +12,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from django.test import SimpleTestCase
+from django.core.management import call_command
+from django.test import SimpleTestCase, TestCase
 
 BACKEND = Path(__file__).resolve().parents[2]
 RAIZ = BACKEND.parent
@@ -201,6 +203,15 @@ class CoherenciaDeArchivosTest(SimpleTestCase):
         # El destino del comando de arranque existe y es invocable (lo que gunicorn importará en Render).
         self.assertTrue(callable(importlib.import_module("wanchaq_limpio.wsgi").application))
 
+    def test_render_yaml_instala_dependencias_y_aplica_las_migraciones_al_construir(self):
+        texto = (RAIZ / "render.yaml").read_text(encoding="utf-8")
+        comando = re.search(r"^\s*buildCommand:\s*(.+)$", texto, re.MULTILINE).group(1)
+        self.assertIn("pip install -r requirements.txt", comando)
+        self.assertIn("python manage.py migrate --noinput", comando)  # sin migrate, POST /reportes daría 500 (no hay tablas)
+        # `&&`: si la instalación falla no se intenta migrar, y si migrar falla la construcción falla (no queda a medias)
+        self.assertLess(comando.index("pip install"), comando.index("manage.py migrate"))
+        self.assertIn("&&", comando)
+
     def test_render_yaml_fija_python_completo_y_compatible_con_django(self):
         texto = (RAIZ / "render.yaml").read_text(encoding="utf-8")
         version = re.search(r"key: PYTHON_VERSION\s+value:\s*(\d+)\.(\d+)\.(\d+)\s*$", texto, re.MULTILINE)
@@ -226,3 +237,51 @@ class CoherenciaDeArchivosTest(SimpleTestCase):
             self.skipTest("git no está instalado")
         p = subprocess.run(["git", "check-ignore", "-q", "backend/.env"], cwd=RAIZ)
         self.assertEqual(p.returncode, 0, "backend/.env debe estar en .gitignore")
+
+
+class MigracionesTest(TestCase):
+    def test_las_migraciones_estan_al_dia_con_los_modelos(self):
+        # Si alguien cambia models.py y olvida `makemigrations`, el despliegue migraría un esquema distinto del código
+        # (y Render aplica `migrate` en cada construcción).
+        salida = io.StringIO()
+        try:
+            call_command("makemigrations", "api", check=True, dry_run=True, stdout=salida, stderr=salida)
+        except SystemExit:
+            self.fail("models.py cambió sin generar migración. Ejecuta `python manage.py makemigrations api`:\n" + salida.getvalue())
+
+    def test_la_migracion_inicial_crea_las_dos_tablas_del_contrato(self):
+        from django.db import connection
+
+        nombres = set(connection.introspection.table_names())
+        self.assertLessEqual({"reporte", "reporte_eliminado"}, nombres)
+
+    def test_la_clave_natural_es_unica_en_la_base_de_datos_no_solo_en_el_codigo(self):
+        from django.db import IntegrityError, transaction
+
+        from api.models import Reporte
+
+        datos = dict(
+            id_anonimo="3f2b8c1e-5a7d-4e0b-9c64-1d2e3f4a5b6c", id_local=1, categoria="MIXTO",
+            fecha_hora="2026-09-18T15:00:00Z", latitud=-13.53, longitud=-71.9475, foto_public_id="x",
+        )
+        Reporte.objects.create(**datos)
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Reporte.objects.create(**datos)
+
+    def test_la_base_rechaza_valores_fuera_del_contrato_aunque_el_codigo_los_dejara_pasar(self):
+        # Defensa en profundidad: las CHECK constraints protegen los datos si algún día se guarda por otra vía.
+        from django.db import IntegrityError, transaction
+
+        from api.models import Reporte
+
+        base = dict(
+            id_anonimo="3f2b8c1e-5a7d-4e0b-9c64-1d2e3f4a5b6c", id_local=1, categoria="MIXTO",
+            fecha_hora="2026-09-18T15:00:00Z", latitud=-13.53, longitud=-71.9475, foto_public_id="x",
+        )
+        invalidos = [
+            {"categoria": "OTRO"}, {"latitud": 95.0}, {"longitud": -200.0},
+            {"categoria_ia": "ESCOMBROS", "confianza_ia": 0.5}, {"categoria_ia": "VIDRIO", "confianza_ia": 1.5},
+        ]
+        for cambio in invalidos:
+            with self.subTest(cambio=cambio), self.assertRaises(IntegrityError), transaction.atomic():
+                Reporte.objects.create(**{**base, **cambio})

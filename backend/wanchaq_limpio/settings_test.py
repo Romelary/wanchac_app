@@ -15,3 +15,7 @@ os.environ["HEALTH_TOKEN"] = ""  # cada prueba fija el suyo con override_setting
 from wanchaq_limpio.settings import *  # noqa: E402,F401,F403
 
 DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
+
+# El servidor HTTP de LiveServerTestCase envuelve la aplicación en un manejador de archivos estáticos que exige STATIC_URL
+# (su valor por defecto es None y falla). La aplicación real no sirve estáticos, por eso solo se define aquí.
+STATIC_URL = "/static/"

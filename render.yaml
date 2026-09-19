@@ -15,7 +15,10 @@ services:
     region: virginia
     # Solo se construye la carpeta backend/: los commits que solo tocan la app Android no redespliegan el servicio.
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
+    # Las migraciones se aplican al CONSTRUIR (no al arrancar): el plan gratuito reinicia el servicio tras cada sueño y
+    # migrar en cada arranque frío lo haría más lento. Render no ofrece "pre-deploy command" en el plan gratuito. Si una
+    # migración falla, la construcción falla y el despliegue anterior sigue sirviendo: nunca queda a medias.
+    buildCommand: pip install -r requirements.txt && python manage.py migrate --noinput
     # 1 proceso con 4 hilos: el plan gratuito tiene 512 MB de RAM. --timeout 60 cubre el arranque en frío de Neon.
     # ${PORT:-10000}: Render documenta PORT como opcional con 10000 por defecto; así funciona esté o no definida
     # (con `$PORT` a secas, si faltara, gunicorn recibiría "0.0.0.0:" y no arrancaría).
