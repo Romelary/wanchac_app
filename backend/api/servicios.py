@@ -13,12 +13,29 @@ conexión, y esta salida se pega en chats y en documentos de tesis. De la excepc
 from django.db import connection
 
 
+# Restos de las PLANTILLAS que el usuario copia y olvida reemplazar: la de `.env.example` y la que muestra la consola de
+# Cloudinary (`cloudinary://<your_api_key>:<your_api_secret>@nube`, que lleva los símbolos < > de "rellena aquí").
+# Reconocerlas da un mensaje preciso en vez de un genérico "no se pudo conectar / no aceptó las credenciales", y evita
+# una llamada de red que se sabe que fallará. Una prueba vigila que sigan coincidiendo con `.env.example`.
+_PLANTILLA_BD = ("HOST_DE_NEON", "CONTRASENA", "NOMBRE_DE_BASE")
+_PLANTILLA_CLOUDINARY = ("<", ">", "your_api", "CLAVE_API", "SECRETO_API", "NOMBRE_DE_NUBE")
+
+
 def _resultado(ok, detalle):
     return {"ok": ok, "detalle": detalle}
 
 
+def _contiene_alguna(valores, marcas):
+    return any(marca in str(valor) for valor in valores for marca in marcas)
+
+
 def comprobar_base_de_datos():
     """Conecta, y si el motor es PostgreSQL comprueba además que PostGIS está habilitado y que `geography` funciona."""
+    ajustes = connection.settings_dict
+    if _contiene_alguna((ajustes.get(campo) or "" for campo in ("HOST", "USER", "PASSWORD", "NAME")), _PLANTILLA_BD):
+        return _resultado(
+            False, "DATABASE_URL todavía tiene los marcadores de .env.example (HOST_DE_NEON, CONTRASENA…): pega la cadena real de Neon"
+        )
     try:
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
@@ -47,6 +64,10 @@ def comprobar_cloudinary():
     configuracion = cloudinary.config()
     if not (configuracion.cloud_name and configuracion.api_key and configuracion.api_secret):
         return _resultado(False, "CLOUDINARY_URL ausente o mal formada (debe ser cloudinary://clave:secreto@nombre)")
+    if _contiene_alguna((configuracion.cloud_name, configuracion.api_key, configuracion.api_secret), _PLANTILLA_CLOUDINARY):
+        return _resultado(
+            False, "CLOUDINARY_URL todavía tiene una plantilla (p. ej. <your_api_key>): reemplaza clave y secreto por los reales, sin los símbolos < >"
+        )
     try:
         cloudinary.api.ping()
     except Exception as exc:  # noqa: BLE001 - solo el NOMBRE de la excepción

@@ -32,9 +32,13 @@ class _CursorFalso:
         return (self._ultima,)
 
 
-def _conexion_postgres(cursor):
+AJUSTES_REALES = {"HOST": "ep-ejemplo.us-east-1.aws.neon.tech", "USER": "alex", "PASSWORD": "AbC123", "NAME": "neondb"}
+
+
+def _conexion_postgres(cursor, ajustes=None):
     conexion = mock.MagicMock()
     conexion.vendor = "postgresql"
+    conexion.settings_dict = ajustes or AJUSTES_REALES
     conexion.cursor.return_value = cursor
     return conexion
 
@@ -60,6 +64,7 @@ class BaseDeDatosTest(SimpleTestCase):
 
     def test_error_de_conexion_no_filtra_el_mensaje_de_la_excepcion(self):
         conexion = mock.MagicMock()
+        conexion.settings_dict = AJUSTES_REALES
         conexion.cursor.side_effect = RuntimeError(f"connection to host db.ejemplo.neon.tech user=x password={CLAVE_SECRETA}")
         with mock.patch.object(servicios, "connection", conexion):
             r = servicios.comprobar_base_de_datos()
@@ -72,6 +77,22 @@ class BaseDeDatosTest(SimpleTestCase):
         with mock.patch.object(servicios, "connection", _conexion_postgres(_CursorFalso(falla_postgis=True))):
             r = servicios.comprobar_base_de_datos()
         self.assertNotIn(CLAVE_SECRETA, str(r))
+
+    def test_los_marcadores_de_env_example_se_reconocen_sin_intentar_conectar(self):
+        # Olvidar reemplazar la plantilla es el error más probable al configurar; sin esto el usuario vería un genérico
+        # "no se pudo conectar" tras esperar a que falle el DNS.
+        for campo, marcador in (("HOST", "HOST_DE_NEON"), ("PASSWORD", "CONTRASENA"), ("NAME", "NOMBRE_DE_BASE")):
+            with self.subTest(campo=campo):
+                conexion = _conexion_postgres(_CursorFalso(), {**AJUSTES_REALES, campo: marcador})
+                with mock.patch.object(servicios, "connection", conexion):
+                    r = servicios.comprobar_base_de_datos()
+                self.assertFalse(r["ok"])
+                self.assertIn("marcadores de .env.example", r["detalle"])
+                conexion.cursor.assert_not_called()
+
+    def test_ajustes_reales_no_se_confunden_con_una_plantilla(self):
+        with mock.patch.object(servicios, "connection", _conexion_postgres(_CursorFalso())):
+            self.assertTrue(servicios.comprobar_base_de_datos()["ok"])
 
 
 class BaseDeDatosSqliteTest(TestCase):
@@ -94,6 +115,23 @@ class CloudinaryTest(SimpleTestCase):
         self.assertFalse(r["ok"])
         self.assertIn("CLOUDINARY_URL", r["detalle"])
         ping.assert_not_called()
+
+    def test_la_plantilla_de_la_consola_de_cloudinary_se_reconoce_sin_llamar_a_la_red(self):
+        # La consola muestra cloudinary://<your_api_key>:<your_api_secret>@nube; el SDK lee esos textos LITERALMENTE.
+        casos = {
+            "consola de Cloudinary": {"api_key": "<your_api_key>", "api_secret": "<your_api_secret>"},
+            "solo el secreto sin rellenar": {"api_secret": "<your_api_secret>"},
+            "sin los símbolos": {"api_key": "your_api_key"},
+            "plantilla de .env.example": {"api_key": "CLAVE_API", "api_secret": "SECRETO_API", "cloud_name": "NOMBRE_DE_NUBE"},
+        }
+        for nombre, campos in casos.items():
+            with self.subTest(nombre), mock.patch("cloudinary.config", return_value=self._configuracion(**campos)), mock.patch(
+                "cloudinary.api.ping"
+            ) as ping:
+                r = servicios.comprobar_cloudinary()
+            self.assertFalse(r["ok"])
+            self.assertIn("plantilla", r["detalle"])
+            ping.assert_not_called()
 
     def test_credenciales_aceptadas(self):
         with mock.patch("cloudinary.config", return_value=self._configuracion()), mock.patch(

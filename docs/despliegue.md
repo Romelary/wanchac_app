@@ -2,7 +2,7 @@
 
 > Guía paso a paso para dejar funcionando la infraestructura del backend de Wanchaq Limpio: la base de datos (Neon), las fotos (Cloudinary) y el servidor (Render). Es también evidencia de tesis: registra **qué se configuró, por qué así y cómo se comprobó**. Decisiones técnicas: [ADR-0004](./adr/0004-backend-django-sin-geodjango.md). Diseño general: [`diseno.md`](./diseno.md) §4.1.
 >
-> Estado (2026-09-18): el **esqueleto** del backend existe y está probado (67 pruebas), pero **aún no se ha desplegado**: falta que tú crees los proyectos en cada panel y pegues tus claves. La lógica de reportes (Fase 1) viene después de que esto funcione.
+> Estado (2026-09-18): el **esqueleto** del backend existe y está probado (71 pruebas), pero **aún no se ha desplegado**: falta que tú crees los proyectos en cada panel y pegues tus claves. La lógica de reportes (Fase 1) viene después de que esto funcione.
 
 ## 0. Reglas de seguridad (léelas primero)
 
@@ -51,7 +51,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe manage.py test
 ```
 
-La última línea debe terminar en `OK` (67 pruebas; no usan red ni tus claves). Se usa siempre `.\.venv\Scripts\python.exe` para no tener que "activar" el entorno (PowerShell suele bloquear el script de activación).
+La última línea debe terminar en `OK` (71 pruebas; no usan red ni tus claves). Se usa siempre `.\.venv\Scripts\python.exe` para no tener que "activar" el entorno (PowerShell suele bloquear el script de activación).
 
 Luego crea tu archivo de variables:
 
@@ -91,6 +91,15 @@ Genera el `HEALTH_TOKEN` (un secreto aleatorio que solo tú conoces) y pégalo e
 
 **Por qué la directa y no la *pooled***: las migraciones y `CREATE EXTENSION` deben usar conexión directa (recomendación de Neon), y con 1 proceso de servidor no necesitamos el agrupador de conexiones. El script de verificación **avisa** si detecta `-pooler`.
 
+**El *prompt* para agentes de IA que la consola de Neon muestra** (`npm i -g neon`, `neon login`, `neon skills`, `neon mcp`, `neon link`, `neon config init`, `neon deploy`): **no lo uses en este proyecto**. Es el asistente de Neon para conectar un agente de IA a tu cuenta y no hace falta, porque de Neon solo necesitamos **PostGIS y la cadena de conexión directa** (pasos 3–5). Según la documentación de Neon:
+
+- `neon mcp` escribe la configuración de tus agentes de IA para que operen **directamente sobre tu cuenta de Neon** (autenticación incluida). Contradice la regla de §0: el asistente no maneja credenciales.
+- `neon deploy` aplica cambios al proyecto y **copia credenciales a un archivo local** (`.env.local`).
+- `neon config init` añade `neon.ts` y dependencias de Node a un repositorio que es Kotlin + Django.
+- `neon login` abre tu navegador para iniciar sesión: eso solo lo haces tú.
+
+Fuentes: [neon mcp](https://neon.com/docs/cli/mcp), [neon skills](https://neon.com/docs/cli/skills), [Just landed in the Neon CLI](https://neon.com/blog/just-landed-in-the-neon-cli). El identificador de proyecto que aparece en ese prompt no es un secreto, pero tampoco hace falta compartirlo.
+
 ## 5. Cloudinary (fotos)
 
 1. Entra en la consola de Cloudinary y activa la verificación en dos pasos.
@@ -102,6 +111,7 @@ Genera el `HEALTH_TOKEN` (un secreto aleatorio que solo tú conoces) y pégalo e
    CLOUDINARY_URL=cloudinary://…(tu clave)…:…(tu secreto)…@…(tu nombre de nube)…
    ```
 
+   **Ojo con la plantilla**: la consola de Cloudinary muestra `CLOUDINARY_URL=cloudinary://<your_api_key>:<your_api_secret>@tu_nube`. Los textos entre `< >` son **marcadores**: hay que reemplazarlos por tu clave y tu secreto reales **y quitar también los símbolos `< >`**. La línea de `.env` empieza por `CLOUDINARY_URL=` (sin guion bajo delante). El *cloud name* (lo que va tras la `@`) **no es secreto**: aparece en todas las URL de tus imágenes; la clave y el secreto sí. El secreto suele mostrarse oculto en la consola: revélalo desde allí o genera un par nuevo. El verificador reconoce la plantilla sin rellenar y lo dice.
 5. **No crees *upload presets* "sin firmar"**: permitirían a cualquiera subir a tu cuenta. La app Android no sube a Cloudinary; sube al backend, que sube con firma.
 6. Las fotos de los reportes se guardarán **privadas** (`type=authenticated`, decisión de la Fase 1): su URL pública no las sirve, solo una URL firmada. Es coherente con el consentimiento (Anexo 9) y con `diseno.md` §4.2. Que tu cuenta respeta ese modo se comprueba desde ya con `--subida` (siguiente sección).
 
@@ -183,6 +193,8 @@ No hace falta activarlo hasta que la app empiece a usarse de verdad; mientras de
 | `FALLO Neon: no se pudo conectar (OperationalError)` | Contraseña o host mal copiados; comillas sobrantes; proyecto pausado; o sin internet. | Vuelve a copiar la cadena desde **Connect** (con *Connection pooling* apagado). Tarda hasta 15 s en rendirse (límite de conexión). |
 | `FALLO Neon: … PostGIS no está habilitado` | Falta la extensión. | En el **SQL Editor** de Neon: `CREATE EXTENSION IF NOT EXISTS postgis;`. |
 | `FALLO Cloudinary: CLOUDINARY_URL ausente o mal formada` | Falta la variable o no tiene el formato `cloudinary://clave:secreto@nube`. | Revisa que no haya espacios ni comillas. |
+| `FALLO Cloudinary: CLOUDINARY_URL todavía tiene una plantilla` | Se dejó `<your_api_key>`/`<your_api_secret>` de la consola o los marcadores de `.env.example`. | Reemplázalos por los valores reales, **sin los símbolos `< >`** (§5). |
+| `FALLO Neon: DATABASE_URL todavía tiene los marcadores de .env.example` | Se dejó `USUARIO:CONTRASENA@HOST_DE_NEON…`. | Pega la cadena real de Neon (§4). |
 | `FALLO Cloudinary: … no aceptó las credenciales` | Clave o secreto incorrectos, o el par fue revocado. | Vuelve a copiarlos desde **Settings → API Keys**. |
 | `FALLO la URL pública SÍ sirve la foto` | El recurso se subió como público. | **No sigas**: avísame; es un fallo de seguridad de la configuración. |
 | `FALLO /health no respondió 200 (código 0)` | Sin conexión, o Render aún está construyendo/arrancando. | Espera 1–2 min y reintenta; revisa **Logs** en Render. |
@@ -194,7 +206,7 @@ No hace falta activarlo hasta que la app empiece a usarse de verdad; mientras de
 
 | Qué | Cómo se comprobó | Resultado |
 |---|---|---|
-| El código del backend, la configuración y el script | `python manage.py test` (67 pruebas) + 37 mutaciones deliberadas | ✅ en verde (2026-09-18) |
+| El código del backend, la configuración y el script | `python manage.py test` (71 pruebas) + 43 mutaciones deliberadas | ✅ en verde (2026-09-18) |
 | La aplicación WSGI real (la que carga gunicorn) por HTTP | Script de una sola vez con `wsgiref`: `/health` 200, `/health/servicios` 401 sin token y 503 con la base inalcanzable, sin filtrar la cadena de conexión | ✅ 2026-09-18 |
 | Cuentas reales (Neon, Cloudinary, Render) | **Pendiente**: la ejecuta el usuario con `verificar_servicios.py` | ⏳ |
 | Comando de arranque `gunicorn …` | Sin comprobar localmente (gunicorn no corre en Windows); se comprobará en el primer despliegue | ⏳ |

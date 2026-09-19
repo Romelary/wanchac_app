@@ -136,6 +136,15 @@ class CoherenciaDeArchivosTest(SimpleTestCase):
         self.assertIn("CONTRASENA", v["DATABASE_URL"])
         self.assertIn("SECRETO_API", v["CLOUDINARY_URL"])
 
+    def test_el_diagnostico_reconoce_las_plantillas_de_env_example(self):
+        # Si alguien cambia los marcadores de .env.example y no los del diagnóstico, esta prueba lo avisa: el usuario
+        # que olvide reemplazarlos dejaría de recibir el mensaje preciso.
+        from api import servicios
+
+        v = self._variables_de_env_example()
+        self.assertTrue(any(m in v["DATABASE_URL"] for m in servicios._PLANTILLA_BD))
+        self.assertTrue(any(m in v["CLOUDINARY_URL"] for m in servicios._PLANTILLA_CLOUDINARY))
+
     def test_render_yaml_declara_los_secretos_sin_valor(self):
         bloques = self._bloques_de_render_yaml()
         for nombre in ("DATABASE_URL", "CLOUDINARY_URL", "HEALTH_TOKEN"):
