@@ -2,7 +2,7 @@
 
 > Guía paso a paso para dejar funcionando la infraestructura del backend de Wanchaq Limpio: la base de datos (Neon), las fotos (Cloudinary) y el servidor (Render). Es también evidencia de tesis: registra **qué se configuró, por qué así y cómo se comprobó**. Decisiones técnicas: [ADR-0004](./adr/0004-backend-django-sin-geodjango.md). Diseño general: [`diseno.md`](./diseno.md) §4.1.
 >
-> Estado (2026-09-18): el **esqueleto** del backend existe y está probado (80 pruebas), pero **aún no se ha desplegado**: falta que tú crees los proyectos en cada panel y pegues tus claves. La lógica de reportes (Fase 1) viene después de que esto funcione.
+> Estado (2026-09-18): el **esqueleto** del backend existe y está probado (88 pruebas), pero **aún no se ha desplegado**: falta que tú crees los proyectos en cada panel y pegues tus claves. La lógica de reportes (Fase 1) viene después de que esto funcione.
 
 ## 0. Reglas de seguridad (léelas primero)
 
@@ -12,7 +12,7 @@
 | **Los secretos los escribes tú**, en dos únicos sitios: el archivo `backend/.env` (tu computadora) y el panel de Render (variables de entorno). | Claude (el asistente) no crea cuentas ni maneja credenciales: si un paso te pide una, es tuyo. |
 | `backend/.env` **no se sube a git** (está en `.gitignore`, y una prueba automática lo vigila). `.env.example` sí se sube, pero solo lleva marcadores de posición. | Para que el repositorio pueda ser revisado sin exponer nada. |
 | Activa la **verificación en dos pasos** en las tres cuentas (y en GitHub). | Es el mayor punto débil de una infraestructura gratuita: si te roban la cuenta, controlan tus datos. |
-| El script de verificación **solo imprime OK/FALLO**, nunca valores. Puedes pegar su salida completa en el chat. | Está diseñado y probado para eso (ver `pruebas.md`). |
+| El script de verificación **solo imprime OK/FALLO/AVISO/INFO**, nunca valores. La única cifra parcial: cuando Cloudinary falla muestra los **4 últimos dígitos de la clave de API** (un identificador que sin el secreto no autentica nada) para reconocerla en la consola; el secreto jamás se imprime. Puedes pegar su salida completa en el chat. | Está diseñado y probado para eso (ver `pruebas.md`). |
 
 **Si un secreto se filtra** (lo pegaste donde no debías, se subió a git): no basta con borrarlo, hay que **cambiarlo**: Neon → restablecer la contraseña del rol; Cloudinary → generar un par de claves nuevo y revocar el anterior; Render → editar la variable; y actualizar tu `.env`. En git, un secreto subido queda en el historial aunque luego se borre el archivo.
 
@@ -51,7 +51,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe manage.py test
 ```
 
-La última línea debe terminar en `OK` (80 pruebas; no usan red ni tus claves). Se usa siempre `.\.venv\Scripts\python.exe` para no tener que "activar" el entorno (PowerShell suele bloquear el script de activación).
+La última línea debe terminar en `OK` (88 pruebas; no usan red ni tus claves). Se usa siempre `.\.venv\Scripts\python.exe` para no tener que "activar" el entorno (PowerShell suele bloquear el script de activación).
 
 Luego crea tu archivo de variables:
 
@@ -200,6 +200,9 @@ No hace falta activarlo hasta que la app empiece a usarse de verdad; mientras de
 | `FALLO Cloudinary: … (401 …): esa clave de API existe pero está desactivada` | El par está desactivado en la consola (¿el que desactivaste al rotar?). | Usa el par **nuevo y activo** en `.env`. |
 | `FALLO Cloudinary: … (401 …): la clave existe, pero el SECRETO no le corresponde` | El secreto está incompleto, es de otro par o tiene un carácter de más/de menos. | Copia el secreto con el **botón de copiar** de la consola (no seleccionando el texto). Las *Pistas sobre la forma* que acompañan al mensaje indican si su longitud es anómala. |
 | `FALLO Cloudinary: CLOUDINARY_URL lleva el secreto OCULTO (asteriscos)` | Se copió el texto enmascarado (`*****`) de la pantalla. | Usa el botón de copiar o revela el secreto y vuelve a pegarlo. |
+| `AVISO CLOUDINARY_URL (u otra) existe TAMBIÉN en el entorno de Windows con otro valor` | **La trampa de "corrijo el `.env` y sigue el mismo error"**: si la variable ya existe en el entorno de Windows o en tu ventana de PowerShell, **gana sobre el `.env`** (por diseño el `.env` no pisa lo ya definido: en Render manda el panel). Suele ocurrir tras seguir una instrucción de "`set CLOUDINARY_URL=…`" o "`$env:CLOUDINARY_URL=…`". | Ver más abajo, *Quitar una variable del entorno de Windows*. |
+| `AVISO … aparece varias veces en backend/.env: se usa la ÚLTIMA` | Quedó una línea vieja además de la nueva. | Borra las líneas viejas y deja una sola por variable. |
+| `INFO la clave de API de Cloudinary en uso termina en ...NNNN` | Aparece cuando Cloudinary falla: son los **4 últimos dígitos** de la clave que está leyendo el programa. | Compárala con la clave **activa** de *Settings → API Keys*. Si termina igual que la del par que borraste, sigues usando el viejo. |
 | `FALLO Cloudinary: … no aceptó las credenciales (OtraExcepcion)` | Fallo distinto de un 401 (red, servicio caído…). | Reintenta; si persiste, avísame con el nombre de la excepción. |
 | `FALLO la URL pública SÍ sirve la foto` | El recurso se subió como público. | **No sigas**: avísame; es un fallo de seguridad de la configuración. |
 | `FALLO /health no respondió 200 (código 0)` | Sin conexión, o Render aún está construyendo/arrancando. | Espera 1–2 min y reintenta; revisa **Logs** en Render. |
@@ -207,11 +210,35 @@ No hace falta activarlo hasta que la app empiece a usarse de verdad; mientras de
 | `FALLO /health/servicios no existe` | Falta `HEALTH_TOKEN` en Render. | Añádelo en *Environment* y redespliega. |
 | Render: error de compilación con la versión de Python | `PYTHON_VERSION` de `render.yaml` no disponible. | Cámbiala por otra 3.12.x publicada (Django 6.1 exige ≥ 3.12). |
 
+### Quitar una variable del entorno de Windows
+
+Solo si el verificador dice que existe *también en el entorno de Windows*. Estos comandos **no muestran** el valor. Para comprobar si existe en tu ventana actual y en tu usuario de Windows:
+
+```powershell
+$env:CLOUDINARY_URL -ne $null
+```
+
+```powershell
+[Environment]::GetEnvironmentVariable("CLOUDINARY_URL", "User") -ne $null
+```
+
+Para quitarla de la ventana actual y, si también estaba en tu usuario, de forma permanente (después **cierra y vuelve a abrir PowerShell**):
+
+```powershell
+Remove-Item Env:CLOUDINARY_URL
+```
+
+```powershell
+[Environment]::SetEnvironmentVariable("CLOUDINARY_URL", $null, "User")
+```
+
+Cambia `CLOUDINARY_URL` por el nombre de la variable que indique el aviso. Es un cambio en **tu** sistema, y solo afecta a tu usuario.
+
 ## 11. Registro de verificaciones de esta guía
 
 | Qué | Cómo se comprobó | Resultado |
 |---|---|---|
-| El código del backend, la configuración y el script | `python manage.py test` (80 pruebas) + 61 mutaciones deliberadas | ✅ en verde (2026-09-18) |
+| El código del backend, la configuración y el script | `python manage.py test` (88 pruebas) + 73 mutaciones deliberadas | ✅ en verde (2026-09-18) |
 | La aplicación WSGI real (la que carga gunicorn) por HTTP | Script de una sola vez con `wsgiref`: `/health` 200, `/health/servicios` 401 sin token y 503 con la base inalcanzable, sin filtrar la cadena de conexión | ✅ 2026-09-18 |
 | Cuentas reales (Neon, Cloudinary, Render) | **Pendiente**: la ejecuta el usuario con `verificar_servicios.py` | ⏳ |
 | Comando de arranque `gunicorn …` | Sin comprobar localmente (gunicorn no corre en Windows); se comprobará en el primer despliegue | ⏳ |

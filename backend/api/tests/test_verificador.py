@@ -7,6 +7,7 @@ El script es lo que TÚ ejecutas con tus credenciales reales y lo que se pega en
 """
 
 import io
+import os
 import struct
 import tempfile
 import urllib.error
@@ -188,16 +189,22 @@ class SubidaPrivadaTest(SimpleTestCase):
 
 
 class LocalTest(SimpleTestCase):
-    def _correr(self, entorno, bd_ok=True, cloudinary_ok=True, con_env=True, subida=False, subida_ok=True):
+    def _correr(self, entorno, bd_ok=True, cloudinary_ok=True, con_env=True, subida=False, subida_ok=True,
+                contenido_env="", clave_api="123456789012345"):
         bd = {"ok": bd_ok, "detalle": "conectado; PostGIS 3.5 operativo" if bd_ok else "no se pudo conectar (OperationalError)"}
         cl = {"ok": cloudinary_ok, "detalle": "credenciales aceptadas"}
         with tempfile.TemporaryDirectory() as carpeta:
             if con_env:
-                (Path(carpeta) / ".env").write_text("", encoding="utf-8")
+                archivo = Path(carpeta) / ".env"
+                if isinstance(contenido_env, bytes):
+                    archivo.write_bytes(contenido_env)
+                else:
+                    archivo.write_text(contenido_env, encoding="utf-8")
             with mock.patch.object(v, "BACKEND", Path(carpeta)), mock.patch.object(v, "_iniciar_django", return_value=True), \
                     mock.patch.dict("os.environ", entorno, clear=False), \
                     mock.patch("api.servicios.comprobar_base_de_datos", return_value=bd), \
                     mock.patch("api.servicios.comprobar_cloudinary", return_value=cl), \
+                    mock.patch("cloudinary.config", return_value=mock.Mock(api_key=clave_api)), \
                     mock.patch.object(v, "_subida_privada", return_value=subida_ok) as subida_mock:
                 codigo, salida = _capturar(v.verificar_local, subida)
         return codigo, salida, subida_mock
@@ -245,3 +252,54 @@ class LocalTest(SimpleTestCase):
         codigo, salida, no_valida = self._correr(self.ENTORNO, cloudinary_ok=False, subida=True)
         no_valida.assert_not_called()
         self.assertEqual(codigo, 1)
+
+    # --- Diagnóstico de ORIGEN de las variables: la trampa de "corrijo el .env y sigue el mismo error" ---------------
+    def test_una_variable_del_entorno_de_windows_que_contradice_al_env_avisa_sin_mostrar_valores(self):
+        # La carga del .env no pisa lo que ya existe en el entorno: una CLOUDINARY_URL puesta antes en PowerShell GANA.
+        entorno = {**self.ENTORNO, "CLOUDINARY_URL": "cloudinary://1:secretoviejo@nube"}
+        _, salida, _ = self._correr(entorno, contenido_env="CLOUDINARY_URL=cloudinary://2:secretonuevo@nube\n")
+        self.assertIn("AVISO CLOUDINARY_URL existe TAMBIÉN en el entorno de Windows", salida)
+        for valor in ("secretoviejo", "secretonuevo", "cloudinary://"):
+            self.assertNotIn(valor, salida)
+
+    def test_si_el_entorno_y_el_env_coinciden_no_hay_aviso(self):
+        entorno = {**self.ENTORNO, "CLOUDINARY_URL": "cloudinary://1:igual@nube"}
+        _, salida, _ = self._correr(entorno, contenido_env="CLOUDINARY_URL=cloudinary://1:igual@nube\n")
+        self.assertNotIn("TAMBIÉN", salida)
+
+    def test_una_variable_del_env_que_no_existe_en_el_entorno_no_es_conflicto(self):
+        with mock.patch.dict("os.environ"):
+            os.environ.pop("HEALTH_TOKEN", None)
+            entorno = {k: val for k, val in self.ENTORNO.items() if k != "HEALTH_TOKEN"}
+            _, salida, _ = self._correr(entorno, contenido_env="HEALTH_TOKEN=abc\n")
+        self.assertNotIn("TAMBIÉN", salida)
+
+    def test_una_variable_repetida_en_el_env_avisa_y_las_comentadas_no_cuentan(self):
+        _, salida, _ = self._correr(self.ENTORNO, contenido_env="HEALTH_TOKEN=a\nHEALTH_TOKEN=b\nDEBUG=1\n")
+        self.assertIn("HEALTH_TOKEN aparece varias veces", salida)
+        self.assertNotIn("DEBUG aparece", salida)
+        _, salida, _ = self._correr(self.ENTORNO, contenido_env="# HEALTH_TOKEN=vieja\nHEALTH_TOKEN=nueva\n")
+        self.assertNotIn("varias veces", salida)
+
+    def test_un_env_ilegible_no_rompe_el_diagnostico_de_origen(self):
+        # UTF-16 (creado con `>` de PowerShell): de eso se queja la carga de ajustes; aquí no debe haber traceback.
+        codigo, salida, _ = self._correr(self.ENTORNO, contenido_env="CLOUDINARY_URL=x\n".encode("utf-16"))
+        self.assertNotIn("Traceback", salida)
+        self.assertIn(codigo, (0, 1))
+
+    # --- Reconocer la clave en la consola sin exponerla ---------------------------------------------------------------
+    def test_si_cloudinary_falla_muestra_donde_termina_la_clave_sin_mostrarla_entera(self):
+        _, salida, _ = self._correr(self.ENTORNO, cloudinary_ok=False)
+        self.assertIn("INFO", salida)
+        self.assertIn("la clave de API de Cloudinary en uso termina en ...2345", salida)
+        self.assertNotIn("123456789012345", salida)
+        self.assertNotIn("6789012345", salida)
+
+    def test_si_cloudinary_funciona_no_menciona_la_clave(self):
+        _, salida, _ = self._correr(self.ENTORNO)
+        self.assertNotIn("termina en", salida)
+
+    def test_una_clave_que_no_es_numerica_no_se_muestra_ni_en_parte(self):
+        _, salida, _ = self._correr(self.ENTORNO, cloudinary_ok=False, clave_api="<your_api_key>")
+        self.assertNotIn("termina en", salida)
+        self.assertNotIn("your_api", salida)

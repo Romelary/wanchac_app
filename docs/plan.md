@@ -252,7 +252,7 @@ El cliente Android no puede completar los Módulos 4 y 5 sin estos endpoints. No
 
 | Fase | Contenido | Estado |
 |---|---|---|
-| 0. Infraestructura | Esqueleto Django, `/health`, `/health/servicios`, `render.yaml`, script `verificar_servicios.py`, guía [`despliegue.md`](./despliegue.md) | ✅ código y pruebas (80) el 2026-09-18 · ⏳ **falta que el usuario cree los proyectos, verifique y despliegue** |
+| 0. Infraestructura | Esqueleto Django, `/health`, `/health/servicios`, `render.yaml`, script `verificar_servicios.py`, guía [`despliegue.md`](./despliegue.md) | ✅ código y pruebas (88) el 2026-09-18 · ⏳ **falta que el usuario cree los proyectos, verifique y despliegue** |
 | 1. Recibir y guardar | Modelo `reporte` (PostGIS), `POST /reportes` idempotente, `DELETE` con lápida, foto privada en Cloudinary, validación en servidor | ⏳ |
 | 2. Agrupamiento | DBSCAN (ε 50 m, MinSamples 4), silueta y proporción de ruido (RF-05/RF-06), `Punto_critico` (CORR-004) | ⏳ |
 | 3. Mapa público | `GET /puntos-criticos?estado=confirmado` (Módulo 5) | ⏳ |

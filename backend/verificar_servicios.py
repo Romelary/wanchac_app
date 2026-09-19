@@ -15,15 +15,19 @@ Uso, desde la carpeta `backend` y con el entorno virtual activado (ver docs/desp
         Verifica el servicio YA desplegado en Render (usa el HEALTH_TOKEN de backend/.env). La primera llamada puede
         tardar ~1 minuto: el plan gratuito de Render duerme el servicio tras 15 minutos sin tráfico.
 
-SEGURIDAD: imprime únicamente "OK"/"FALLO"/"AVISO" y textos fijos. Nunca imprime el valor de una variable ni el
-mensaje de error de un servicio (ver api/servicios.py), así que su salida completa se puede pegar en el chat.
+SEGURIDAD: imprime únicamente "OK"/"FALLO"/"AVISO"/"INFO" y textos fijos. Nunca imprime el valor de una variable ni
+el mensaje de error de un servicio (ver api/servicios.py), así que su salida completa se puede pegar en el chat. La
+única cifra parcial es, cuando Cloudinary falla, los 4 ÚLTIMOS dígitos de la clave de API (un identificador que sin el
+secreto no autentica nada) para reconocerla en la consola; el secreto jamás se imprime, ni siquiera en parte.
 Devuelve código de salida 0 si todo está bien y 1 si algo falla.
 """
 
 import argparse
 import base64
+import io
 import json
 import os
+import re
 import secrets
 import struct
 import sys
@@ -36,6 +40,7 @@ from urllib.parse import urlparse
 
 BACKEND = Path(__file__).resolve().parent
 TIMEOUT_ARRANQUE_EN_FRIO_S = 120  # Render tarda ~1 min en despertar un servicio dormido; Neon unos segundos más.
+VARIABLES_DEL_PROYECTO = ("DEBUG", "SECRET_KEY", "DATABASE_URL", "CLOUDINARY_URL", "HEALTH_TOKEN", "ALLOWED_HOSTS")
 
 
 def _linea(nivel, texto):
@@ -53,6 +58,10 @@ def fallo(texto):
 
 def aviso(texto):
     _linea("AVISO", texto)
+
+
+def info(texto):
+    _linea("INFO", texto)
 
 
 def png_minimo():
@@ -83,6 +92,61 @@ def _iniciar_django():
         detalle = str(exc) if isinstance(exc, ImproperlyConfigured) else f"{type(exc).__name__} (revisa backend/.env)"
         return fallo(f"los ajustes no arrancan: {detalle}")
     return True
+
+
+def _leer_env():
+    """Texto de backend/.env, o None si no existe o no está en UTF-8 (de eso ya se queja la carga de ajustes)."""
+    try:
+        return (BACKEND / ".env").read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+def _conflictos_con_el_entorno():
+    """Variables definidas en backend/.env Y en el entorno de Windows, con valores DISTINTOS.
+
+    La carga del .env no pisa las variables que ya existen (en Render manda el panel). En tu máquina eso significa que
+    una variable puesta antes en PowerShell o en las variables de entorno de Windows GANA sobre el .env: corriges el
+    archivo y "sigue el mismo error". Debe llamarse ANTES de cargar los ajustes, que mezclan el .env en os.environ.
+    """
+    texto = _leer_env()
+    if texto is None:
+        return []
+    from dotenv import dotenv_values
+
+    valores = dotenv_values(stream=io.StringIO(texto))
+    return [n for n in VARIABLES_DEL_PROYECTO if valores.get(n) and os.environ.get(n) and valores[n] != os.environ[n]]
+
+
+def _repetidas_en_env():
+    """Variables que aparecen más de una vez en backend/.env: gana la ÚLTIMA, que suele ser una vieja olvidada."""
+    nombres = re.findall(r"^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=", _leer_env() or "", re.MULTILINE)
+    return [n for n in VARIABLES_DEL_PROYECTO if nombres.count(n) > 1]
+
+
+def _avisos_de_origen():
+    for nombre in _conflictos_con_el_entorno():
+        aviso(
+            f"{nombre} existe TAMBIÉN en el entorno de Windows con otro valor: se usa ESA, no la de backend/.env "
+            "(ver docs/despliegue.md §10 para quitarla)"
+        )
+    for nombre in _repetidas_en_env():
+        aviso(f"{nombre} aparece varias veces en backend/.env: se usa la ÚLTIMA (borra las viejas)")
+
+
+def _final_de_la_clave_de_api():
+    """Muestra SOLO los 4 últimos dígitos de la clave de API en uso, para reconocerla en la lista de la consola."""
+    try:
+        import cloudinary
+
+        clave = str(cloudinary.config().api_key or "")
+    except Exception:  # noqa: BLE001 - una URL mal formada ya se explicó en la comprobación anterior
+        return
+    if clave.isdigit() and len(clave) >= 8:
+        info(
+            f"la clave de API de Cloudinary en uso termina en ...{clave[-4:]}: debe ser la de la clave ACTIVA "
+            "que ves en Settings → API Keys"
+        )
 
 
 def _variables():
@@ -160,6 +224,7 @@ def _estado_http(url):
 
 
 def verificar_local(con_subida):
+    _avisos_de_origen()  # ANTES de cargar los ajustes: estos mezclan el .env en os.environ
     if not _iniciar_django():
         return 1
     from api import servicios
@@ -169,6 +234,8 @@ def verificar_local(con_subida):
     todo_ok &= ok(f"Neon: {bd['detalle']}") if bd["ok"] else fallo(f"Neon: {bd['detalle']}")
     cl = servicios.comprobar_cloudinary()
     todo_ok &= ok(f"Cloudinary: {cl['detalle']}") if cl["ok"] else fallo(f"Cloudinary: {cl['detalle']}")
+    if not cl["ok"]:
+        _final_de_la_clave_de_api()
     if con_subida:
         if cl["ok"]:
             todo_ok &= _subida_privada()
