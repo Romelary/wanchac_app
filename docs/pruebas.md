@@ -15,6 +15,15 @@
 ./gradlew assembleDebug assembleDebugAndroidTest ktlintCheck detekt testDebugUnitTest
 ```
 
+Backend (Django, carpeta `backend/`; ver [`despliegue.md`](./despliegue.md) §3 para crear el entorno virtual):
+
+```powershell
+cd backend
+.\.venv\Scripts\python.exe manage.py test
+```
+
+No usan red ni claves, y **nunca leen tu `.env` ni tocan la base real** (`manage.py test` usa `settings_test.py`: SQLite en memoria).
+
 ## Notas técnicas de testing (para no repetir diagnósticos)
 
 ### DataStore + JVM unit test + Windows → usar Robolectric
@@ -213,6 +222,24 @@ Robolectric puede simular el tamaño de ventana (`@Config(qualifiers = ...)`) y 
 **Verificación manual del seguro de publicación** (no automatizada; se ejecutó el 2026-09-18): `./gradlew verificarSinUbicacionSimulada -PubicacionSimulada=true` **falla** con el mensaje *"'ubicacionSimulada' está activa: es un modo de PRUEBA…"*; sin la propiedad **pasa**; y `assembleRelease --dry-run` muestra que depende de `verificarCorreoContacto` **y** `verificarSinUbicacionSimulada`. Además `release` fija `UBICACION_SIMULADA = false`, así que el modo no puede activarse en publicación ni siquiera saltándose el seguro.
 
 **Lo que NO cubre**: que la variante de prueba instalada use de hecho la ubicación simulada al guardar en el dispositivo (se comprobó solo la versión instalada, `1.0-ubicacion-simulada`), ni nada del GPS real.
+
+## Backend — infraestructura (Fase 0, `backend/`)
+
+**67 pruebas** de Django (`python manage.py test`), sin red ni credenciales. Documentación: [`despliegue.md`](./despliegue.md), [ADR-0004](./adr/0004-backend-django-sin-geodjango.md).
+
+| Archivo | Casos | Qué verifica | Requisito / motivo |
+|---|---|---|---|
+| `test_health.py` (8) | `/health` responde 200 **sin tocar la base** (`SimpleTestCase` prohíbe consultas: si tocara la base, fallaría) y solo acepta GET · `/health/servicios`: sin token 401, token incorrecto 401, **token en la URL no vale**, sin token configurado el endpoint **no existe** (404), todo bien 200, un servicio caído 503 y lo nombra | Que el pinger no despierte Neon; que el diagnóstico no quede abierto por olvido | `diseno.md` §4.1 (riesgo de cold start, indicador de sincronización) |
+| `test_servicios.py` (10) | PostGIS operativo → OK con versión · sin PostGIS → falla y dice `CREATE EXTENSION postgis` · `geography` que no mide en metros → falla · **el mensaje de una excepción de la base o de Cloudinary nunca aparece en la respuesta** (host, usuario y "contraseña" de prueba no se filtran) · motor que no es PostgreSQL → falla · Cloudinary sin credenciales no llama a la red · el resultado global es OK solo si todos lo son | Que el diagnóstico sea seguro de pegar en un chat y detecte los fallos reales de una cuenta recién creada | RF-02/CORR-007 (PostGIS), privacidad |
+| `test_configuracion.py` (16) | Sin `SECRET_KEY` o sin `DATABASE_URL` en producción **no arranca** (en vez de usar SQLite, que perdería los datos) · producción completa arranca con `DEBUG` apagado · **TLS obligatorio aunque la URL no lo pida** · la cadena tal como la genera Neon (con `channel_binding`) conserva sus parámetros · **límite de conexión de 15 s** (y una URL puede fijar el suyo) · `DEBUG` apagado por defecto · en desarrollo sin nada usa SQLite · una base local no exige TLS · el host de Render se permite solo · **coherencia de archivos**: toda variable que lee `settings.py` está en `.env.example`; `.env.example` no lleva secretos reales; `render.yaml` declara los secretos **sin valor** (`sync: false`), genera la `SECRET_KEY` y no activa `DEBUG`; `backend/.env` está ignorado por git (`git check-ignore`) | Que un despliegue mal configurado falle fuerte y que nada sensible se versione | Seguridad, ADR-0004 #4/#7 |
+| `test_entorno.py` (6) | Lee un `.env` normal · **tolera el BOM de UTF-8** (lo garantiza python-dotenv; la prueba avisa si una versión futura dejara de hacerlo) · un `.env` en **UTF-16** da un error claro en español · **no pisa** las variables ya definidas (en Render manda el panel) · archivo inexistente sin error · valores con y sin comillas | El error más probable de un usuario de Windows al crear su `.env` | Usabilidad de la configuración |
+| `test_verificador.py` (27) | El PNG de 1×1 px de prueba es **válido** (firma, CRC de cada trozo, dimensiones, datos) · modo remoto: todo bien → 0, **nunca imprime el token** (3 escenarios), servicio caído → 1 y lo nombra, token rechazado / endpoint inexistente / `.env` mal codificado → mensaje claro, si `/health` no responde **no se envía el token**, avisa del arranque en frío, sin `https://` **no envía nada**, sin token local no consulta · `_pedir` (error HTTP, sin conexión, cuerpo que no es JSON) · **subida privada** con Cloudinary simulado: todo correcto; una URL pública que sirve la foto es **FALLO**; un recurso que no quedó `authenticated` es FALLO; una URL firmada que no sirve es FALLO; el recurso de prueba **se borra siempre**, incluso si una comprobación falla; no poder borrarlo pide borrarlo a mano; un rechazo de subida no filtra el mensaje · modo local: todo correcto devuelve 0 y **no imprime valores** (contraseña, token, `cloudinary://`, host), variable vacía / sin `.env` / base caída → FALLO, cadena *pooled* solo avisa, `--subida` solo si se pide y Cloudinary responde, y su fallo hace fallar el resultado global | Que el script que el usuario ejecutará con sus claves reales decida bien, no filtre nada y no deje basura en su cuenta | Privacidad (Anexo 9), seguridad |
+
+**Pruebas de mutación** (hechas a mano con un script; no forman parte de la suite): se rompió el código a propósito **37 veces** y se comprobó que alguna prueba fallaba — `/health` que consulta la base, token incorrecto aceptado, token en la URL, endpoint abierto sin token, 503 convertido en 200, mensajes de excepción filtrados (base y Cloudinary), PostGIS ausente dado por bueno, SQLite en producción, clave por defecto, TLS opcional, `DEBUG` encendido, límite de conexión ausente, `render.yaml` con un valor secreto o con `DEBUG`, contraseña real en `.env.example`, variable nueva sin documentar, recurso de prueba que no se borra, foto pública dada por privada, subida como pública, token impreso o enviado por la URL, dirección `http`, variable vacía dada por definida, `.env` UTF-16 sin explicar, `.env` que pisa el panel, CRC del PNG roto… **2 no se detectaron al principio y sus pruebas eran débiles**: (1) *TLS obligatorio*: la URL de prueba ya traía `sslmode=require`, así que la prueba no medía la configuración → se usa ahora una URL sin él; (2) *ignorar el resultado de la subida privada*: el simulado siempre devolvía "bien" → se añadió el caso en que falla. Tras reforzarlas, las 37 se detectan. Un test que no puede fallar no prueba nada.
+
+**Comprobación de extremo a extremo** (una sola vez, no automatizada): la aplicación WSGI real (`wanchaq_limpio.wsgi.application`, la que carga gunicorn) servida con `wsgiref` y consultada por HTTP: `/health` 200; `/health/servicios` sin token 401, con token y una base inalcanzable **503 a los ~16 s, sin filtrar la cadena de conexión**; ruta inexistente 404. Esta comprobación **encontró un fallo real** (una base inalcanzable colgaba la petición indefinidamente) que ninguna prueba unitaria había detectado, y por eso existe `connect_timeout`.
+
+**Lo que NO cubre**: nada contra **Neon, Cloudinary o Render reales** (el asistente no tiene cuentas ni credenciales, por diseño): eso lo comprueba el usuario con `verificar_servicios.py` (`despliegue.md` §6–7). Tampoco el SQL propio de PostGIS (las pruebas corren sobre SQLite; la Fase 1 necesitará una prueba de integración contra una rama de desarrollo de Neon), ni el comando `gunicorn` (no corre en Windows), ni que la URL firmada de Cloudinary sea aceptada por el servicio (su formato sí se comprobó localmente con credenciales falsas).
 
 ---
 

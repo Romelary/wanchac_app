@@ -240,12 +240,24 @@ El cliente Android no puede completar los Módulos 4 y 5 sin estos endpoints. No
 |---|---|---|
 | `POST /reportes` | Módulo 4 | Recibe GeoJSON, valida y persiste en PostgreSQL/PostGIS |
 | `GET /puntos-criticos?estado=confirmado` | Módulo 5 | Solo agrupaciones ya verificadas en campo |
-| `GET /health` | — | Usado por el pinger anti-cold-start (ver `diseno.md` §4.1), no lo consume el cliente Android |
-| Job periódico DBSCAN | — | Corre en el backend, no lo consume el cliente directamente |
+| `GET /health` | — | Usado por el pinger anti-cold-start (ver `diseno.md` §4.1), no lo consume el cliente Android. ✅ **Implementado y probado** (2026-09-18); no toca la base de datos |
+| `GET /health/servicios` | — | Diagnóstico con token (cabecera `X-Health-Token`): comprueba Neon+PostGIS y Cloudinary. ✅ **Implementado y probado** (2026-09-18) |
+| Job periódico DBSCAN | — | Se ejecuta en el backend/contra su base, no lo consume el cliente directamente. Propuesta (ADR-0004 #3): comando que se corre al cerrar la ventana de observación, fuera del servidor web |
 
 **Stack de despliegue objetivo** (confirmado 2026-09-17, ya usado en un prototipo anterior): Render (API Django, plan Free) + Neon (PostgreSQL/PostGIS, serverless) + Cloudinary (imágenes). Detalle y mitigación del cold-start de Render en `diseno.md` §4.1.
 
 **Estado del backend**: existió un prototipo previo con este mismo stack, usado solo como referencia de qué tecnologías funcionaron bien. **Decisión (2026-09-17): el backend se construye desde cero**, sin reutilizar ese código, aplicando directamente el diseño ya corregido (`diseno.md`, `correcciones-documento.md` — especialmente CORR-004, el esquema de `Punto_critico`).
+
+**Fases del backend** (actualizado 2026-09-18):
+
+| Fase | Contenido | Estado |
+|---|---|---|
+| 0. Infraestructura | Esqueleto Django, `/health`, `/health/servicios`, `render.yaml`, script `verificar_servicios.py`, guía [`despliegue.md`](./despliegue.md) | ✅ código y pruebas (67) el 2026-09-18 · ⏳ **falta que el usuario cree los proyectos, verifique y despliegue** |
+| 1. Recibir y guardar | Modelo `reporte` (PostGIS), `POST /reportes` idempotente, `DELETE` con lápida, foto privada en Cloudinary, validación en servidor | ⏳ |
+| 2. Agrupamiento | DBSCAN (ε 50 m, MinSamples 4), silueta y proporción de ruido (RF-05/RF-06), `Punto_critico` (CORR-004) | ⏳ |
+| 3. Mapa público | `GET /puntos-criticos?estado=confirmado` (Módulo 5) | ⏳ |
+
+Decisiones de la Fase 0 y alternativas descartadas: [ADR-0004](./adr/0004-backend-django-sin-geodjango.md).
 
 **Recomendación mientras tanto**: levantar un servidor mock (`json-server` o `MockWebServer` embebido) con la misma forma de respuesta, para no bloquear el desarrollo del cliente Android independientemente de en qué estado esté el backend real.
 
@@ -272,7 +284,7 @@ Al terminar cada módulo, antes de pasar al siguiente:
 | 1. Onboarding y consentimiento | ✅ Completado (2026-09-17) |
 | 2. Captura y almacenamiento offline-first | ✅ Completado (2026-09-17) |
 | 3. Clasificación IA on-device | 🔶 **3b integrada en la app (2026-09-18) con el modelo v1 provisional, sin ejecutar en dispositivo** (ADR-0003). 3a: **ejecutado en Colab el 2026-09-18** (modelo v1 provisional de **4 clases**, exactitud de prueba 0,89 sobre un dataset fácil; `escombros` manual). **Sin medir aún con fotos de calle ni "fuera de clase"**; 7 fotos de `organico` sin declarar; 3b (integración Android): bloqueada hasta tener el `.tflite` |
-| 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17); backend real sigue pendiente |
+| 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17); backend real sigue pendiente (esqueleto de la Fase 0 listo el 2026-09-18, falta desplegarlo y la Fase 1; además hay que subir los tiempos de espera de OkHttp, ver `progreso.md`) |
 | 5. Mapa público | ⏳ No iniciado (bloqueado por backend) |
 | 6. Mis reportes | ✅ Completado (2026-09-18) — con eliminación, ver ADR-0002 |
 | 7. Ajustes | ✅ Completado (2026-09-18) — idioma diferido (CORR-009); correo de contacto pendiente y bloquea la publicación |

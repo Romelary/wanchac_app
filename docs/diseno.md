@@ -133,9 +133,16 @@ flowchart TB
 
 | Componente | Servicio | Nota |
 |---|---|---|
-| API Django | Render (plan Free) | Web service sin costo. Se "duerme" tras ~15 min de inactividad (cold start de decenas de segundos). |
-| Base de datos | Neon (PostgreSQL + PostGIS, serverless) | Soporta la extensión PostGIS. Autosuspend propio, pero el resume es del orden de milisegundos/segundos, mucho más rápido que el cold start de Render. |
-| Almacenamiento de imágenes | Cloudinary (plan Free) | CDN + transformaciones de imagen; no tiene problema de cold start al no ser un servidor de aplicación. |
+| API Django | Render (plan Free) | Web service sin costo: **0,1 CPU y 512 MB**. Se "duerme" tras 15 min sin tráfico y tarda **≈ 1 min** en despertar (documentación de Render, verificada 2026-09-18). 750 h de instancia/mes por cuenta; disco efímero; sin SSH. |
+| Base de datos | Neon (PostgreSQL + PostGIS, serverless) | Soporta la extensión PostGIS. Free: 0,5 GB, 100 CU-h/mes; el cómputo se duerme a los 5 min, pero el despertar es de milisegundos/pocos segundos, mucho más rápido que el cold start de Render. |
+| Almacenamiento de imágenes | Cloudinary (plan Free) | CDN + transformaciones de imagen; no tiene problema de cold start al no ser un servidor de aplicación. 25 créditos/mes. Las fotos de los reportes se guardarán **privadas** (`type=authenticated`). |
+
+**Cómo se construyó y se configura** (2026-09-18): esqueleto en [`backend/`](../backend/) y [`render.yaml`](../render.yaml); decisiones y alternativas descartadas en [ADR-0004](./adr/0004-backend-django-sin-geodjango.md) (Django sin GeoDjango; PostGIS solo en la base); guía paso a paso, límites de cada plan y solución de problemas en [`despliegue.md`](./despliegue.md). Puntos de diseño relevantes:
+
+- La app **solo habla con el servidor**, nunca con Neon ni Cloudinary: no hay claves de servicios en el teléfono.
+- **`/health`** no toca la base de datos (lo pincha un monitor externo; si consultara Neon lo despertaría siempre y gastaría su cuota de cómputo). **`/health/servicios`** sí comprueba Neon (con PostGIS) y Cloudinary, exige un token en una cabecera y nunca devuelve mensajes de excepción: es la forma de verificar el servidor **desplegado**, porque el plan gratuito no da consola.
+- La conexión a la base tiene **límite de tiempo (15 s)**: se comprobó que sin él una base inalcanzable cuelga la petición indefinidamente.
+- **Un servidor que no puede guardar no debe arrancar**: sin `DATABASE_URL` (o sin `SECRET_KEY`) falla al iniciar, en vez de usar un SQLite que se borraría en cada reinicio de Render.
 
 **Riesgo metodológico a documentar**: el cold start de Render (plan Free) puede hacer que una sincronización falle o tarde justo en el momento en que se mide el indicador *"Reportes guardados y sincronizados según condición de red, ≥ 95% en cada condición"* (Anexo 2) — no porque el diseño offline-first de la app falle, sino porque la infraestructura gratuita estaba dormida. Para no contaminar esa métrica con un artefacto de hosting:
 
