@@ -13,13 +13,14 @@ from urllib.parse import urlparse
 
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
-from dotenv import load_dotenv
+
+from wanchaq_limpio.entorno import cargar_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Las pruebas de configuración necesitan un entorno "limpio" (sin lo que haya en tu .env): NO_CARGAR_DOTENV=1.
 if not os.environ.get("NO_CARGAR_DOTENV"):
-    load_dotenv(BASE_DIR / ".env")
+    cargar_dotenv(BASE_DIR / ".env")
 
 
 def _booleano(nombre, defecto=False):

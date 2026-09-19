@@ -48,7 +48,7 @@ class PngMinimoTest(SimpleTestCase):
         self.assertEqual(len(zlib.decompress(trozos[b"IDAT"])), 4)  # 1 byte de filtro + 3 de color
 
 
-@mock.patch("dotenv.load_dotenv")
+@mock.patch("wanchaq_limpio.entorno.cargar_dotenv")
 class RemotoTest(SimpleTestCase):
     def _verificar(self, respuestas, url="https://api.ejemplo.onrender.com", token=TOKEN):
         with mock.patch.dict("os.environ", {"HEALTH_TOKEN": token}), mock.patch.object(
@@ -96,6 +96,15 @@ class RemotoTest(SimpleTestCase):
     def test_avisa_del_arranque_en_frio(self, _):
         _, salida, _ = self._verificar([(200, {"estado": "ok"}, 58.0), (200, SERVICIOS_OK, 1.0)])
         self.assertIn("AVISO", salida)
+
+    def test_un_env_mal_codificado_se_explica_sin_traceback(self, cargar):
+        from django.core.exceptions import ImproperlyConfigured
+
+        cargar.side_effect = ImproperlyConfigured("backend/.env no está guardado como UTF-8")
+        codigo, salida, pedir = self._verificar([])
+        self.assertEqual(codigo, 1)
+        self.assertIn("UTF-8", salida)
+        self.assertEqual(pedir.call_count, 0)
 
     def test_sin_https_no_envia_nada(self, _):
         codigo, salida, pedir = self._verificar([], url="http://api.ejemplo.com")

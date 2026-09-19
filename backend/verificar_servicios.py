@@ -206,12 +206,14 @@ def verificar_remoto(base):
     if not _es_direccion_segura(base):
         return _resumen(fallo("la dirección debe empezar por https:// (el token no debe viajar sin cifrar)"))
     base = base.rstrip("/")
-    try:
-        from dotenv import load_dotenv
+    sys.path.insert(0, str(BACKEND))
+    from django.core.exceptions import ImproperlyConfigured
+    from wanchaq_limpio.entorno import cargar_dotenv
 
-        load_dotenv(BACKEND / ".env")
-    except ImportError:
-        pass
+    try:
+        cargar_dotenv(BACKEND / ".env")
+    except ImproperlyConfigured as exc:  # mensaje propio, sin secretos
+        return _resumen(fallo(str(exc)))
     codigo, _, segundos = _pedir(f"{base}/health")
     if codigo != 200:
         return _resumen(fallo(f"/health no respondió 200 (código {codigo}); ¿el despliegue terminó? Revisa los logs en Render"))

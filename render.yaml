@@ -7,9 +7,11 @@ services:
     name: wanchaq-limpio-api
     runtime: python
     plan: free
-    # DEBE ser la misma región (o la más cercana) que la de tu proyecto en Neon: cada consulta cruza esa distancia.
-    # Opciones de Render: oregon, ohio, virginia, frankfurt, singapore.
-    region: oregon
+    # DEBE coincidir con la región de tu proyecto en Neon (cada consulta cruza esa distancia): virginia <-> AWS us-east-1
+    # (N. Virginia), ohio <-> us-east-2. Es la más cercana a Perú entre las de Render. La región de Neon NO se puede
+    # cambiar después de crear el proyecto; ver docs/despliegue.md. Opciones de Render: oregon, ohio, virginia,
+    # frankfurt, singapore.
+    region: virginia
     # Solo se construye la carpeta backend/: los commits que solo tocan la app Android no redespliegan el servicio.
     rootDir: backend
     buildCommand: pip install -r requirements.txt

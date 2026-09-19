@@ -18,7 +18,8 @@ RAIZ = BACKEND.parent
 VARIABLES_DEL_PROYECTO = (
     "SECRET_KEY", "DEBUG", "DATABASE_URL", "CLOUDINARY_URL", "HEALTH_TOKEN", "ALLOWED_HOSTS", "RENDER_EXTERNAL_HOSTNAME",
 )
-POSTGRES = "postgresql://usuario:contrasena@ep-ejemplo.neon.tech/neondb?sslmode=require"
+# Con la misma forma que la cadena que genera la consola de Neon (documentación oficial, 2026-09-18).
+POSTGRES = "postgresql://usuario:contrasena@ep-ejemplo.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 
 
 def _evaluar_ajustes(expresion, **entorno):
@@ -57,6 +58,15 @@ class FalloRapidoTest(SimpleTestCase):
             "s.DATABASES['default']['OPTIONS'].get('sslmode')", SECRET_KEY="una-clave", DATABASE_URL=sin_tls
         )
         self.assertEqual(salida, "require")
+
+    def test_la_cadena_de_neon_conserva_sus_parametros_de_seguridad(self):
+        # La consola de Neon añade channel_binding=require: no debe perderse ni romper la conexión.
+        _, salida, _ = _evaluar_ajustes(
+            "sorted(s.DATABASES['default']['OPTIONS'].items())", SECRET_KEY="una-clave", DATABASE_URL=POSTGRES
+        )
+        self.assertEqual(
+            salida, "[('channel_binding', 'require'), ('connect_timeout', 15), ('sslmode', 'require')]"
+        )
 
     def test_la_conexion_a_la_base_tiene_limite_de_tiempo(self):
         # Sin límite, una base que no contesta cuelga la petición hasta que gunicorn mata el proceso (ver settings.py).
