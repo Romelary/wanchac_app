@@ -2,7 +2,7 @@
 
 > Lista de tareas para ver de un vistazo **qué está hecho y qué falta**. Es una **vista**: el detalle, las decisiones y la evidencia de cada punto viven en [`progreso.md`](./progreso.md) (registro por sesiones y pendientes), [`plan.md`](./plan.md) (módulos), [`pruebas.md`](./pruebas.md), [`despliegue.md`](./despliegue.md) y los ADR. Se actualiza al cierre de cada sesión, junto con `progreso.md`.
 >
-> **Corte: 2026-09-18 (Sesión 23).** Fechas según el reloj del PC (ver la tarea F11: está en UTC-8, no en hora de Perú).
+> **Corte: 2026-09-19 (Sesión 24).** Fechas según el reloj del PC (ver la tarea F11: está en UTC-8, no en hora de Perú).
 
 **Leyenda.** Quién: *Usuario* · *Claude* · *Asesor* (decisión que hay que consultar). Prioridad: 🔴 bloquea otras tareas o la ventana de observación · 🟡 importante · ⚪ pulido u opcional. `[x]` hecho · `[ ]` pendiente. Una casilla marcada con *(dicho por el usuario)* no tiene evidencia que yo haya visto.
 
@@ -11,15 +11,15 @@
 <!-- RESUMEN:INICIO -->
 | Área | Hechas | Total | Avance |
 |---|---:|---:|---|
-| **A.** Infraestructura y backend | 7 | 18 | `████░░░░░░` 39 % |
-| **B.** App Android | 9 | 21 | `████░░░░░░` 43 % |
+| **A.** Infraestructura y backend | 7 | 19 | `████░░░░░░` 37 % |
+| **B.** App Android | 13 | 22 | `██████░░░░` 59 % |
 | **C.** Modelo de IA | 4 | 9 | `████░░░░░░` 44 % |
-| **D.** Pruebas en dispositivo y calidad | 3 | 10 | `███░░░░░░░` 30 % |
+| **D.** Pruebas en dispositivo y calidad | 3 | 11 | `███░░░░░░░` 27 % |
 | **E.** Publicación en Play Store | 1 | 9 | `█░░░░░░░░░` 11 % |
-| **F.** Asesor y documento de tesis | 0 | 12 | `░░░░░░░░░░` 0 % |
-| **Total** | **24** | **79** | `███░░░░░░░` **30 %** |
+| **F.** Asesor y documento de tesis | 1 | 13 | `█░░░░░░░░░` 8 % |
+| **Total** | **29** | **83** | `███░░░░░░░` **35 %** |
 
-**Pendientes: 55**, de las cuales **15 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 29** · **Claude 22** · **Asesor 15**.
+**Pendientes: 54**, de las cuales **14 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 31** · **Claude 19** · **Asesor 15**.
 <!-- RESUMEN:FIN -->
 
 > Es un **conteo de tareas, no de esfuerzo**: una tarea como "Fase 2 (DBSCAN)" pesa mucho más que "quitar un aviso". Sirve para ver el rumbo, no para medir horas.
@@ -30,12 +30,12 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 
 1. **A8 + A9** — cerrar Render y la seguridad de Cloudinary (falta la evidencia de Render y confirmar la rotación de la clave).
 2. **A10** — desplegar la Fase 1 y ejecutar `--reporte-de-prueba`: es la primera vez que la API real guarda un reporte.
-3. **B10 + B11** — que la app apunte a Render y aguante su arranque en frío (~1 min).
+3. **A19** — configurar en `local.properties` la dirección del servidor (`baseUrl`) y la clave de Google Maps (`MAPS_API_KEY`): la app **ya** apunta a donde se le diga y aguanta el arranque en frío de Render (B10 y B11 hechos el 2026-09-19).
 4. **D9** — primer reporte real de punta a punta: teléfono → Render → Neon.
 5. **D5** — GPS real en exteriores dentro de Wanchaq (hoy solo se probó con ubicación simulada).
 6. **C5 → C7** — fotos de calle, medir el modelo y fijar el umbral (hoy es provisional: 0,70).
 7. **F2** — hablar del cronograma con el asesor **antes** de que empiece la ventana.
-8. **A14 + A18 + B14** — agrupamiento, cómo se *confirma* un foco y el mapa: sin ellos no se pueden medir las dimensiones de la Variable 2.
+8. **A14 + A15 + A18** — agrupamiento, el endpoint del mapa y cómo se *confirma* un foco (la pantalla del mapa ya existe, B14, pero se verá **vacía** sin ellos): sin esto no se pueden medir las dimensiones de la Variable 2.
 9. **E1 a E7** — correo de contacto, cuenta de Play, política de privacidad y **prueba cerrada de 14 días** (empezarla con antelación).
 
 ## A. Infraestructura y backend
@@ -58,6 +58,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **A16** Columna `geography` + índice GiST y **prueba de integración contra PostgreSQL real** (rama de desarrollo de Neon), al llegar la primera consulta espacial — *Claude* · ⚪ (Fase 2/3)
 - [ ] **A17** Rama de desarrollo en Neon para no probar contra producción cuando haya datos reales — *Usuario* · ⚪
 - [ ] **A18** **Hueco de planificación: cómo se confirma un foco (RF-07 / Instrumento 2).** El diseño dice que el observador registra `estado_verificacion` y el mapa solo muestra los `confirmado`, pero **no hay ninguna tarea, módulo ni fase** que lo construya (¿script de importación de la ficha de campo, formulario web, panel mínimo?). Sin esto el Módulo 5 quedaría vacío — *Asesor + Claude* · 🔴 · [diseno.md](./diseno.md) (RF-07 y secuencia del observador)
+- [ ] **A19** **Clave de Google Maps y dirección del servidor**: en Google Cloud, un proyecto con **cuenta de facturación**, la API *Maps SDK for Android* y una clave **restringida** (paquete `com.wanchaqlimpio.app` + huella SHA-1 + solo esa API), con **presupuesto y alertas**; luego `MAPS_API_KEY` y `baseUrl` en `local.properties` (**nunca** al chat ni a git) — *Usuario* · 🔴 sin ella el mapa sale gris · [despliegue-mapa.md](./despliegue-mapa.md)
 
 ## B. App Android
 
@@ -70,11 +71,11 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [x] **B7** Módulo 7 — Ajustes y "borrar todos mis datos" — *Claude*
 - [x] **B8** Adaptación a pantallas grandes (ancho de lectura, barras del sistema, rotación), verificada en la Galaxy Tab S9+ — *Claude + Usuario*
 - [x] **B9** Modo de ubicación simulada, solo depuración, con doble seguro contra `release` — *Claude*
-- [ ] **B10** `BASE_URL` configurable por variante de compilación (hoy fija en `http://10.0.2.2:8000/`, el emulador) — *Claude* · 🔴 sin esto la app no habla con Render
-- [ ] **B11** Tiempos de espera de OkHttp (~60 s; por defecto 10 s y el arranque en frío de Render tarda ~1 min) — *Claude* · 🔴
+- [x] **B10** `BASE_URL` configurable: `baseUrl` en `local.properties` o `-PbaseUrl=…`; en depuración, si falta, la del emulador; **`release` falla** si no es `https` — *Claude*
+- [x] **B11** Tiempos de espera de OkHttp de 30/90/60/150 s (conexión/lectura/escritura/llamada) para aguantar el arranque en frío de Render (~1 min) — *Claude*
 - [ ] **B12** `SyncWorker`: tratar 400/413/415/422 (y la foto faltante) como **rechazo definitivo** en vez de reintentar para siempre — *Claude* · 🟡
 - [ ] **B13** Reducir la foto antes de subirla (p. ej. lado largo 1 600 px, JPEG 85): menos datos móviles y menos cuota de Cloudinary — *Claude* · ⚪
-- [ ] **B14** Módulo 5 — **Mapa público** de puntos críticos confirmados (Google Maps SDK o Mapbox) — *Claude* · 🟡 · bloqueado por A14, A15, A18 y F12
+- [x] **B14** Módulo 5 — **mapa público en la app con Google Maps** ([ADR-0005](./adr/0005-mapa-publico-dentro-de-la-app-con-google-maps.md)): destino "Mapa", cliente de `GET /puntos-criticos`, estados cargando / sin focos / con focos / error, y pruebas en la JVM — *Claude* · **sin datos reales** (faltan A14, A15 y A18) **y sin ver en un dispositivo** (D11)
 - [ ] **B15** Íconos definitivos: navegación (hoy provisionales del asistente) e ícono de la app — *Claude* · ⚪
 - [ ] **B16** Revisión de **accesibilidad**: contraste, tamaños táctiles, lector de pantalla — *Claude* · 🟡
 - [ ] **B17** Estados de error y vacío en todas las pantallas — *Claude* · 🟡
@@ -82,6 +83,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **B19** Miniatura de la foto en "Mis reportes" (solo si las pruebas de usabilidad lo piden) — *Claude* · ⚪
 - [ ] **B20** Cambio de idioma (diferido, CORR-009; el quechua exigiría traducción revisada por un hablante) — *Asesor* · ⚪
 - [ ] **B21** Decidir `targetSdk` 36 (hoy) frente a 34 (el documento) y documentar la razón — *Asesor* · 🟡
+- [x] **B22** Manifiesto: **quitar el inicializador automático de WorkManager**. `WanchaqLimpioApp` entrega la fábrica de Hilt, pero sin esto WorkManager arrancaba con la configuración por defecto y la ignoraba: `SyncWorker` y `EliminarReporteWorker` (`@HiltWorker`) **no se habrían podido crear en un dispositivo real**. Fallo del Módulo 4 hallado por el lint de `release` — *Claude* · **sin verificar en un dispositivo** (escenario C10, tarea D9) · [pruebas.md](./pruebas.md)
 
 ## C. Modelo de IA (clasificador de residuos)
 
@@ -98,22 +100,23 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 ## D. Pruebas en dispositivo y calidad
 
 - [x] **D1** Instalar en la Galaxy Tab S9+ y comprobar la adaptación de pantalla (botón de 592 dp centrado en horizontal) — *Usuario + Claude*
-- [x] **D2** Suite de la app en la JVM: 128 pruebas unitarias en verde, ktlint y detekt limpios — *Claude*
+- [x] **D2** Suite de la app en la JVM: 174 pruebas unitarias en verde (44 son del mapa, con 30 mutaciones deliberadas: 29 detectadas y 1 equivalente; 2 de la inicialización de WorkManager), ktlint y detekt limpios — *Claude* · [pruebas.md](./pruebas.md)
 - [x] **D3** Suite del backend: 202 pruebas y 141 mutaciones deliberadas — *Claude* · [pruebas.md](./pruebas.md)
 - [ ] **D4** **Protocolo completo en la tablet (32 escenarios A–F)**: solo se verificó el consentimiento en horizontal — *Usuario* · 🟡 · [prueba-en-dispositivo.md](./prueba-en-dispositivo.md)
 - [ ] **D5** **GPS real en exteriores dentro de Wanchaq** (escenario C8): variante normal, cielo despejado, ~30 s; si aún rechaza por precisión, hacer que la app espere una lectura ≤ 15 m — *Usuario* · 🔴
 - [ ] **D6** Probar en un **teléfono real**, no solo la tablet — *Usuario* · 🟡
 - [ ] **D7** Ejecutar `./gradlew connectedDebugAndroidTest` (las pruebas de UI y de referencia del clasificador compilan pero nunca se ejecutaron) — *Usuario + Claude* · 🟡
 - [ ] **D8** Medir la latencia del clasificador y comprobar que las librerías nativas cargan en el dispositivo — *Usuario* · 🟡
-- [ ] **D9** **Primer reporte real de punta a punta**: teléfono → Render → Neon, visible en la base — *Usuario + Claude* · 🔴 · necesita A10, B10 y B11
+- [ ] **D9** **Primer reporte real de punta a punta**: teléfono → Render → Neon, visible en la base (escenario **C10** del protocolo; es también la **primera vez** que WorkManager crea un trabajo de sincronización en un dispositivo, B22) — *Usuario + Claude* · 🔴 · necesita A10 y `baseUrl` (A19); B10 y B11 ya están hechos
 - [ ] **D10** Ronda de prueba piloto interna antes de aplicar el Instrumento 1 (SUS, 38 participantes) — *Usuario* · 🟡
+- [ ] **D11** **Ver el mapa en un dispositivo** con la clave real (escenarios G1 a G8 del protocolo): que no salga gris, el encuadre en Wanchaq, el límite de desplazamiento, el error sin red y el marcador de un foco de prueba — *Usuario* · 🟡 · necesita A19 · [prueba-en-dispositivo.md](./prueba-en-dispositivo.md)
 
 ## E. Publicación en Play Store (Módulo 9, al final)
 
 - [x] **E0** `applicationId` definitivo fijado: `com.wanchaqlimpio.app` (no se puede cambiar tras publicar) — *Claude*
 - [ ] **E1** **Correo de contacto público** en `gradle.properties` (`contactEmail=`): la compilación `release` falla sin él — *Usuario* · 🔴
 - [ ] **E2** Cuenta de desarrollador de Google Play (pago único de US$25) — *Usuario* · 🟡
-- [ ] **E3** Keystore de firma y Play App Signing (la clave **nunca** a git) — *Usuario + Claude* · 🟡
+- [ ] **E3** Keystore de firma y Play App Signing (la clave **nunca** a git). **Además, añadir su huella SHA-1 a la restricción de la clave de Google Maps**: sin ella el mapa funciona en depuración pero sale gris en la app publicada — *Usuario + Claude* · 🟡
 - [ ] **E4** Política de privacidad pública, derivada del texto validado del Anexo 9 — *Claude + Asesor* · 🟡
 - [ ] **E5** Formulario *Data Safety* (ubicación y fotos; eliminación ya cubierta por RNF-05) y clasificación de contenido — *Usuario* · 🟡
 - [ ] **E6** Recursos de la ficha: ícono, capturas, descripciones corta y larga — *Usuario + Claude* · ⚪
@@ -132,5 +135,6 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **F8** Citar **TrashNet** (Thung y Yang, 2016) y declarar la procedencia y licencia de los datos de entrenamiento — *Usuario* · 🟡
 - [ ] **F9** Declarar en *Limitaciones* los límites de la infraestructura gratuita y suavizar **RNF-02** (99 % de disponibilidad, que esa infraestructura no puede sostener) — *Usuario + Asesor* · 🟡 · [despliegue.md §2](./despliegue.md)
 - [ ] **F10** Declarar en la metodología el **pinger** que evita el arranque en frío (riesgo sobre el indicador de sincronización) — *Usuario* · 🟡 · [diseno.md §4.1](./diseno.md)
-- [ ] **F12** Decidir **dónde vive el mapa público**: el plan lo pone dentro de la app (Google Maps o Mapbox) pero la tesis menciona un panel web con React/Leaflet; opciones, requisitos y recomendación en [plan.md](./plan.md) (Módulo 5) — *Asesor + Usuario* · 🟡
+- [x] **F12** Decidido **dónde vive el mapa público**: **en la app, con Google Maps** (decisión del usuario, 2026-09-19; ya tiene cuenta de Google Cloud) — [ADR-0005](./adr/0005-mapa-publico-dentro-de-la-app-con-google-maps.md). Se recomendó la opción web con Leaflet; la elección es del usuario
+- [ ] **F13** **Avisar al asesor** de que el mapa público quedó en la app con Google Maps: la tesis menciona un panel web con React/Leaflet que no se hará — *Usuario + Asesor* · 🟡
 - [ ] **F11** Poner la **zona horaria del PC en hora de Perú (UTC-5)**: hoy está en UTC-8 y las fechas de los commits (evidencia de tesis) salen 3 h atrasadas respecto a Perú — *Usuario* · ⚪

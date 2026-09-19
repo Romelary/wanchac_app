@@ -194,6 +194,28 @@ La app trata **cualquier respuesta no exitosa como "reintentar"** (`SyncWorker`)
 
 **Pendiente en el cliente**: hoy `SyncWorker` reintenta **para siempre** cualquier respuesta no exitosa, incluidos los errores permanentes (400, 413, 415, 422). Hay que hacer que trate esos códigos como rechazo definitivo (ver `progreso.md`).
 
+#### Contrato del mapa público: `GET /puntos-criticos` (definido por el cliente el 2026-09-19; **el servidor aún no lo implementa**)
+
+Como con `POST /reportes`, el cliente (Módulo 5, [ADR-0005](./adr/0005-mapa-publico-dentro-de-la-app-con-google-maps.md)) lo define **antes** de que exista el backend, para que este se construya contra un contrato explícito. Las pruebas del cliente lo simulan con `MockWebServer`.
+
+| Aspecto | Contrato |
+|---|---|
+| Petición | `GET /puntos-criticos`, **sin parámetros ni identificador de dispositivo**: los focos son públicos. `plan.md` decía `?estado=confirmado`; el servidor puede admitir ese único valor por compatibilidad (cualquier otro, 400), pero **solo devuelve focos confirmados aunque se pida otra cosa** (CORR-003) |
+| Respuesta 200 | GeoJSON `FeatureCollection` (RFC 7946, RNF-06). **Una colección vacía (`features: []`) es válida y es el estado normal** mientras ningún foco esté confirmado en campo |
+| Cada `Feature` | `geometry`: `Point` con `[longitud, latitud]` = centroide del foco. `properties`: `id` (entero), `numReportes` (entero), `categoriaPredominante` (texto, una de las 6 categorías en mayúsculas; opcional), `fechaDeteccionEpochMillis` (entero) |
+| Lo que **no** debe llevar | `idAnonimo`, `idLocal`, fotos ni reportes individuales; tampoco las métricas internas de calidad del agrupamiento (`coeficiente_silueta`, `proporcion_ruido`) |
+| Tolerancia del cliente | Descarta un foco mal formado (sin id, sin geometría `Point`, coordenadas imposibles) **sin tumbar la lista**; una categoría desconocida deja el foco sin categoría; ignora campos que no conoce |
+| Errores | Cualquier no-2xx = "el servidor tuvo un problema" (pantalla con *Reintentar*); sin respuesta = "sin conexión"; 2xx con un cuerpo que no es JSON, vacío, cortado o de otra forma (p. ej. un `id` como texto) = "respuesta inválida" (**no** se descarta solo ese foco: un tipo equivocado es una violación del contrato, no un dato raro); 2xx sin cuerpo (204) tampoco es un mapa vacío |
+| Caché sugerida | `Cache-Control: public, max-age=60` (opcional; la app pide la lista cada vez que se abre la pestaña) |
+
+```json
+{"type": "FeatureCollection", "features": [
+  {"type": "Feature",
+   "geometry": {"type": "Point", "coordinates": [-71.9475, -13.53]},
+   "properties": {"id": 12, "numReportes": 7, "categoriaPredominante": "PLASTICO", "fechaDeteccionEpochMillis": 1790000000000}}
+]}
+```
+
 **Política pendiente**: qué ocurre con un `Punto_critico` cuando se da de baja un reporte que lo integraba (recalcular la agrupación, marcarlo, o congelar tras la ventana de observación). A definir con el asesor; ver ADR-0002.
 
 ## 5. Arquitectura interna del cliente Android (MVVM + Repository, offline-first)
@@ -387,7 +409,7 @@ sequenceDiagram
 | Pantalla | Contenido | Cambia respecto al Cap. IV porque... |
 |---|---|---|
 | **Onboarding + Consentimiento** | Texto del Anexo 9, checkbox de aceptación, genera `id_anonimo` local | Reemplaza a la pantalla de login (sin correo/contraseña) |
-| **Mapa** | Solo lectura. Muestra `Punto_critico` con `estado_verificacion = confirmado`. Sin edición | Ya no muestra reportes crudos individuales; evita exponer datos no verificados |
+| **Mapa** | Solo lectura, **dentro de la app con Google Maps** ([ADR-0005](./adr/0005-mapa-publico-dentro-de-la-app-con-google-maps.md)). Muestra `Punto_critico` con `estado_verificacion = confirmado` (contrato `GET /puntos-criticos` en §4.2). Sin edición | Ya no muestra reportes crudos individuales; evita exponer datos no verificados |
 | **Reportar foco** | Cámara (RF-08) → **paso de confirmación** con la foto, la categoría sugerida por la IA (RF-04) y las 6 categorías para corregirla → GPS automático con validación de precisión (RF-02) → guardado, con botón reintentar si se rechaza | Se mantiene del Cap. IV en lo esencial; el paso de confirmación es nuevo (antes la categoría se elegía *antes* de tomar la foto, sin poder ver la sugerencia). Si el modelo duda, propone «Mixto» y lo dice; si no está disponible, se elige a mano. No se muestra el porcentaje de confianza (falsa precisión) |
 | **Mis reportes** | Lista de reportes hechos desde este dispositivo (por `id_anonimo`), con opción de eliminar | Reemplaza el concepto de "perfil de cuenta"; implementa RNF-05 |
 | **Ajustes** *(implementado en el Módulo 7)* | Propósito de la app y versión; código anónimo del dispositivo (seleccionable, para citarlo al pedir acceso/rectificación/cancelación por correo); correo de contacto público con botón para escribir; **"Borrar todos mis datos"** (elimina reportes y fotos, solicita su baja en el backend y revoca el consentimiento; con confirmación explícita) | Se mantiene del Cap. IV sin el ítem "cerrar sesión" (ADR-0001) y **sin el "cambio de idioma"**, diferido por decisión del usuario (CORR-009). "Revocar consentimiento" y "borrar datos" se fusionan en una sola acción porque una sin la otra dejaría datos huérfanos (ADR-0002) |

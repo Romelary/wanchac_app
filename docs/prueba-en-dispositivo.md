@@ -80,6 +80,7 @@ Marca cada uno con **OK**, **FALLA** o **N/A** y anota lo observado en la secci�
 | C7 | Reportar fuera de Wanchaq / con GPS impreciso / dos veces el mismo lugar en < 30 min | Mensaje de rechazo claro y botón "Reintentar" (con la variante **normal**) |
 | C8 | **GPS real:** variante normal, **en exteriores dentro de Wanchaq** con cielo despejado; esperar unos 30 s con la cámara abierta y reportar | Se acepta (error ≤ 15 m). Anota los segundos que tardó y, si se rechaza, la precisión que dice el mensaje |
 | C9 | **Ubicación simulada:** variante de prueba, guardar dos reportes seguidos | Ambos se guardan (el segundo no es duplicado) y aparecen en "Mis reportes" |
+| C10 | **Sincronización real** (necesita `baseUrl` en `local.properties` apuntando a Render **con la Fase 1 desplegada**, y red): guardar un reporte con conexión y esperar hasta ≈ 2 min (Render puede estar despertando) | En "Mis reportes" pasa de "Pendiente de envío" a **"Enviado"** y el reporte aparece en la base de Neon. **Si se queda en "Pendiente de envío"**: mirar Logcat por `Could not create Worker` (señal de que WorkManager no usa la fábrica de Hilt: ver `pruebas.md`, «Inicialización de WorkManager») y por errores HTTP |
 
 ### D. Clasificador de IA (modelo v1 provisional)
 Ver la nota de la sección 4. Para cada foto anota: qué era, qué sugirió, qué categoría propuso la app y cuánto tardó.
@@ -107,6 +108,17 @@ Ver la nota de la sección 4. Para cada foto anota: qué era, qué sugirió, qu�
 | F2 | Girar la tablet mientras dice "Analizando la foto…" | No se pierde la foto ni se cierra la app |
 | F3 | En la confirmación, salir a otra app y volver | Sigue en la confirmación con la misma foto |
 | F4 | En la confirmación, **cerrar la app a la fuerza** y reabrirla | La app arranca normal; la foto sin confirmar se borra sola en el siguiente arranque (verificable con `adb shell run-as com.wanchaqlimpio.app ls files/reportes`) |
+### G. Mapa público (necesita la clave de Google Maps: ver [`despliegue-mapa.md`](./despliegue-mapa.md))
+| # | Qué hacer | Esperado |
+|---|---|---|
+| G1 | Tocar la pestaña **Mapa** (la primera de la barra) con la clave configurada | Se ve el **mapa de Wanchaq** con calles, **no un fondo gris**; controles de zoom visibles |
+| G2 | Sin ningún foco confirmado (lo normal hoy) | El mapa del distrito y una tarjeta "Aún no hay focos confirmados"; el botón **Actualizar** responde |
+| G3 | Sin `MAPS_API_KEY` en `local.properties`, en una compilación de depuración | Aviso **rojo** arriba diciendo que falta la clave; el resto de la app funciona |
+| G4 | Arrastrar y alejar el mapa hacia fuera del distrito | No deja irse a más de ≈ 1 km de Wanchaq ni alejar más allá del zoom mínimo |
+| G5 | Modo avión y tocar **Mapa** (o **Actualizar**) | "No se pudo conectar con el servidor…" con **Reintentar**; al volver la red, Reintentar carga |
+| G6 | Girar la tablet y usar pantalla dividida con el mapa abierto | El mapa y las tarjetas se adaptan; nada queda tras una barra del sistema; las tarjetas no se estiran de borde a borde |
+| G7 | Con un foco de prueba en el servidor (cuando exista `GET /puntos-criticos`; ver `avance.md` A15) | Aparece su marcador; al tocarlo muestra categoría, nº de reportes y fecha; el contador dice "1 foco confirmado" |
+| G8 | Abrir **Mapa** tras un rato sin usar la app (servidor dormido) | La primera petición puede tardar hasta ≈ 1 min (Render despierta) y **no** da error de tiempo agotado |
 
 ## 4. Lo que se espera que falle o haya que mirar (hipótesis antes de probar)
 
@@ -147,9 +159,11 @@ adb logcat -d -s ClasificadorResiduo ReporteScreen AlmacenFotos DecodificadorFot
 | C5 | ☐ | |
 | C6 | ☐ | |
 | C7 | ☐ | |
+| C8–C10 | ☐ | C10 necesita `baseUrl` (Render con la Fase 1 desplegada) |
 | D1–D5 | ☐ | |
 | E1–E4 | ☐ | |
 | F1–F4 | ☐ | |
+| G1–G8 | ☐ | requiere la clave de Google Maps |
 | `connectedDebugAndroidTest` | ☐ | pruebas ejecutadas: ___ · fallidas: ___ |
 
 ## 5b. Sesión 1 — 2026-09-18, Galaxy Tab S9+ (solo lo que se verificó)

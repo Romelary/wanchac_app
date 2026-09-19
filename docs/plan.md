@@ -190,7 +190,7 @@ flowchart TD
 - **Objetivo**: mostrar los `Punto_critico` con `estado_verificacion = confirmado`.
 - **Requisitos que satisface**: derivado de la corrección del punto 0 de `diseno.md` (visibilidad pública, no admin).
 - **Entregables**: pantalla de mapa (Google Maps SDK o Mapbox), consumo de `GET /puntos-criticos`, sin edición.
-- **Decisión pendiente (2026-09-18): dónde vive el mapa público.** El plan lo pone **dentro de la app**, pero la tesis menciona un **panel web con React/Leaflet** (`progreso.md`, Sesión 1). Son alcances distintos y hay que elegir antes de construir. Datos verificados el 2026-09-18:
+- **Decisión (tomada el 2026-09-19): dónde vive el mapa público.** El plan lo pone **dentro de la app**, pero la tesis menciona un **panel web con React/Leaflet** (`progreso.md`, Sesión 1). Son alcances distintos y hay que elegir antes de construir. Datos verificados el 2026-09-18:
 
   | Opción | Qué exige | Ventajas | Inconvenientes |
   |---|---|---|---|
@@ -199,8 +199,11 @@ flowchart TD
   | **C. Mapbox o MapLibre** | Cuenta y token (Mapbox) o un proveedor de teselas (MapLibre) | Estilos propios | No investigado a fondo: más configuración que A o B |
 
   **Recomendación (a consultar con el asesor)**: **B**, por costo cero, coherencia con la tesis y porque el requisito es *público y de solo lectura*. Cambiar el plan (que decía Google Maps o Mapbox) exigiría un ADR. Sea cual sea la opción, el mapa **necesita antes**: la Fase 2 del backend (agrupamiento → `Punto_critico`), **una forma de confirmar un foco en campo** (RF-07; hoy no hay ninguna tarea, ver `avance.md` A18) y `GET /puntos-criticos`. Además solo tendrá contenido tras semanas de reportes y verificación: **no hace falta para empezar la ventana de observación**.
+
+  **Decidido por el usuario (2026-09-19): opción A** — en la app, con Google Maps, porque ya tiene cuenta de Google Cloud. Registro, datos verificados y consecuencias en [ADR-0005](./adr/0005-mapa-publico-dentro-de-la-app-con-google-maps.md); cómo configurar la clave, en [`despliegue-mapa.md`](./despliegue-mapa.md). Queda **avisar al asesor** de que el panel web con Leaflet que menciona la tesis se sustituye por el mapa de la app.
+- **Estado del Módulo 5 (2026-09-19)**: ✅ **lado de la app implementado**: destino "Mapa" en la navegación, `MapaGoogle` (Maps Compose 7.0.0, encuadre y límites en Wanchaq, marcadores con categoría, nº de reportes y fecha), cliente de `GET /puntos-criticos`, estados cargando / sin focos / con focos / error con "Reintentar", y pruebas en la JVM. ⏳ **Falta**: la clave de Google Maps (la crea el usuario), el backend (Fase 2 agrupamiento, Fase 3 endpoint) y **una forma de confirmar un foco** (`avance.md` A18), y comprobar el dibujo real del mapa en un dispositivo (escenario G).
 - **Depende de**: Módulo 4 + endpoint de backend disponible.
-- **Pruebas**: UI test de carga de marcadores con respuesta simulada (MockWebServer).
+- **Pruebas**: hechas en la JVM (44, ver [`pruebas.md`](./pruebas.md), «Módulo 5»): mapper de la respuesta, repositorio contra un servidor de mentira (MockWebServer), `ViewModel`, contenido de la pantalla con Compose + Robolectric (el mapa de Google se sustituye por un texto), tiempos de espera del cliente HTTP y límite del distrito. **Lo que sí exige un dispositivo**: el dibujo real del mapa (escenarios G1 a G8 de `prueba-en-dispositivo.md`).
 
 ### Módulo 6 — Mis reportes
 
@@ -297,7 +300,7 @@ Al terminar cada módulo, antes de pasar al siguiente:
 | 2. Captura y almacenamiento offline-first | ✅ Completado (2026-09-17) |
 | 3. Clasificación IA on-device | 🔶 **3b integrada en la app (2026-09-18) con el modelo v1 provisional, sin ejecutar en dispositivo** (ADR-0003). 3a: **ejecutado en Colab el 2026-09-18** (modelo v1 provisional de **4 clases**, exactitud de prueba 0,89 sobre un dataset fácil; `escombros` manual). **Sin medir aún con fotos de calle ni "fuera de clase"**; 7 fotos de `organico` sin declarar; 3b (integración Android): bloqueada hasta tener el `.tflite` |
 | 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17). Backend: **Fase 1 lista (2026-09-18), falta desplegarla**. Pendiente en el cliente (ver `progreso.md`): `BASE_URL` configurable por variante de compilación, tiempos de espera de OkHttp (~60 s, por el arranque en frío de Render) y tratar 400/413/415/422 como rechazo definitivo en vez de reintentar para siempre |
-| 5. Mapa público | ⏳ No iniciado (bloqueado por backend) |
+| 5. Mapa público | 🔶 **Lado de la app listo (2026-09-19, ADR-0005)**: pantalla con Google Maps, cliente y pruebas en la JVM. Faltan la clave de Google Maps (usuario), el backend (Fases 2 y 3), cómo se confirma un foco (A18) y comprobarlo en un dispositivo |
 | 6. Mis reportes | ✅ Completado (2026-09-18) — con eliminación, ver ADR-0002 |
 | 7. Ajustes | ✅ Completado (2026-09-18) — idioma diferido (CORR-009); correo de contacto pendiente y bloquea la publicación |
 | 8. Pulido y QA final | 🔶 Iniciado (2026-09-18): adaptación a pantallas grandes, pruebas de adaptación y [protocolo de prueba en dispositivo](./prueba-en-dispositivo.md); **falta ejecutarlo en una tablet y un teléfono**, revisar accesibilidad (contraste, tamaños táctiles) y reemplazar los íconos provisionales de la navegación |
