@@ -2,7 +2,7 @@
 
 > Lista de tareas para ver de un vistazo **qué está hecho y qué falta**. Es una **vista**: el detalle, las decisiones y la evidencia de cada punto viven en [`progreso.md`](./progreso.md) (registro por sesiones y pendientes), [`plan.md`](./plan.md) (módulos), [`pruebas.md`](./pruebas.md), [`despliegue.md`](./despliegue.md) y los ADR. Se actualiza al cierre de cada sesión, junto con `progreso.md`.
 >
-> **Corte: 2026-09-19 (Sesión 24).** Fechas según el reloj del PC (ver la tarea F11: está en UTC-8, no en hora de Perú).
+> **Corte: 2026-09-19 (Sesión 25; el área G la añadió la Sesión 25-B, paralela a la 25).** Fechas según el reloj del PC (ver la tarea F11: está en UTC-8, no en hora de Perú).
 
 **Leyenda.** Quién: *Usuario* · *Claude* · *Asesor* (decisión que hay que consultar). Prioridad: 🔴 bloquea otras tareas o la ventana de observación · 🟡 importante · ⚪ pulido u opcional. `[x]` hecho · `[ ]` pendiente. Una casilla marcada con *(dicho por el usuario)* no tiene evidencia que yo haya visto.
 
@@ -12,14 +12,15 @@
 | Área | Hechas | Total | Avance |
 |---|---:|---:|---|
 | **A.** Infraestructura y backend | 8 | 20 | `████░░░░░░` 40 % |
-| **B.** App Android | 13 | 22 | `██████░░░░` 59 % |
+| **B.** App Android | 18 | 25 | `███████░░░` 72 % |
 | **C.** Modelo de IA | 4 | 9 | `████░░░░░░` 44 % |
-| **D.** Pruebas en dispositivo y calidad | 3 | 11 | `███░░░░░░░` 27 % |
+| **D.** Pruebas en dispositivo y calidad | 4 | 13 | `███░░░░░░░` 31 % |
 | **E.** Publicación en Play Store | 1 | 9 | `█░░░░░░░░░` 11 % |
 | **F.** Asesor y documento de tesis | 1 | 13 | `█░░░░░░░░░` 8 % |
-| **Total** | **30** | **84** | `████░░░░░░` **36 %** |
+| **G.** Confiabilidad de los instrumentos | 0 | 14 | `░░░░░░░░░░` 0 % |
+| **Total** | **36** | **103** | `███░░░░░░░` **35 %** |
 
-**Pendientes: 54**, de las cuales **14 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 31** · **Claude 19** · **Asesor 15**.
+**Pendientes: 67**, de las cuales **18 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 42** · **Claude 24** · **Asesor 18**.
 <!-- RESUMEN:FIN -->
 
 > Es un **conteo de tareas, no de esfuerzo**: una tarea como "Fase 2 (DBSCAN)" pesa mucho más que "quitar un aviso". Sirve para ver el rumbo, no para medir horas.
@@ -37,6 +38,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 7. **F2** — hablar del cronograma con el asesor **antes** de que empiece la ventana.
 8. **A14 + A15 + A18** — agrupamiento, el endpoint del mapa y cómo se *confirma* un foco (la pantalla del mapa ya existe, B14, pero se verá **vacía** sin ellos): sin esto no se pueden medir las dimensiones de la Variable 2.
 9. **E1 a E7** — correo de contacto, cuenta de Play, política de privacidad y **prueba cerrada de 14 días** (empezarla con antelación).
+10. **G1 + G2 + G9** — decidir y congelar el plan de confiabilidad, retirar de la tesis la «muestra piloto simulada» y decidir si la app guarda la precisión declarada **antes** de que existan reportes reales: sin eso la confiabilidad de los instrumentos no se puede medir ni reportar ([plan](./plan-confiabilidad-instrumentos.md)).
 
 ## A. Infraestructura y backend
 
@@ -74,10 +76,10 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [x] **B9** Modo de ubicación simulada, solo depuración, con doble seguro contra `release` — *Claude*
 - [x] **B10** `BASE_URL` configurable: `baseUrl` en `local.properties` o `-PbaseUrl=…`; en depuración, si falta, la del emulador; **`release` falla** si no es `https` — *Claude*
 - [x] **B11** Tiempos de espera de OkHttp de 30/90/60/150 s (conexión/lectura/escritura/llamada) para aguantar el arranque en frío de Render (~1 min) — *Claude*
-- [ ] **B12** `SyncWorker`: tratar 400/413/415/422 (y la foto faltante) como **rechazo definitivo** en vez de reintentar para siempre — *Claude* · 🟡
-- [ ] **B13** Reducir la foto antes de subirla (p. ej. lado largo 1 600 px, JPEG 85): menos datos móviles y menos cuota de Cloudinary — *Claude* · ⚪
+- [x] **B12** `SyncWorker`: **rechazo definitivo** (400, 410, 413, 415, 422 y foto ausente → estado local `RECHAZADO`, no se reenvía para siempre), seguimiento **por reporte** (intentos, cuándo, motivo, código HTTP, red; migración de Room 2→3), «Enviar ahora» y «Reintentar» ([ADR-0006](./adr/0006-envio-confiable-de-reportes.md)) — *Claude* · **verificado en la tablet** con un servidor falso (no con Render)
+- [x] **B13** Reducir la foto al tomarla (lado largo 1 600 px, JPEG 85, sin metadatos): **4,0 MB → ≈ 0,2 MB medido en la tablet** ([ADR-0007](./adr/0007-gps-en-caliente-y-foto-reducida.md)) — *Claude*
 - [x] **B14** Módulo 5 — **mapa público en la app con Google Maps** ([ADR-0005](./adr/0005-mapa-publico-dentro-de-la-app-con-google-maps.md)): destino "Mapa", cliente de `GET /puntos-criticos`, estados cargando / sin focos / con focos / error, y pruebas en la JVM — *Claude* · **sin datos reales** (faltan A14, A15 y A18) **y sin ver en un dispositivo** (D11)
-- [ ] **B15** Íconos definitivos: navegación (hoy provisionales del asistente) e ícono de la app — *Claude* · ⚪
+- [ ] **B15** Ícono de la app (los íconos de la navegación ya son los definitivos, de Material, verificados en la tablet el 2026-09-19) — *Claude* · ⚪
 - [ ] **B16** Revisión de **accesibilidad**: contraste, tamaños táctiles, lector de pantalla — *Claude* · 🟡
 - [ ] **B17** Estados de error y vacío en todas las pantallas — *Claude* · 🟡
 - [ ] **B18** Migrar `hiltViewModel()` al nuevo paquete (solo un aviso de obsolescencia) — *Claude* · ⚪
@@ -85,6 +87,9 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **B20** Cambio de idioma (diferido, CORR-009; el quechua exigiría traducción revisada por un hablante) — *Asesor* · ⚪
 - [ ] **B21** Decidir `targetSdk` 36 (hoy) frente a 34 (el documento) y documentar la razón — *Asesor* · 🟡
 - [x] **B22** Manifiesto: **quitar el inicializador automático de WorkManager**. `WanchaqLimpioApp` entrega la fábrica de Hilt, pero sin esto WorkManager arrancaba con la configuración por defecto y la ignoraba: `SyncWorker` y `EliminarReporteWorker` (`@HiltWorker`) **no se habrían podido crear en un dispositivo real**. Fallo del Módulo 4 hallado por el lint de `release` — *Claude* · **sin verificar en un dispositivo** (escenario C10, tarea D9) · [pruebas.md](./pruebas.md)
+- [x] **B23** **GPS en caliente**: con la cámara abierta se muestra «GPS listo ±N m», la lectura de la foto viaja con la confirmación, se espera hasta 30 s a una lectura ≤ 15 m (sin relajar el criterio), **la foto se conserva** si el GPS no converge («Reintentar ubicación») y los permisos (precisa + aproximada) tienen salida a los Ajustes ([ADR-0007](./adr/0007-gps-en-caliente-y-foto-reducida.md)) — *Claude* · **sin GPS real** (ver D5)
+- [x] **B24** **Registro de envíos**: Ajustes → «Compartir registro de envíos» manda un CSV (un renglón por reporte: intentos, cuándo llegó, red, motivo del fallo) **sin coordenadas, fotos ni código anónimo** — *Claude* · *el selector de compartir no se ha probado en el dispositivo* (H11)
+- [x] **B25** **Servidor falso local** (`herramientas/servidor_falso.py`) para provocar fallos de red a voluntad, y configuración de red **solo de depuración** que permite `http://` únicamente hacia `localhost`, `127.0.0.1` y `10.0.2.2` — *Claude* · [prueba-en-dispositivo.md §2c](./prueba-en-dispositivo.md)
 
 ## C. Modelo de IA (clasificador de residuos)
 
@@ -101,9 +106,9 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 ## D. Pruebas en dispositivo y calidad
 
 - [x] **D1** Instalar en la Galaxy Tab S9+ y comprobar la adaptación de pantalla (botón de 592 dp centrado en horizontal) — *Usuario + Claude*
-- [x] **D2** Suite de la app en la JVM: 174 pruebas unitarias en verde (44 son del mapa, con 30 mutaciones deliberadas: 29 detectadas y 1 equivalente; 2 de la inicialización de WorkManager), ktlint y detekt limpios — *Claude* · [pruebas.md](./pruebas.md)
+- [x] **D2** Suite de la app en la JVM: **288 pruebas unitarias en verde** (174 al cerrar la Sesión 24; el resto son del envío confiable, el GPS en caliente, la foto reducida y el registro de envíos), ktlint y detekt limpios — *Claude* · [pruebas.md](./pruebas.md) · *sin prueba de mutación de los lotes de la Sesión 25 (sí del mapa: 30 mutaciones, 29 detectadas y 1 equivalente)*
 - [x] **D3** Suite del backend: 209 pruebas y 152 mutaciones deliberadas — *Claude* · [pruebas.md](./pruebas.md)
-- [ ] **D4** **Protocolo completo en la tablet (32 escenarios A–F)**: solo se verificó el consentimiento en horizontal — *Usuario* · 🟡 · [prueba-en-dispositivo.md](./prueba-en-dispositivo.md)
+- [ ] **D4** **Protocolo completo en la tablet (32 escenarios A–F)**: solo se verificó el consentimiento en horizontal — *Usuario* · 🟡 · [prueba-en-dispositivo.md](./prueba-en-dispositivo.md) · *avance: en la Sesión 25 se verificaron los escenarios C1 a C6, C9, C10 (contra un servidor falso), E2 y H8 y H10 en parte; ver [§5c](./prueba-en-dispositivo.md)*
 - [ ] **D5** **GPS real en exteriores dentro de Wanchaq** (escenario C8): variante normal, cielo despejado, ~30 s; si aún rechaza por precisión, hacer que la app espere una lectura ≤ 15 m — *Usuario* · 🔴
 - [ ] **D6** Probar en un **teléfono real**, no solo la tablet — *Usuario* · 🟡
 - [ ] **D7** Ejecutar `./gradlew connectedDebugAndroidTest` (las pruebas de UI y de referencia del clasificador compilan pero nunca se ejecutaron) — *Usuario + Claude* · 🟡
@@ -111,6 +116,8 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **D9** **Primer reporte real de punta a punta**: teléfono → Render → Neon, visible en la base (escenario **C10** del protocolo; es también la **primera vez** que WorkManager crea un trabajo de sincronización en un dispositivo, B22) — *Usuario + Claude* · 🔴 · necesita A10 y `baseUrl` (A19); B10 y B11 ya están hechos
 - [ ] **D10** Ronda de prueba piloto interna antes de aplicar el Instrumento 1 (SUS, 38 participantes) — *Usuario* · 🟡
 - [ ] **D11** **Ver el mapa en un dispositivo** con la clave real (escenarios G1 a G8 del protocolo): que no salga gris, el encuadre en Wanchaq, el límite de desplazamiento, el error sin red y el marcador de un foco de prueba — *Usuario* · 🟡 · necesita A19 · [prueba-en-dispositivo.md](./prueba-en-dispositivo.md)
+- [x] **D12** **Sesión 2 en la tablet (2026-09-19)**: migración de la base con datos reales (4 reportes), WorkManager con la fábrica de Hilt, envío y fallos contra un servidor falso (503, 422, respuesta perdida, cierre forzado, servidor que no contesta, «Enviar ahora», baja), foto reducida, permisos — *Usuario + Claude* · [prueba-en-dispositivo.md §5c](./prueba-en-dispositivo.md)
+- [ ] **D13** **Escenarios H1 a H11** que necesitan a una persona con la tablet: modo avión, Wi-Fi sin salida, reinicio con pendientes, servidor dormido, fecha del teléfono mal puesta, **girar la tablet** (B1, C3) y compartir el registro de envíos — *Usuario + Claude* · 🟡 · [prueba-en-dispositivo.md](./prueba-en-dispositivo.md)
 
 ## E. Publicación en Play Store (Módulo 9, al final)
 
@@ -139,3 +146,22 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [x] **F12** Decidido **dónde vive el mapa público**: **en la app, con Google Maps** (decisión del usuario, 2026-09-19; ya tiene cuenta de Google Cloud) — [ADR-0005](./adr/0005-mapa-publico-dentro-de-la-app-con-google-maps.md). Se recomendó la opción web con Leaflet; la elección es del usuario
 - [ ] **F13** **Avisar al asesor** de que el mapa público quedó en la app con Google Maps: la tesis menciona un panel web con React/Leaflet que no se hará — *Usuario + Asesor* · 🟡
 - [ ] **F11** Poner la **zona horaria del PC en hora de Perú (UTC-5)**: hoy está en UTC-8 y las fechas de los commits (evidencia de tesis) salen 3 h atrasadas respecto a Perú — *Usuario* · ⚪
+
+## G. Confiabilidad de los instrumentos
+
+> Plan completo, cifras y decisiones en [`plan-confiabilidad-instrumentos.md`](./plan-confiabilidad-instrumentos.md). Distinto de las pruebas de confiabilidad **del software** ([`pruebas-de-confiabilidad.md`](./pruebas-de-confiabilidad.md)): aquí se mide si los **instrumentos** (SUS, ficha de campo, ficha GPS) dan resultados repetibles.
+
+- [ ] **G1** **Decidir con el asesor** los criterios y el diseño (D1–D10 del plan §12: α ≥ 0,70, κ ≥ 0,61, doble observación de **todas** las agrupaciones, cómo se aplican «≥ 70 %» y «≥ 95 %») y **congelarlo en git**, con fecha, antes de la primera medición — *Asesor + Usuario* · 🔴 · [plan §12](./plan-confiabilidad-instrumentos.md)
+- [ ] **G2** **Sustituir** en el Cap. III la sección «Confiabilidad de los instrumentos», que reporta resultados de una «muestra piloto **simulada**» (κ aritméticamente imposibles; focos y puntos que no son los del diseño), por el texto «previsto» del plan §10-A, y quitar la columna «Qué necesitas» de la Tabla 5 — *Usuario + Asesor* · 🔴 · [CORR-011](./correcciones-documento.md)
+- [ ] **G3** Plantillas de captura (CSV o formularios con opciones cerradas) para SUS, ficha de campo, fotos, sistema-por-agrupación y GPS — *Claude* · 🟡 · [plan, Apéndice A](./plan-confiabilidad-instrumentos.md)
+- [ ] **G4** Scripts de análisis en `analisis/confiabilidad/` (α con IC de Feldt y *bootstrap*, ω, κ / κ ponderado / PABAK / AC1 con IC, ICC, DE agrupada y límite de repetibilidad, Wilson), **validados con ejemplos publicados** y con pruebas — *Claude* · 🟡 · (hoy solo existen `dimensionamiento.py` y `verificar_documento_v591.py`)
+- [ ] **G5** Manual de codificación de la Ficha de Observación de Campo (definiciones operativas, reglas de desempate, fotos de ejemplo), **sin cambiar la ficha validada** — *Usuario + Claude* · 🟡
+- [ ] **G6** **Piloto del SUS** (≥ 15, mejor 20) con entrevista cognitiva: es la tarea D10 vista desde la confiabilidad — *Usuario* · 🟡 · necesita la app en manos de participantes
+- [ ] **G7** **Calibración de la Ficha de Observación de Campo** (2 observadores × ≥ 20 sitios, con fotos estándar) y **re-calificación intraobservador** a los ≥ 14 días — *Usuario* · 🟡 · no necesita la app
+- [ ] **G8** **Mediciones del Instrumento 3**: 8 puntos × 5 mediciones independientes, ≥ 2 teléfonos, variante **normal** (nunca la de ubicación simulada) — *Usuario* · 🟡 · necesita D5
+- [ ] **G9** Decidir y, si se aprueba, guardar la **precisión declarada** de cada lectura aceptada (Room + servidor, con ADR) y un **registro de lecturas GPS** solo en depuración; **si se quiere en los reportes reales, antes de la ventana** (después no se puede recuperar) — *Usuario + Claude* · 🔴 · [plan §9 (I-1, I-3)](./plan-confiabilidad-instrumentos.md)
+- [ ] **G10** Aplicación final del SUS (n = 38) y alfa final con su intervalo de confianza — *Usuario* · 🟡
+- [ ] **G11** **Fase 2 de la ficha de campo**: doble observación de **todas** las agrupaciones (observadores ciegos a la IA), calificación de fotos por dos evaluadores y kappa final — *Usuario* · 🔴 · necesita A14 y A18
+- [ ] **G12** Estabilidad del agrupamiento (sensibilidad de ε y MinSamples, Jaccard por remuestreo, mitades temporales) y pureza de categoría por agrupación — *Claude* · ⚪ · dentro de A14
+- [ ] **G13** Redactar los resultados reales de confiabilidad (con IC y lista GRRAS) en el Cap. III y en el de resultados — *Usuario + Claude* · 🟡
+- [ ] **G14** Revisar con el asesor la **V de Aiken** de los Anexos 10–12 (lo que muestran no es la V de Aiken) — *Asesor* · 🟡 · [CORR-012](./correcciones-documento.md)

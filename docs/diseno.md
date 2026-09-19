@@ -191,6 +191,7 @@ La app distingue lo **transitorio** (se reintenta) de lo **permanente** (el repo
 - **Mensajes de error fijos**: nunca repiten lo que envió el cliente (el `geojson` trae el seudónimo y la ubicación). Los registros ocultan todo UUID (`wanchaq_limpio/logs.py`), porque `idAnonimo` viaja en la URL del DELETE.
 - **Datos de IA**: `categoriaIa` y `confianzaIa` van juntas o ninguna; `categoriaIa` solo admite las 4 clases del modelo (nunca `ESCOMBROS` ni `MIXTO`); `confianzaIa` entre 0 y 1.
 - **Validación "dentro de Wanchaq"** con el **mismo rectángulo** que la app (`LimiteDistritalWanchaq.kt`), provisional hasta tener el polígono oficial; entonces pasará a `ST_Within` (CORR-007).
+- **La foto que envía la app es una versión reducida** (desde el 2026-09-19, [ADR-0007](./adr/0007-gps-en-caliente-y-foto-reducida.md)): lado largo ≤ 1 600 px, JPEG de calidad 85, con la orientación ya aplicada a los píxeles y **sin metadatos** (ni EXIF ni ubicación). Medido en la tablet: de ≈ 4,0 MB a ≈ 0,2 MB. El límite de 10 MB del servidor queda muy lejos; si la reducción fallara, se enviaría la original.
 
 #### Qué hace la app con cada respuesta (implementado el 2026-09-19; decisiones y alternativas en [ADR-0006](./adr/0006-envio-confiable-de-reportes.md))
 

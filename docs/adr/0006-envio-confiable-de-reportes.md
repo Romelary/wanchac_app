@@ -34,6 +34,19 @@ Antes de usar la app en campo se revisó el envío (`SyncWorker`) contra lo que 
 - **La red anotada es la que había al empezar el intento**; una red que cambia a mitad de la subida queda anotada como al principio.
 - **Es un cambio del modelo de la tesis** (ampliación local de los estados del Cap. IV): hay que reflejarlo en el documento.
 
+## Verificación en un dispositivo real (2026-09-19, Sesión 25)
+
+Además de las pruebas en la JVM (Room en memoria y un servidor de mentira), se comprobó **en la Galaxy Tab S9+** contra un servidor falso local (`herramientas/servidor_falso.py`; detalle en [`prueba-en-dispositivo.md`](../prueba-en-dispositivo.md) §5c):
+
+- **La migración de Room 2→3 conservó los 4 reportes** que había en la tablet (instalación sobre la versión anterior).
+- **WorkManager creó el trabajo con la fábrica de Hilt** y **la espera lineal se cumplió** en el planificador de Android (intentos a los 30 s y a los 60 s).
+- Se clasificaron como se esperaba: sin servidor (`SIN_CONEXION`), **503** (sigue pendiente), **422** (`RECHAZADO`, con «Reintentar»), servidor que no contesta (**`TIEMPO_AGOTADO` a los 90 s**) y una respuesta perdida (el servidor guardó el reporte y cortó: el reintento recibió 200 y **no se duplicó**).
+- **Cierre forzado a mitad del envío**: el reporte llegó una sola vez (el sistema reinició el envío por su cuenta). «**Enviar ahora**» canceló una petición colgada y mandó todo al momento.
+
+**Lo que esa prueba corrigió** (no lo habían visto las pruebas automáticas): «enviado» se anotaba con la hora en que **salía** la petición y no con la de la **respuesta**; ahora el intento se anota al empezar y el envío al terminar.
+
+**Límites que quedan, dichos sin rodeos**: (1) un envío que **no termina** retrasa a los demás hasta 90 s, porque los reportes se mandan de uno en uno (si pesa en el campo, cortar la pasada tras dos tiempos agotados seguidos); (2) **un intento interrumpido** (la app muere a mitad de la subida) **no se cuenta** en `intentos`; (3) la librería de red **repite por su cuenta** una petición cuya conexión se corta, así que el servidor puede ver un mismo reporte varias veces dentro de un intento (inofensivo por la idempotencia, pero el número de peticiones del servidor no es el número de intentos).
+
 ## Lo que NO está verificado
 
-Todo se probó con Room en memoria y un servidor de mentira (`SyncWorkerTest`, `ProgramadorSincronizacionWorkManagerTest`). **No se ha visto en un dispositivo real**: que WorkManager reintente al volver la red, que la espera lineal se cumpla en el planificador de Android, ni cómo se comporta con una red realmente lenta o intermitente. Los escenarios H de [`prueba-en-dispositivo.md`](../prueba-en-dispositivo.md) lo cubren.
+**El servidor real** (Render/Neon): todo lo anterior fue contra un servidor falso. Tampoco se ha visto **con una red realmente lenta o intermitente**, ni con **modo avión, Wi-Fi sin salida o reinicio del teléfono** (necesitan a una persona con el equipo): son los escenarios H1 a H6 de [`prueba-en-dispositivo.md`](../prueba-en-dispositivo.md). **No se hizo prueba de mutación** de este cambio.

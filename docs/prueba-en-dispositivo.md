@@ -22,7 +22,7 @@ Debe aparecer la tablet como `device` (no `unauthorized`, no `offline`). Si le p
 **Antes de probar el reporte** — dos cosas que se pasan por alto:
 
 - **Ubicación:** la app **rechaza a propósito** los reportes con error de GPS mayor de 15 m y los que caen fuera del distrito de Wanchaq (RF-02, CORR-007). En interiores el GPS casi nunca llega a 15 m, y fuera de Wanchaq siempre saldrá *"fuera del distrito"*: no es un fallo. Hay dos formas de probar el reporte: **(a) la real**, en exteriores dentro de Wanchaq con cielo despejado, o **(b) el modo de ubicación simulada** de la sección 2b, para ejercitar el resto del flujo estés donde estés.
-- **Sincronización:** el servidor todavía no existe (`BASE_URL` apunta a `10.0.2.2`, que solo vale en un emulador). En un dispositivo real los reportes se guardan y quedan **"Pendiente de envío"**: es lo esperado.
+- **Sincronización:** hay tres formas de probar el envío. **(a)** Contra el **servidor real**: Render con la Fase 1 desplegada y `baseUrl` en `local.properties` (escenario C10). **(b)** Contra el **servidor falso local** de la sección 2c, que provoca a voluntad fallos difíciles de repetir en la calle (servidor caído, respuesta perdida, red lenta) sin tocar la base de datos real. **(c)** Sin servidor: con la dirección por defecto (`http://10.0.2.2:8000/`, que solo vale en un emulador) los reportes se guardan y quedan **"Pendiente de envío"**, con el motivo del último fallo.
 
 ## 2. Instalar y ejecutar
 
@@ -44,7 +44,34 @@ Sirve para probar guardar, Mis reportes, duplicados, etc. cuando el dispositivo 
 - **Desde el botón Run de Android Studio:** agrega la línea `ubicacionSimulada=true` a tu `gradle.properties` **de usuario** (`%USERPROFILE%\.gradle\gradle.properties`), **nunca** al del proyecto (ese sí se sube al repositorio). Quítala al terminar.
 - **No puede llegar a una versión de publicación:** en `release` la bandera está fija en `false` y, además, `assembleRelease` y `bundleRelease` **fallan** con un mensaje claro si la propiedad está activa (verificado).
 - **Los datos son falsos:** esos reportes no sirven como datos de la investigación. Cuando exista el servidor, una compilación de prueba debe apuntar a un servidor de desarrollo, no al real.
+- **Reinicios de la app:** la cuenta de pasos vuelve a cero cada vez que arranca la app, y Android puede arrancarla solo (p. ej. para enviar pendientes). Por eso cada arranque usa además una **columna distinta** (≈ 33 m al este por cada minuto del reloj); sin eso, los reportes hechos tras un reinicio repetirían los puntos de los anteriores y saldría «Ya reportaste este mismo lugar…» (se vio en la tablet el 2026-09-19 y se corrigió).
 - **Lo que NO prueba:** el GPS real, ni el filtro de 15 m con lecturas reales. Eso solo se prueba con la variante normal, en exteriores dentro de Wanchaq (escenario C8).
+
+## 2c. Servidor falso local (probar el envío sin Render)
+
+Para lo que Render no permite provocar a voluntad: un servidor que se cae, que **recibe el reporte y pierde la respuesta**, que tarda o que no contesta nunca. Es una herramienta de **prueba**: **no sustituye** a la prueba contra el servidor real (C10), no usa ninguna cuenta ni secreto y solo funciona con compilaciones de **depuración** (la de publicación bloquea todo lo que no sea `https`).
+
+```bash
+python herramientas/servidor_falso.py                                            # 1. el servidor, en el puerto 8000 del PC
+"$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe" reverse tcp:8000 tcp:8000     # 2. el dispositivo lo ve como «localhost»
+./gradlew installDebug -PubicacionSimulada=true -PbaseUrl=http://localhost:8000  # 3. la app apuntando a él
+```
+
+Su comportamiento se cambia **sin reiniciar**, escribiendo una palabra en `herramientas/modo.txt`:
+
+| Modo | Qué hace el servidor | Qué debe hacer la app |
+|---|---|---|
+| `ok` | Responde 201 (y **200** si ya tenía ese reporte) | «Enviado» |
+| `503` (o `500`, `429`…) | Ese código HTTP | Sigue «Pendiente de envío», «Intentos: N · último fallo: el servidor no está disponible», y reintenta a los 30 s, 60 s, 90 s… |
+| `422` (o `400`, `413`…) | Ese código HTTP | «No se pudo enviar», con **Reintentar** y **Eliminar**; no reintenta sola |
+| `lento:20` | Espera 20 s y responde 201 | Espera; «Enviado» al terminar |
+| `corta` | Corta la conexión a mitad del envío | «sin conexión» y reintenta |
+| `perdida` | **Guarda** el reporte y corta **sin responder** | Cree que falló y reintenta; con `ok` el servidor contesta 200 y **no duplica** |
+| `colgado` | Acepta y no contesta nunca | A los **90 s** «el servidor tardó demasiado en responder» |
+
+El servidor escribe una línea por petición (`idLocal`, categoría, tamaño de la foto, código devuelto y cuántos reportes distintos lleva) y guarda las fotos que recibe en `herramientas/recibidas/`. **No imprime coordenadas** ni el código anónimo completo. Después, para volver a la configuración normal: `./gradlew installDebug` (sin `-PbaseUrl`) y `adb reverse --remove tcp:8000`.
+
+**Dos avisos.** (1) Los reportes de esta prueba **no llegan a Neon**: se quedan en el servidor falso, así que **no** cuentan para el indicador del Anexo 2. (2) Si después se instala una compilación que apunta a Render, los reportes que sigan `PENDIENTE` **sí** se enviarán allí con sus coordenadas simuladas: antes, dejarlos «Enviado» (con el servidor falso en `ok`) o eliminarlos.
 
 ## 3. Escenarios de prueba
 
@@ -66,7 +93,7 @@ Marca cada uno con **OK**, **FALLA** o **N/A** y anota lo observado en la secci�
 | B3 | *Ajustes → Pantalla → Tamaño de fuente y estilo*: fuente grande | Los textos crecen sin cortarse; los botones siguen alcanzables |
 | B4 | Modo oscuro | Texto legible, sin bloques ilegibles |
 | B5 | Riel de navegación vs. barra inferior | En horizontal ancho aparece un riel lateral; los tres destinos funcionan |
-| B6 | Fijarse en los **íconos** de la navegación | Ojo: son provisionales del asistente de Android Studio (casa, corazón, cuenta) y **no** corresponden a Reportar / Mis reportes / Ajustes: es un pendiente de pulido, no una regresión |
+| B6 | Fijarse en los **íconos** de la navegación | Mapa (pin), Reportar (más), Mis reportes (lista) y Ajustes (engranaje). *Resuelto el 2026-09-19 (Sesión 2): antes eran los provisionales del asistente de Android Studio (casa, corazón, cuenta)* |
 
 ### C. Reporte de punta a punta
 | # | Qué hacer | Esperado |
@@ -108,6 +135,7 @@ Ver la nota de la sección 4. Para cada foto anota: qué era, qué sugirió, qu�
 | F2 | Girar la tablet mientras dice "Analizando la foto…" | No se pierde la foto ni se cierra la app |
 | F3 | En la confirmación, salir a otra app y volver | Sigue en la confirmación con la misma foto |
 | F4 | En la confirmación, **cerrar la app a la fuerza** y reabrirla | La app arranca normal; la foto sin confirmar se borra sola en el siguiente arranque (verificable con `adb shell run-as com.wanchaqlimpio.app ls files/reportes`) |
+
 ### G. Mapa público (necesita la clave de Google Maps: ver [`despliegue-mapa.md`](./despliegue-mapa.md))
 | # | Qué hacer | Esperado |
 |---|---|---|
@@ -120,6 +148,23 @@ Ver la nota de la sección 4. Para cada foto anota: qué era, qué sugirió, qu�
 | G7 | Con un foco de prueba en el servidor (hoy el endpoint es **provisional y siempre devuelve vacío**: hace falta la Fase 3 real, `avance.md` A15, o un dato de prueba) | Aparece su marcador; al tocarlo muestra categoría, nº de reportes y fecha; el contador dice "1 foco confirmado" |
 | G8 | Abrir **Mapa** tras un rato sin usar la app (servidor dormido) | La primera petición puede tardar hasta ≈ 1 min (Render despierta) y **no** da error de tiempo agotado |
 
+### H. Confiabilidad del envío y del GPS (protocolo completo en [`pruebas-de-confiabilidad.md`](./pruebas-de-confiabilidad.md))
+Los reportes de estas pruebas conviene hacerlos con la variante de **ubicación simulada** (sección 2b) para no depender del GPS, salvo H9 (que **es** del GPS). Los que dicen «servidor falso» usan la sección 2c; los demás, el servidor real con `baseUrl`.
+
+| # | Qué hacer | Esperado |
+|---|---|---|
+| H1 | **Modo avión y cierre forzado.** Modo avión → guardar 3 reportes → *Ajustes de Android → Apps → Wanchaq Limpio → Forzar detención* → apagar el modo avión → abrir la app y esperar ≈ 2 min | Los 3 pasan de «Pendiente de envío» a **«Enviado»** y en el servidor hay **3**, no más. En la Galaxy Tab S9+ (Android 16) el sistema reinició el envío **por su cuenta** tras un cierre forzado (Sesión 2, abajo): no darlo por hecho en otros equipos; la app además encola un envío al abrirse |
+| H2 | **Reinicio del teléfono con pendientes.** Modo avión → guardar 2 reportes → reiniciar el teléfono → desbloquearlo → apagar el modo avión **sin abrir la app** y esperar ≈ 2 min → abrir la app | Siguen pendientes tras el reinicio y se envían solos al volver la red (WorkManager se reprograma al arrancar, pero solo tras el **primer desbloqueo**: la base de datos está en almacenamiento cifrado). Si solo llegan al abrir la app, anotarlo: es el límite del ahorro de energía del fabricante |
+| H3 | **Cinco reportes seguidos** (con red y servidor despierto): guardar 5 en menos de 2 min | Los 5 quedan «Enviado» pocos segundos después del último; el servidor tiene 5, sin repetidos; el registro de envíos muestra `intentos` = 1 en todos |
+| H4 | **Wi-Fi sin salida a Internet (R4).** Conectarse a un Wi-Fi sin Internet → guardar 2 reportes → esperar 1 min → dar salida a Internet | «Pendiente de envío» mientras no haya Internet (`red_al_guardar` = `SIN_INTERNET` en el registro); se envían solos al recuperar la salida, sin abrir la app |
+| H5 | **Eliminar un pendiente.** Modo avión → guardar un reporte → «Eliminar» → apagar el modo avión | No aparece en «Mis reportes» y en Neon **no** queda ese `id_local` (la baja se encola y el servidor deja una lápida: si el reporte llegara después, no se guardaría) |
+| H6 | **Servidor dormido (R6).** ≥ 15 min sin tráfico (sin *pinger*) → guardar **un** reporte y cronometrar hasta «Enviado» | Tarda hasta ≈ 1 min (Render despierta) y **termina en «Enviado»**; puede verse un intento con «el servidor tardó demasiado en responder» (la espera de lectura es de 90 s). Anotar los segundos |
+| H7 | **Fecha del teléfono mal puesta.** Poner la fecha 2 años atrás (a mano) → guardar → esperar | El servidor rechaza (422): «No se pudo enviar». **«Reintentar» no lo arregla**: la fecha ya quedó guardada en el reporte; hay que eliminarlo y volver a reportar con la fecha automática |
+| H8 | **Peso y tamaño de la foto.** Guardar un reporte y ver `adb shell run-as com.wanchaqlimpio.app ls -l files/reportes` | La foto nueva pesa **menos de ≈ 1 MB** (lado largo 1600 px, sin metadatos; en la Galaxy Tab S9+, ≈ 0,2 MB). Las hechas con versiones anteriores pesan ≈ 4 MB |
+| H9 | **GPS real** (variante **normal**). Primero en interiores y luego en exteriores dentro de Wanchaq: abrir la cámara, esperar, tomar la foto y guardar | Con la cámara abierta el aviso pasa de «buscando señal» a «listo ±N m» o «impreciso ±N m». Con GPS impreciso, al guardar **espera hasta 30 s** («Precisión actual: ~N m…») y, si no llega a 15 m, dice «El GPS aún no es lo bastante preciso» con **«Reintentar ubicación»** y **conserva la foto**. Anotar los segundos hasta «listo» y la precisión final |
+| H10 | **Permisos.** *Ajustes de Android → Apps → Wanchaq Limpio → Permisos*: quitar cámara y ubicación → «Reportar» | Pantalla «Permisos necesarios» con «Conceder permisos» y «Abrir los ajustes de la app»; si solo se concede la ubicación **aproximada** sigue pidiendo (debe ser precisa); al volver de los Ajustes con todo concedido aparece la cámara sola |
+| H11 | **Registro de envíos.** *Ajustes → «Compartir registro de envíos»* → mandarlo a un correo o a un chat | Llega texto con líneas `#` (versión de la app, modelo y hora), un encabezado y **un renglón por reporte**; **sin** coordenadas, fotos ni código anónimo |
+
 ## 4. Lo que se espera que falle o haya que mirar (hipótesis antes de probar)
 
 Salen de leer el código, **no de haber probado**; cada una se confirma o descarta en la sesión:
@@ -127,7 +172,7 @@ Salen de leer el código, **no de haber probado**; cada una se confirma o descar
 1. **Barras del sistema:** la app dibuja de borde a borde (obligatorio con `targetSdk` 36). Todas las pantallas usan `Scaffold` desde el Módulo 3b; si algo queda bajo la barra de estado, es un fallo.
 2. **Android 16 en pantallas grandes:** con `targetSdk` 36, Android **ignora** las restricciones de orientación y de tamaño de ventana en pantallas de 600 dp o más (la app llena toda la ventana y gira libremente) y no permite renunciar a dibujar de borde a borde. Es decir, en la tablet la app *tiene* que funcionar girada, en ventana y en pantalla dividida.
 3. **Rotación de la cámara:** al girar 180° Android no recrea la actividad; se agregó un aviso a CameraX (`MantenerRotacionDeCaptura`) para que la foto no quede boca abajo. **Sin probar en dispositivo** → escenario C3.
-4. **Modelo de IA:** primera vez que corre LiteRT de verdad. Si las librerías nativas no cargan en la tablet, la app sigue con elección manual y lo deja en el registro (`logcat`, etiqueta `ClasificadorResiduo`).
+4. **Modelo de IA:** primera vez que corre LiteRT de verdad. Si las librerías nativas no cargan en la tablet, la app sigue con elección manual y lo deja en el registro (`logcat`, etiqueta `ClasificadorResiduo`). **Verificado el 2026-09-19 (Sesión 2, C4):** las librerías nativas cargan en la tablet y el modelo sugirió «Plástico» ante un objeto de plástico; la **latencia** y la **exactitud con fotos de calle** siguen sin medirse.
 5. **Redimensionado de fotos grandes:** la app reduce con `inSampleSize` + escalado de Android y el entrenamiento usó `tf.image.resize`; es una diferencia pequeña pero sin medir con fotos reales (ver `progreso.md`, Sesión 18).
 
 ## 5. Registro de resultados
@@ -164,6 +209,7 @@ adb logcat -d -s ClasificadorResiduo ReporteScreen AlmacenFotos DecodificadorFot
 | E1–E4 | ☐ | |
 | F1–F4 | ☐ | |
 | G1–G8 | ☐ | requiere la clave de Google Maps |
+| H1–H11 | ☐ | H9 necesita la variante **normal** y exteriores; H1 a H8 y H11, la de ubicación simulada; H6 y H4, servidor real |
 | `connectedDebugAndroidTest` | ☐ | pruebas ejecutadas: ___ · fallidas: ___ |
 
 ## 5b. Sesión 1 — 2026-09-18, Galaxy Tab S9+ (solo lo que se verificó)
@@ -177,13 +223,52 @@ Dispositivo: **Galaxy Tab S9+ Wi-Fi (SM-X810)**, Android 16 (API 36), One UI 8.0
 | A1 (barras del sistema) | **Parcial** | El botón inferior no queda tapado por la barra de tareas de Samsung. Falta revisar la parte de arriba, sin desplazar la pantalla, y en vertical |
 | Resto de escenarios | *pendiente* | A3–A4, B1–B6, C, D, E y F |
 
+## 5c. Sesión 2 — 2026-09-19, Galaxy Tab S9+ (con servidor falso; solo lo que se verificó)
+
+Dispositivo: el mismo (**SM-X810**, Android 16 / API 36, One UI 8.0.5, pantalla de 2800 × 1752 px en horizontal). App: compilación de depuración con **ubicación simulada** (`1.0-ubicacion-simulada`) del árbol de trabajo posterior al commit `b928066` (los lotes 2 y 3 aún sin confirmar), instalada **sobre la versión de la Sesión 1** con `adb` (mismo firmante: conserva los datos). Servidor: **`herramientas/servidor_falso.py`** en el PC, alcanzado con `adb reverse` (§2c). **Nada de esto tocó Render ni Neon.** Las horas de abajo son las del dispositivo (UTC−5).
+
+| Escenario | Resultado | Observación (medido en el dispositivo) |
+|---|---|---|
+| Instalar sobre la versión anterior | **OK** | Los datos se conservaron: base de datos **v2 con 4 reportes** `PENDIENTE` de la Sesión 1 (3 fotos de ≈ 4 MB y 1 de ≈ 1 MB) |
+| Arranque | **OK** | Inicio en frío de 659 a 783 ms; sin errores ni avisos propios en `logcat` |
+| **Migración de Room 2→3 con datos reales** | **OK** | `user_version` 2 → 3; los 4 reportes intactos (categoría, estado, sugerencia de la IA, fecha) y con las columnas nuevas de seguimiento |
+| WorkManager con la fábrica de Hilt | **OK** | `Starting work for …SyncWorker` en el primer segundo, **sin** `Could not create Worker` (el arreglo de la Sesión 24 funciona en un dispositivo real) |
+| Espera lineal entre reintentos | **OK** | Sin servidor: `ECONNREFUSED` → `SIN_CONEXION`; intentos a las 14:04:53, 14:05:23 (+30 s) y 14:06:23 (+60 s) |
+| Envío de los 4 pendientes (C10, con servidor falso) | **OK** | 201 ×4 en un segundo; cuerpos de 4 048 696 / 4 056 316 / 3 967 972 / 974 421 bytes; las fotos recibidas pesan **lo mismo** que en la tablet y son JPEG válidos. Lo que viaja: `categoria`, `categoriaIa`, `confianzaIa`, `fechaHoraEpochMillis`, `idAnonimo`, `idLocal` (**nada del seguimiento local**) |
+| C1–C2 Cámara | **OK** | Vista previa nítida y el indicador «**GPS listo · ±5 m**» (ubicación simulada) |
+| C3 Foto derecha | **Parcial** | Derecha en la confirmación **en horizontal**; **no se giró la tablet** (vertical y 180° siguen pendientes) |
+| C4 Confirmación | **OK** | «Sugerencia automática: Plástico» ante un objeto de plástico (las librerías de LiteRT cargan), las 6 categorías, «Guardar reporte» y «Tomar otra foto» |
+| C5 Guardar y «Mis reportes» | **OK** | «¡Reporte guardado!…»; en la lista con «Enviado» y «Enviado el …»; el más nuevo arriba |
+| **H8 Peso y tamaño de la foto** | **OK** | Versión anterior: **4128 × 3096 px, ≈ 4,0 MB**, con EXIF. Versión nueva: **1600 × 1200 px, 234 769 bytes (≈ 0,2 MB)**, **sin EXIF** (orientación ya aplicada, sin ubicación). 17 veces menos |
+| B6 Íconos | **OK** | Mapa, Reportar, Mis reportes y Ajustes con sus íconos (ya no los provisionales) |
+| E2 Eliminar un reporte | **OK** | Pide confirmación; la baja llegó al servidor falso (`DELETE … → 204`) |
+| C7 Duplicado (< 30 min y < 20 m) | **OK** | «Ya reportaste este mismo lugar hace menos de 30 minutos.» con «Reintentar» (apareció por el defecto 2, abajo) |
+| Servidor con **503** | **OK** | Sigue «Pendiente de envío»: «Intentos: 1 · último fallo: el servidor no está disponible» |
+| Servidor con **422** | **OK** | «**No se pudo enviar**: el servidor no aceptó este reporte…» con **Reintentar** y **Eliminar**; no reintenta solo. En la base: `RECHAZADO`, `RECHAZADO_POR_EL_SERVIDOR`, 422, 2 intentos, `red_al_guardar` = `WIFI` |
+| **Respuesta perdida** (el servidor guarda y corta) | **OK** | Reintentó (3 envíos en el mismo segundo por la librería de red, y luego cada 30 s y 60 s); al pasar a `ok` el servidor contestó **200** y quedó «Enviado». **El servidor tiene 1 copia**, no varias |
+| **Cierre forzado a mitad del envío** (H1, en parte) | **OK** | El reporte llegó **una sola vez** (el segundo envío recibió 200). **El sistema reinició el envío por su cuenta** un instante después del cierre (`Start proc … for service SystemJobService`): buena noticia, pero **no dar por hecho en otros equipos** |
+| Servidor que **no contesta** | **OK** | A los **90 009 ms** `SocketTimeoutException` → «TIEMPO_AGOTADO» → «el servidor tardó demasiado en responder». **Mientras tanto el siguiente reporte esperó** (defecto 4) |
+| «**Enviar ahora**» con una petición colgada | **OK** | Canceló la petición colgada (`Socket closed` tras 85 s) y **mandó los dos reportes en 3 segundos**; el aviso «2 reportes sin enviar» desapareció. La petición cancelada **no** contó como intento |
+| H10 Permisos (en parte) | **Parcial** | Sin cámara y con solo la ubicación **aproximada**: «Permisos necesarios», «Conceder permisos» y la ayuda «La ubicación debe ser «precisa»…»; «Abrir los ajustes de la app» abre los Ajustes de Android; tras conceder (con `adb`) y volver con Atrás, **la cámara aparece sola**. **Falta**: el diálogo del sistema y la doble negativa |
+| H3 Cinco reportes seguidos | **No concluyente** | El intento reveló el defecto 2 (ubicación simulada repetida tras un reinicio). Corregido; **hay que repetirlo** |
+
+**Defectos hallados en esta sesión** (ninguno lo habían visto las pruebas automáticas; detalle y correcciones en `progreso.md`, Sesión 25):
+1. **«Enviado» se anotaba con la hora de salida de la petición**, no con la de la respuesta (un envío de 25 s quedó anotado 25 s antes). **Corregido**, con prueba.
+2. **La ubicación simulada repetía los mismos puntos tras reiniciar la app**, y los reportes salían como duplicados. **Corregido** (cada arranque usa otra columna, según el minuto del reloj), con prueba.
+3. **Un intento interrumpido no se cuenta** en `intentos`. **Documentado** (`pruebas-de-confiabilidad.md` §9).
+4. **Un envío que no termina retrasa a los demás** hasta 90 s. **Documentado**, con la alternativa.
+
+**Después de esta sesión** se cambió la forma de leer las fotos en disco (`decodificarArchivo`, por un problema de las pruebas en Windows: ver `pruebas.md`, «Notas técnicas») y se **reinstaló la versión final**, pero **la tablet se bloqueó** y no se pudo repetir con ella la foto, el envío ni H3. **Pendiente al desbloquearla**: una foto nueva (peso y orientación), la clasificación de la IA, H3 y H11.
+
+**Sin verificar en la tablet** (necesitan al usuario o al GPS): girar el equipo y pantalla dividida (B1, B2, C3), modo avión, Wi-Fi sin salida y reinicio (H1 a H4), servidor dormido (H6), fecha mal puesta (H7), **GPS real** (C8, H9), compartir el registro de envíos (H11), un teléfono, y **todo contra Render**.
+
 ---
 
 ## 6. Dispositivos probados
 
 | Dispositivo | Android / One UI | Fecha | Resultado global | Notas |
 |---|---|---|---|---|
-| Galaxy Tab S9+ (SM-X810) | Android 16 / One UI 8.0.5 | 2026-09-18 | *en curso* (ver 5b) | Instalación y consentimiento en horizontal verificados; falta el resto |
+| Galaxy Tab S9+ (SM-X810) | Android 16 / One UI 8.0.5 | 2026-09-18 y 2026-09-19 | *en curso* (ver 5b y 5c) | Sesión 1: instalación y consentimiento en horizontal. **Sesión 2**: migración de la base, envío y fallos contra un **servidor falso**, foto reducida, permisos, íconos; falta girar el equipo, el GPS real, modo avión / Wi-Fi sin salida / reinicio y el servidor real |
 | Un teléfono (recomendado además de la tablet: las tabletas no representan a quien reporta en la calle) | | | *pendiente* | |
 
 ## 7. Problemas conocidos al preparar la prueba
@@ -212,5 +297,5 @@ Dispositivo: **Galaxy Tab S9+ Wi-Fi (SM-X810)**, Android 16 (API 36), One UI 8.0
 
 **Qué hacer**: para probar el flujo en cualquier lugar, la variante de la sección 2b. Para probar el GPS de verdad, salir a un lugar despejado dentro de Wanchaq (escenario C8).
 
-**Pendiente, decidir con evidencia** (no antes): hoy el código toma **la primera lectura** que devuelve el servicio de ubicación de Google y la valida; no espera a que la precisión mejore. Si en exteriores con cielo despejado el reporte sigue rechazándose por precisión, hay que hacer que la app **espere hasta ≈ 30 s a una lectura ≤ 15 m** (mostrando "Buscando señal GPS…") antes de rechazar, sin cambiar el criterio de 15 m. No se cambió todavía porque no hay evidencia de que haga falta: el fallo observado se explica por estar en interiores.
+**Se hizo (2026-09-19, Sesión 25)**: la app ya **mantiene el GPS encendido con la cámara abierta**, muestra su estado («GPS listo · ±5 m»…), usa la lectura del momento de la foto y, si no era buena, **espera hasta 30 s** a una de ≤ 15 m sin borrar la foto (ver [ADR-0007](./adr/0007-gps-en-caliente-y-foto-reducida.md)). El criterio de 15 m no cambió. **Sigue sin probarse con GPS real** (escenarios C8 y H9): el ajuste de esos 30 s depende de lo que se vea en campo.
 

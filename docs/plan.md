@@ -184,6 +184,7 @@ flowchart TD
   - Actualización de `estado_reporte` (`pendiente` → `sincronizado`) tras éxito
 - **Depende de**: Módulo 2. **Bloqueante externo**: backend con endpoint `POST /reportes` disponible (ver sección 4) o mockeado.
 - **Pruebas**: unit test del mapper a GeoJSON; test de `SyncWorker` con `TestListenableWorkerBuilder`.
+- **Ampliado el 2026-09-19** ([ADR-0006](./adr/0006-envio-confiable-de-reportes.md)): clasificación de cada respuesta, estado local `RECHAZADO`, seguimiento del envío por reporte y registro de envíos exportable (Ajustes); pruebas en [`pruebas.md`](./pruebas.md), «Módulo 4b».
 
 ### Módulo 5 — Mapa público (solo lectura)
 
@@ -299,9 +300,9 @@ Al terminar cada módulo, antes de pasar al siguiente:
 | 1. Onboarding y consentimiento | ✅ Completado (2026-09-17) |
 | 2. Captura y almacenamiento offline-first | ✅ Completado (2026-09-17) |
 | 3. Clasificación IA on-device | 🔶 **3b integrada en la app (2026-09-18) con el modelo v1 provisional, sin ejecutar en dispositivo** (ADR-0003). 3a: **ejecutado en Colab el 2026-09-18** (modelo v1 provisional de **4 clases**, exactitud de prueba 0,89 sobre un dataset fácil; `escombros` manual). **Sin medir aún con fotos de calle ni "fuera de clase"**; 7 fotos de `organico` sin declarar; 3b (integración Android): bloqueada hasta tener el `.tflite` |
-| 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17). Backend: **Fase 1 lista (2026-09-18), falta desplegarla**. Pendiente en el cliente (ver `progreso.md`): `BASE_URL` configurable por variante de compilación, tiempos de espera de OkHttp (~60 s, por el arranque en frío de Render) y tratar 400/413/415/422 como rechazo definitivo en vez de reintentar para siempre |
+| 4. Sincronización diferida | ✅ Completado — cliente (2026-09-17) y, el **2026-09-19**, **envío confiable** ([ADR-0006](./adr/0006-envio-confiable-de-reportes.md)): cada intento se clasifica, un rechazo definitivo (400, 410, 413, 415, 422, foto ausente) queda `RECHAZADO` y no se reenvía para siempre, y cada reporte guarda cuántos intentos hizo, cuándo, con qué red y por qué falló; `BASE_URL` configurable y tiempos de espera de OkHttp para el arranque en frío de Render (Sesión 24). **Verificado en la Galaxy Tab S9+ contra un servidor falso** (Sesión 25); **sin probar contra Render**. Backend: Fase 1 lista, **falta desplegarla** |
 | 5. Mapa público | 🔶 **Lado de la app listo (2026-09-19, ADR-0005)**: pantalla con Google Maps, cliente y pruebas en la JVM. Faltan la clave de Google Maps (usuario), el backend (Fases 2 y 3), cómo se confirma un foco (A18) y comprobarlo en un dispositivo |
 | 6. Mis reportes | ✅ Completado (2026-09-18) — con eliminación, ver ADR-0002 |
 | 7. Ajustes | ✅ Completado (2026-09-18) — idioma diferido (CORR-009); correo de contacto pendiente y bloquea la publicación |
-| 8. Pulido y QA final | 🔶 Iniciado (2026-09-18): adaptación a pantallas grandes, pruebas de adaptación y [protocolo de prueba en dispositivo](./prueba-en-dispositivo.md); **falta ejecutarlo en una tablet y un teléfono**, revisar accesibilidad (contraste, tamaños táctiles) y reemplazar los íconos provisionales de la navegación |
+| 8. Pulido y QA final | 🔶 Iniciado (2026-09-18): adaptación a pantallas grandes, pruebas de adaptación y [protocolo de prueba en dispositivo](./prueba-en-dispositivo.md), ahora con los escenarios H1 a H11 de **confiabilidad del envío y del GPS**; **GPS en caliente, foto reducida y permisos con salida a Ajustes** ([ADR-0007](./adr/0007-gps-en-caliente-y-foto-reducida.md)); íconos de la navegación ya definitivos. **Primera sesión real en la tablet el 2026-09-19** (envío, fallos y migración con un servidor falso); **falta** el GPS real, girar la tablet, un teléfono, revisar accesibilidad (contraste, tamaños táctiles) y el ícono de la app |
 | 9. Publicación en Play Store | ⏳ No iniciado (`applicationId` ya fijado: `com.wanchaqlimpio.app`) |
