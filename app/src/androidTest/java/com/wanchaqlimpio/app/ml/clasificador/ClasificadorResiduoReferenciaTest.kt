@@ -16,8 +16,19 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 
-/** Diferencia máxima admitida entre lo que calcula la app y lo que calculó Python (ver generar_referencias.py). */
-private const val TOLERANCIA = 0.05f
+/**
+ * Diferencia máxima admitida entre lo que calcula la app y lo que calculó Python (ver generar_referencias.py).
+ *
+ * `generar_referencias.py` sugiere 0,05, pero **medido en la Galaxy Tab S9+ (2026-09-19) no alcanza**: con los MISMOS
+ * píxeles de entrada (comprobado: la entrada de la app y la de Python son idénticas, diferencia 0,0 en las 150 528
+ * cifras de cada una de las 4 imágenes), el modelo en el teléfono da hasta 0,059 de diferencia en una probabilidad y
+ * 0,077 en la confianza del degradado rojo-azul, una imagen sintética muy sensible; otras dos imágenes coinciden
+ * hasta la cuarta cifra. Es una diferencia de cómo el intérprete del teléfono calcula el modelo, no del
+ * preprocesado. Con 0,10 esta prueba sigue detectando lo que debe (canales BGR, escala 0–1 o EXIF ignorado cambian las
+ * probabilidades en 0,3 o más), pero **la confianza de la app no es idéntica a la de Python**: el umbral de confianza
+ * debe calibrarse con las cifras del teléfono (ver `docs/pruebas.md`, «Módulo 3b»).
+ */
+private const val TOLERANCIA = 0.10f
 
 /**
  * ÚNICA comprobación automática de que la app prepara la foto igual que el entrenamiento y lee bien la salida
