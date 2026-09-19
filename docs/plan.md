@@ -238,7 +238,8 @@ El cliente Android no puede completar los Módulos 4 y 5 sin estos endpoints. No
 
 | Endpoint | Usado por | Notas |
 |---|---|---|
-| `POST /reportes` | Módulo 4 | Recibe GeoJSON, valida y persiste en PostgreSQL/PostGIS |
+| `POST /reportes` | Módulo 4 | Recibe GeoJSON + foto, valida y persiste. ✅ **Implementado y probado en la Fase 1 (2026-09-19)** (idempotente, con códigos que distinguen lo transitorio de lo permanente); **sin desplegar todavía** |
+| `DELETE /reportes/{idAnonimo}/{idLocal}` | Módulo 6 | Baja idempotente con lápida (ADR-0002). ✅ **Implementado y probado en la Fase 1 (2026-09-19)** |
 | `GET /puntos-criticos?estado=confirmado` | Módulo 5 | Solo agrupaciones ya verificadas en campo |
 | `GET /health` | — | Usado por el pinger anti-cold-start (ver `diseno.md` §4.1), no lo consume el cliente Android. ✅ **Implementado y probado** (2026-09-18); no toca la base de datos |
 | `GET /health/servicios` | — | Diagnóstico con token (cabecera `X-Health-Token`): comprueba Neon+PostGIS y Cloudinary. ✅ **Implementado y probado** (2026-09-18) |
@@ -253,7 +254,7 @@ El cliente Android no puede completar los Módulos 4 y 5 sin estos endpoints. No
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0. Infraestructura | Esqueleto Django, `/health`, `/health/servicios`, `render.yaml`, script `verificar_servicios.py`, guía [`despliegue.md`](./despliegue.md) | ✅ código y pruebas (100) el 2026-09-18 · ✅ **Neon y Cloudinary verificados con cuentas reales por el usuario (2026-09-18)** · ⏳ **falta GitHub privado, Render (Blueprint) y el pinger** |
-| 1. Recibir y guardar | Modelo `reporte` (PostGIS), `POST /reportes` idempotente, `DELETE` con lápida, foto privada en Cloudinary, validación en servidor | ⏳ |
+| 1. Recibir y guardar | Modelos `reporte` y `reporte_eliminado`, `POST /reportes` idempotente, `DELETE` con lápida, foto privada en Cloudinary, validación en servidor (RF-02/RF-09), `migrate` al construir en Render, `verificar_servicios.py --reporte-de-prueba` | ✅ código y **202 pruebas** el 2026-09-19 (incluida la secuencia completa por HTTP real) · ⏳ **falta subirlo a GitHub, dejar que Render lo despliegue y correr `--reporte-de-prueba`** |
 | 2. Agrupamiento | DBSCAN (ε 50 m, MinSamples 4), silueta y proporción de ruido (RF-05/RF-06), `Punto_critico` (CORR-004) | ⏳ |
 | 3. Mapa público | `GET /puntos-criticos?estado=confirmado` (Módulo 5) | ⏳ |
 
@@ -284,7 +285,7 @@ Al terminar cada módulo, antes de pasar al siguiente:
 | 1. Onboarding y consentimiento | ✅ Completado (2026-09-17) |
 | 2. Captura y almacenamiento offline-first | ✅ Completado (2026-09-17) |
 | 3. Clasificación IA on-device | 🔶 **3b integrada en la app (2026-09-18) con el modelo v1 provisional, sin ejecutar en dispositivo** (ADR-0003). 3a: **ejecutado en Colab el 2026-09-18** (modelo v1 provisional de **4 clases**, exactitud de prueba 0,89 sobre un dataset fácil; `escombros` manual). **Sin medir aún con fotos de calle ni "fuera de clase"**; 7 fotos de `organico` sin declarar; 3b (integración Android): bloqueada hasta tener el `.tflite` |
-| 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17); backend real sigue pendiente (esqueleto de la Fase 0 listo el 2026-09-18, falta desplegarlo y la Fase 1; además hay que subir los tiempos de espera de OkHttp, ver `progreso.md`) |
+| 4. Sincronización diferida | ✅ Completado — solo cliente (2026-09-17). Backend: **Fase 1 lista (2026-09-19), falta desplegarla**. Pendiente en el cliente (ver `progreso.md`): `BASE_URL` configurable por variante de compilación, tiempos de espera de OkHttp (~60 s, por el arranque en frío de Render) y tratar 400/413/415/422 como rechazo definitivo en vez de reintentar para siempre |
 | 5. Mapa público | ⏳ No iniciado (bloqueado por backend) |
 | 6. Mis reportes | ✅ Completado (2026-09-18) — con eliminación, ver ADR-0002 |
 | 7. Ajustes | ✅ Completado (2026-09-18) — idioma diferido (CORR-009); correo de contacto pendiente y bloquea la publicación |

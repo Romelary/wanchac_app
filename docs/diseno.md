@@ -165,6 +165,35 @@ Definido por el cliente (Módulos 4 y 6) antes de que exista el backend, para qu
 
 **Seguridad (limitación asumida, ADR-0002)**: al no haber login, `(idAnonimo, idLocal)` funciona como credencial de capacidad para la baja. Es aceptable porque `idAnonimo` es un UUID aleatorio que no se expone públicamente (el mapa público solo muestra `Punto_critico`), pero el backend **no debe** devolverlo en ninguna respuesta pública ni registrarlo en logs de acceso abiertos.
 
+#### Respuestas del servidor (implementado en la Fase 1, 2026-09-19)
+
+La app trata **cualquier respuesta no exitosa como "reintentar"** (`SyncWorker`), salvo el `404` de la baja, que cuenta como cumplida (`EliminarReporteWorker`). Los códigos del servidor distinguen por eso lo transitorio de lo permanente:
+
+| Operación | Código | Significado |
+|---|---|---|
+| `POST /reportes` | **201** | Creado; la foto quedó en Cloudinary como recurso **privado** (`type=authenticated`). |
+| | **200** | Ya recibido (reenvío por respuesta perdida): no se duplica ni se vuelve a subir la foto. |
+| | 400 | Petición mal formada: parte faltante, JSON inválido, UUID, categoría o coordenadas inválidas. |
+| | 410 | El reporte fue dado de baja (lápida): un POST tardío no lo resucita. |
+| | 413 / 415 | Foto de más de 10 MB / no es JPEG (se valida por su firma FF D8 FF). |
+| | 422 | Bien formada pero incumple una regla del estudio: fuera del rectángulo de Wanchaq o fecha imposible. |
+| | 503 | Fallo transitorio de Cloudinary o de la base de datos: reintentar. |
+| `DELETE /reportes/{idAnonimo}/{idLocal}` | **204** | Borrado (fila y foto). |
+| | **404** | No existía; la lápida se registra igual (la baja pudo llegar antes que la subida). |
+| | 503 | Fallo transitorio: **no se borró nada**, reintentar. |
+
+**Garantías implementadas** (ver [ADR-0004](./adr/0004-backend-django-sin-geodjango.md) #15 y #16):
+
+- **Idempotencia por clave natural única** `(idAnonimo, idLocal)`, garantizada por una restricción `UNIQUE` **en la base de datos**, no solo por el código.
+- **Lápida** en una tabla propia (`reporte_eliminado`); las operaciones sobre una misma clave se serializan con un **candado de asesoría de PostgreSQL** (`pg_advisory_xact_lock`), que cierra la carrera POST↔DELETE (un DELETE que no ve el reporte que un POST aún no confirmó).
+- **La baja es atómica**: primero se borra la foto, dentro de la transacción; si Cloudinary falla se revierte todo y la app reintenta. No quedan fotos huérfanas ni bajas a medias.
+- **`public_id` de la foto = hash** de la clave natural, **sin** `idAnonimo`: los identificadores de Cloudinary salen en las URL firmadas que verá quien administre el estudio, y `idAnonimo` es credencial de baja.
+- **Mensajes de error fijos**: nunca repiten lo que envió el cliente (el `geojson` trae el seudónimo y la ubicación). Los registros ocultan todo UUID (`wanchaq_limpio/logs.py`), porque `idAnonimo` viaja en la URL del DELETE.
+- **Datos de IA**: `categoriaIa` y `confianzaIa` van juntas o ninguna; `categoriaIa` solo admite las 4 clases del modelo (nunca `ESCOMBROS` ni `MIXTO`); `confianzaIa` entre 0 y 1.
+- **Validación "dentro de Wanchaq"** con el **mismo rectángulo** que la app (`LimiteDistritalWanchaq.kt`), provisional hasta tener el polígono oficial; entonces pasará a `ST_Within` (CORR-007).
+
+**Pendiente en el cliente**: hoy `SyncWorker` reintenta **para siempre** cualquier respuesta no exitosa, incluidos los errores permanentes (400, 413, 415, 422). Hay que hacer que trate esos códigos como rechazo definitivo (ver `progreso.md`).
+
 **Política pendiente**: qué ocurre con un `Punto_critico` cuando se da de baja un reporte que lo integraba (recalcular la agrupación, marcarlo, o congelar tras la ventana de observación). A definir con el asesor; ver ADR-0002.
 
 ## 5. Arquitectura interna del cliente Android (MVVM + Repository, offline-first)

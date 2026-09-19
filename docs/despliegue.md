@@ -2,7 +2,7 @@
 
 > Guía paso a paso para dejar funcionando la infraestructura del backend de Wanchaq Limpio: la base de datos (Neon), las fotos (Cloudinary) y el servidor (Render). Es también evidencia de tesis: registra **qué se configuró, por qué así y cómo se comprobó**. Decisiones técnicas: [ADR-0004](./adr/0004-backend-django-sin-geodjango.md). Diseño general: [`diseno.md`](./diseno.md) §4.1.
 >
-> Estado (2026-09-18): el **esqueleto** del backend existe y está probado (100 pruebas); **Neon y Cloudinary están verificados con cuentas reales** (§11, evidencia en [`evidencia/`](./evidencia/2026-09-18_verificacion-neon-cloudinary.txt)). **Falta desplegarlo en Render** (§7) y el pinger (§8). La lógica de reportes (Fase 1) viene después.
+> Estado (2026-09-19): el backend está probado (**202 pruebas**, incluida la **Fase 1**: `POST /reportes` y `DELETE`); **Neon y Cloudinary están verificados con cuentas reales** (§11, evidencia en [`evidencia/`](./evidencia/2026-09-18_verificacion-neon-cloudinary.txt)). **Falta comprobar el despliegue en Render** con la Fase 1 (§7, punto 8) y el pinger (§8).
 
 ## 0. Reglas de seguridad (léelas primero)
 
@@ -51,7 +51,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe manage.py test
 ```
 
-La última línea debe terminar en `OK` (100 pruebas; no usan red ni tus claves). Se usa siempre `.\.venv\Scripts\python.exe` para no tener que "activar" el entorno (PowerShell suele bloquear el script de activación).
+La última línea debe terminar en `OK` (202 pruebas; no usan red ni tus claves). Se usa siempre `.\.venv\Scripts\python.exe` para no tener que "activar" el entorno (PowerShell suele bloquear el script de activación).
 
 Luego crea tu archivo de variables:
 
@@ -167,6 +167,14 @@ Render construye el servicio desde un repositorio de GitHub, y el proyecto todav
 
    Verás `OK /health responde (N s)`; si tardó más de 15 s, avisa de que fue el arranque en frío (esperado). Luego `OK base_de_datos (en Render): …` y `OK cloudinary (en Render): …`: eso prueba que **el servidor desplegado**, y no solo tu computadora, llega a Neon y a Cloudinary. El token viaja solo en una cabecera HTTPS, nunca en la URL.
 
+8. **Fase 1 (guardar reportes).** Cada `git push` a `main` hace que Render **redespliegue** solo (`autoDeployTrigger: commit`) y, al construir, aplique las migraciones (`python manage.py migrate --noinput`), que crean en Neon las tablas `reporte` y `reporte_eliminado`. Cuando el despliegue termine, ejecuta el contrato completo de la API contra Render con un reporte de prueba que se borra:
+
+   ```powershell
+   .\.venv\Scripts\python.exe verificar_servicios.py --remoto https://TU-SERVICIO.onrender.com --reporte-de-prueba
+   ```
+
+   Además de los `OK` de los servicios verás seis líneas más: `POST /reportes crea el reporte (201)`, `el mismo reporte reenviado no se duplica (200)`, `DELETE borra el reporte y su foto (204)`, `borrar otra vez es idempotente (404)`, `un POST tardío tras la baja se rechaza (410, lápida)` y `un reporte fuera de Wanchaq se rechaza (422)`. Sube **una** foto de 286 bytes a Cloudinary y la borra; en la base solo queda la lápida (unos bytes). Si la creación falla, el mensaje orienta: **404** = la Fase 1 aún no está desplegada (¿hiciste `git push`?), **500** = las migraciones no se aplicaron (mira *Logs* en Render), **503** = fallaron la base o Cloudinary.
+
 ## 8. Mantener el servicio despierto (pinger)
 
 Render duerme el servicio a los 15 min. Para que no ocurra durante la ventana de observación (motivo y riesgo metodológico: `diseno.md` §4.1):
@@ -210,6 +218,10 @@ No hace falta activarlo hasta que la app empiece a usarse de verdad; mientras de
 | `FALLO token rechazado … no coincide` | El `HEALTH_TOKEN` de tu `.env` y el de Render son distintos. | Iguálalos (el de Render se edita en *Environment*). |
 | `FALLO /health/servicios no existe` | Falta `HEALTH_TOKEN` en Render. | Añádelo en *Environment* y redespliega. |
 | Render: error de compilación con la versión de Python | `PYTHON_VERSION` de `render.yaml` no disponible. | Cámbiala por otra 3.12.x publicada (Django 6.1 exige ≥ 3.12). |
+| `FALLO POST /reportes debía dar 201 y dio 404` | El servicio desplegado no tiene la Fase 1. | Sube los cambios (`git push`) y espera a que Render termine de construir. |
+| `FALLO POST /reportes debía dar 201 y dio 500` | Las tablas no existen: las migraciones no se aplicaron. | En *Logs* de Render busca el error de `migrate` en la construcción; el `buildCommand` de `render.yaml` debe terminar en `python manage.py migrate --noinput`. |
+| `FALLO POST /reportes debía dar 201 y dio 503` | Cloudinary o Neon no respondieron desde Render. | Vuelve a correr `--remoto` sin `--reporte-de-prueba`: te dirá cuál falló. |
+| Render: la construcción falla en `migrate` | Una migración no pudo aplicarse en Neon. | El despliegue anterior **sigue sirviendo** (Render no lo reemplaza si la construcción falla). Pégame las últimas líneas de *Logs* (sin `postgresql://`). |
 | `AVISO Neon está en X (zona A) pero render.yaml usa 'Y' (zona B)` | Neon y Render están en zonas distintas: cada consulta a la base pagaría esa distancia. | Cambia `region:` en `render.yaml` a una de la zona de Neon **antes** de desplegar (después ya no se puede). |
 | Render: *Deploy failed* en el chequeo de salud, o `DisallowedHost` / 400 en el registro | Django rechazó el `Host` con el que Render consulta `/health`. Render usa el subdominio `onrender.com` del servicio (o un dominio propio verificado, si lo tuvieras). | Con el subdominio de Render funciona solo (`RENDER_EXTERNAL_HOSTNAME`). Si añades un dominio propio, ponlo en la variable `ALLOWED_HOSTS` (separado por comas) en el panel. |
 | Render: `ImproperlyConfigured: Falta … SECRET_KEY / DATABASE_URL` en el registro | Falta una variable en el panel (*Environment*). | Añádela y redespliega (**Manual Deploy**). Es el fallo rápido que buscamos: un servidor sin base de datos **no debe** arrancar. |
@@ -243,9 +255,10 @@ Cambia `CLOUDINARY_URL` por el nombre de la variable que indique el aviso. Es un
 
 | Qué | Cómo se comprobó | Resultado |
 |---|---|---|
-| El código del backend, la configuración y el script | `python manage.py test` (100 pruebas) + 86 mutaciones deliberadas | ✅ en verde (2026-09-18) |
+| El código del backend, la configuración y el script | `python manage.py test` (202 pruebas) + 141 mutaciones deliberadas | ✅ en verde (2026-09-18) |
 | La aplicación WSGI real (la que carga gunicorn) por HTTP | Script de una sola vez con `wsgiref`: `/health` 200, `/health/servicios` 401 sin token y 503 con la base inalcanzable, sin filtrar la cadena de conexión | ✅ 2026-09-18 |
 | **Neon** y **Cloudinary** reales | El usuario ejecutó `verificar_servicios.py --subida` con sus credenciales: conexión con TLS, **PostGIS 3.6** operativo, credenciales aceptadas, subida **privada** (`authenticated`), URL pública **404**, URL firmada **200**, recurso borrado. Salida completa en [`evidencia/2026-09-18_verificacion-neon-cloudinary.txt`](./evidencia/2026-09-18_verificacion-neon-cloudinary.txt) | ✅ TODO OK (2026-09-18) |
 | Que se use el par de claves **nuevo** de Cloudinary | Pendiente: confirmar en *Settings → API Keys* que el par que se pegó por error en el chat está **desactivado o borrado** y volver a correr el verificador (si sigue en TODO OK, se usa el nuevo) | ⏳ |
-| **Render** (servicio desplegado) | **Pendiente**: GitHub privado + Blueprint + `verificar_servicios.py --remoto` (§7) | ⏳ |
+| **Render** (servicio desplegado, Fase 0) | Pendiente de registrar: `verificar_servicios.py --remoto` (§7, punto 7) | ⏳ |
+| **Fase 1 en Render** (guardar reportes) | Pendiente: `git push`, construcción con `migrate`, y `verificar_servicios.py --remoto … --reporte-de-prueba` (§7, punto 8). En la suite, la secuencia completa ya pasa por HTTP real contra la aplicación con Cloudinary simulado | ⏳ |
 | Comando de arranque `gunicorn …` | Sin comprobar localmente (gunicorn no corre en Windows); se comprobará en el primer despliegue | ⏳ |
