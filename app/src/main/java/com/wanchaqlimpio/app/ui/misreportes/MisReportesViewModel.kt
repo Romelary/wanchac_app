@@ -54,4 +54,7 @@ class MisReportesViewModel
                 reporteRepository.eliminarReporte(id)
             }
         }
+
+        /** «Enviar ahora»: vuelve a intentar enseguida el envío de los reportes pendientes. */
+        fun enviarAhora() = reporteRepository.enviarPendientesAhora()
     }

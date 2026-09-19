@@ -5,6 +5,7 @@ import androidx.compose.ui.res.stringResource
 import com.wanchaqlimpio.app.R
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.EstadoReporte
+import com.wanchaqlimpio.app.domain.model.MotivoFalloEnvio
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -35,6 +36,20 @@ fun EstadoReporte.etiqueta(): String =
         EstadoReporte.AGRUPADO -> stringResource(R.string.estado_agrupado)
         EstadoReporte.VERIFICADO -> stringResource(R.string.estado_verificado)
         EstadoReporte.DESCARTADO -> stringResource(R.string.estado_descartado)
+        EstadoReporte.RECHAZADO -> stringResource(R.string.estado_rechazado)
+    }
+
+/** Frases cortas, en minúscula, para completar «último fallo: …» o «Motivo: …» (ver strings.xml). */
+@Composable
+fun MotivoFalloEnvio.etiqueta(): String =
+    when (this) {
+        MotivoFalloEnvio.SIN_CONEXION -> stringResource(R.string.envio_motivo_sin_conexion)
+        MotivoFalloEnvio.TIEMPO_AGOTADO -> stringResource(R.string.envio_motivo_tiempo_agotado)
+        MotivoFalloEnvio.SERVIDOR_OCUPADO -> stringResource(R.string.envio_motivo_servidor_ocupado)
+        MotivoFalloEnvio.RESPUESTA_INESPERADA -> stringResource(R.string.envio_motivo_respuesta_inesperada)
+        MotivoFalloEnvio.ERROR_INTERNO -> stringResource(R.string.envio_motivo_error_interno)
+        MotivoFalloEnvio.RECHAZADO_POR_EL_SERVIDOR -> stringResource(R.string.envio_motivo_rechazado)
+        MotivoFalloEnvio.FOTO_NO_DISPONIBLE -> stringResource(R.string.envio_motivo_foto_no_disponible)
     }
 
 private val FORMATO_FECHA_HORA = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)

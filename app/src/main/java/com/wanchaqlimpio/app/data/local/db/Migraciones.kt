@@ -15,3 +15,22 @@ val MIGRACION_1_2 =
             db.execSQL("ALTER TABLE reporte ADD COLUMN confianzaIa REAL")
         }
     }
+
+/**
+ * Versión 2 → 3: seguimiento del envío de cada reporte (intentos, cuándo lo aceptó el servidor, último fallo y la
+ * conexión que había), para explicar el estado al ciudadano y medir la confiabilidad. Los reportes ya guardados
+ * quedan con 0 intentos y el resto en `NULL` ("no se registró"), que es lo que realmente ocurrió: ninguno se pierde
+ * ni cambia de estado.
+ */
+val MIGRACION_2_3 =
+    object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE reporte ADD COLUMN intentosEnvio INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE reporte ADD COLUMN ultimoIntentoEpochMillis INTEGER")
+            db.execSQL("ALTER TABLE reporte ADD COLUMN enviadoEpochMillis INTEGER")
+            db.execSQL("ALTER TABLE reporte ADD COLUMN motivoUltimoFallo TEXT")
+            db.execSQL("ALTER TABLE reporte ADD COLUMN codigoHttpUltimoFallo INTEGER")
+            db.execSQL("ALTER TABLE reporte ADD COLUMN redAlGuardar TEXT")
+            db.execSQL("ALTER TABLE reporte ADD COLUMN redAlUltimoIntento TEXT")
+        }
+    }

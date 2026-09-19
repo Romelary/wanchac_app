@@ -60,6 +60,8 @@ private class ReporteRepositoryFalso(
     override fun observarReportesDe(idAnonimo: String): Flow<List<Reporte>> = flowOf(reportesExistentes)
 
     override suspend fun eliminarReporte(id: Long) = Unit
+
+    override fun enviarPendientesAhora() = Unit
 }
 
 private class ConsentimientoRepositoryFalso(

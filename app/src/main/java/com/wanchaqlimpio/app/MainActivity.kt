@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wanchaqlimpio.app.core.sync.ProgramadorSincronizacion
 import com.wanchaqlimpio.app.ui.ajustes.AjustesScreen
 import com.wanchaqlimpio.app.ui.mapa.MapaScreen
 import com.wanchaqlimpio.app.ui.misreportes.MisReportesScreen
@@ -31,11 +32,18 @@ import com.wanchaqlimpio.app.ui.onboarding.OnboardingViewModel
 import com.wanchaqlimpio.app.ui.reporte.ReporteScreen
 import com.wanchaqlimpio.app.ui.theme.WanchaqLimpioTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var programadorSincronizacion: ProgramadorSincronizacion
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Al abrir la app se asegura que haya un envío encolado si quedaron reportes pendientes (por ejemplo, tras
+        // cerrarla a la fuerza o reiniciar el teléfono). Solo en un arranque nuevo, no al girar la pantalla.
+        if (savedInstanceState == null) programadorSincronizacion.sincronizarAlIniciar()
         enableEdgeToEdge()
         setContent {
             WanchaqLimpioTheme {

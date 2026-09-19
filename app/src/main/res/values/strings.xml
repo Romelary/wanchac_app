@@ -62,6 +62,24 @@
     <string name="estado_agrupado">En análisis</string>
     <string name="estado_verificado">Verificado en campo</string>
     <string name="estado_descartado">No confirmado</string>
+    <string name="estado_rechazado">No se pudo enviar</string>
+
+    <!-- Estado del envío de cada reporte (Módulo 4): se muestra en "Mis reportes" -->
+    <plurals name="mis_reportes_pendientes">
+        <item quantity="one">%1$d reporte sin enviar</item>
+        <item quantity="other">%1$d reportes sin enviar</item>
+    </plurals>
+    <string name="mis_reportes_boton_enviar_ahora">Enviar ahora</string>
+    <string name="envio_detalle_pendiente">Intentos: %1$d · último fallo: %2$s</string>
+    <string name="envio_detalle_enviado">Enviado el %1$s</string>
+    <string name="envio_detalle_rechazado">Motivo: %1$s. Puedes eliminarlo y volver a reportarlo.</string>
+    <string name="envio_motivo_sin_conexion">sin conexión</string>
+    <string name="envio_motivo_tiempo_agotado">el servidor tardó demasiado en responder</string>
+    <string name="envio_motivo_servidor_ocupado">el servidor no está disponible</string>
+    <string name="envio_motivo_respuesta_inesperada">respuesta inesperada del servidor</string>
+    <string name="envio_motivo_error_interno">error interno de la aplicación</string>
+    <string name="envio_motivo_rechazado">el servidor no aceptó este reporte</string>
+    <string name="envio_motivo_foto_no_disponible">la foto ya no está en el teléfono</string>
 
     <string name="categoria_plastico">Plástico</string>
     <string name="categoria_carton">Cartón</string>

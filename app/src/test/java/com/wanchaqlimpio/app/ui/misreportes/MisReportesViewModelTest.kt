@@ -49,6 +49,13 @@ private class ReporteRepositoryFalso(
         idsEliminados += id
         reportes.value = reportes.value.filterNot { it.id == id }
     }
+
+    var enviosAhora = 0
+        private set
+
+    override fun enviarPendientesAhora() {
+        enviosAhora++
+    }
 }
 
 private class ConsentimientoRepositoryFalso(
@@ -134,4 +141,15 @@ class MisReportesViewModelTest {
             }
             assertEquals(listOf(1L), repositorio.idsEliminados)
         }
+
+    @Test
+    fun `enviar ahora pide al repositorio reintentar el envio de los pendientes`() {
+        val repositorio = ReporteRepositoryFalso(listOf(reporte(1)))
+        val viewModel = MisReportesViewModel(repositorio, ConsentimientoRepositoryFalso("device-1"))
+
+        viewModel.enviarAhora()
+        viewModel.enviarAhora()
+
+        assertEquals(2, repositorio.enviosAhora)
+    }
 }

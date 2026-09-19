@@ -10,6 +10,9 @@ package com.wanchaqlimpio.app.domain.model
  * [confianzaIa] son la respuesta cruda del modelo de IA, guardadas aparte para poder medir la exactitud
  * de la IA (Anexo 2) sin mezclarla con las correcciones humanas; son `null` si el modelo no estuvo
  * disponible (ver [SugerenciaIa]).
+ *
+ * [redAlGuardar] y [envio] son datos técnicos para las pruebas de confiabilidad y para explicar el estado del envío
+ * (ver [SeguimientoDeEnvio]); solo viven en el teléfono, nunca se mandan al servidor.
  */
 data class Reporte(
     val id: Long = 0,
@@ -22,4 +25,6 @@ data class Reporte(
     val fechaHoraEpochMillis: Long,
     val categoriaIa: CategoriaResiduo? = null,
     val confianzaIa: Float? = null,
+    val redAlGuardar: TipoDeRed? = null,
+    val envio: SeguimientoDeEnvio = SeguimientoDeEnvio(),
 )

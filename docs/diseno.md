@@ -167,7 +167,7 @@ Definido por el cliente (Módulos 4 y 6) antes de que exista el backend, para qu
 
 #### Respuestas del servidor (implementado en la Fase 1, 2026-09-18)
 
-La app trata **cualquier respuesta no exitosa como "reintentar"** (`SyncWorker`), salvo el `404` de la baja, que cuenta como cumplida (`EliminarReporteWorker`). Los códigos del servidor distinguen por eso lo transitorio de lo permanente:
+La app distingue lo **transitorio** (se reintenta) de lo **permanente** (el reporte queda como `RECHAZADO`): ver «Qué hace la app con cada respuesta» más abajo. En la baja, el `404` cuenta como cumplida (`EliminarReporteWorker`). Los códigos del servidor distinguen por eso lo transitorio de lo permanente:
 
 | Operación | Código | Significado |
 |---|---|---|
@@ -192,7 +192,29 @@ La app trata **cualquier respuesta no exitosa como "reintentar"** (`SyncWorker`)
 - **Datos de IA**: `categoriaIa` y `confianzaIa` van juntas o ninguna; `categoriaIa` solo admite las 4 clases del modelo (nunca `ESCOMBROS` ni `MIXTO`); `confianzaIa` entre 0 y 1.
 - **Validación "dentro de Wanchaq"** con el **mismo rectángulo** que la app (`LimiteDistritalWanchaq.kt`), provisional hasta tener el polígono oficial; entonces pasará a `ST_Within` (CORR-007).
 
-**Pendiente en el cliente**: hoy `SyncWorker` reintenta **para siempre** cualquier respuesta no exitosa, incluidos los errores permanentes (400, 413, 415, 422). Hay que hacer que trate esos códigos como rechazo definitivo (ver `progreso.md`).
+#### Qué hace la app con cada respuesta (implementado el 2026-09-19; decisiones y alternativas en [ADR-0006](./adr/0006-envio-confiable-de-reportes.md))
+
+Antes, `SyncWorker` reintentaba **para siempre** cualquier respuesta no exitosa: un reporte que el servidor nunca aceptaría (400, 413, 415, 422) se reenviaba sin fin, gastando batería y datos, y contaba como «pendiente» en cualquier medición. Ahora cada intento se clasifica (`core/sync/ResultadoEnvio.kt`):
+
+| Lo que ocurre | Qué hace la app | Estado del reporte | Motivo que se anota |
+|---|---|---|---|
+| `200` o `201` (cualquier 2xx) | Lo da por enviado | `SINCRONIZADO` (y anota cuándo) | — |
+| `400`, `410`, `413`, `415`, `422` | **Definitivo**: no se reintenta | `RECHAZADO` | `RECHAZADO_POR_EL_SERVIDOR` y el código |
+| `408`, `429` y todo `5xx` | Reintenta con espera | `PENDIENTE` | `SERVIDOR_OCUPADO` y el código |
+| `404`, `401`, `403`, redirecciones… | Reintenta: **no dicen nada del reporte** (suele ser una dirección equivocada o un servicio recién desplegado) | `PENDIENTE` | `RESPUESTA_INESPERADA` y el código |
+| Sin red / no llega al servidor | Reintenta | `PENDIENTE` | `SIN_CONEXION` |
+| El servidor tarda demasiado (o estaba despertando, ≈ 1 min) | Reintenta | `PENDIENTE` | `TIEMPO_AGOTADO` |
+| La foto ya no está, no se lee o está vacía | **Definitivo**, sin llamar a la red (sin foto no hay evidencia, RF-08) | `RECHAZADO` | `FOTO_NO_DISPONIBLE` |
+| Una excepción imprevista de la app | Reintenta **5 veces** y luego lo da por definitivo (es un error nuestro) | `PENDIENTE` → `RECHAZADO` | `ERROR_INTERNO` |
+
+**Reglas del envío** (todas con prueba en `SyncWorkerTest`, ver `pruebas.md`):
+
+- **Cada reporte por separado**: el fallo de uno no impide enviar los demás. Se envían **del más antiguo al más nuevo**.
+- **Un reporte guardado mientras se envía otro se envía en la misma corrida** (la lista se vuelve a leer tras cada vuelta) y, si ya no hay corrida, se encola encadenado detrás (`APPEND_OR_REPLACE`); con la política anterior (`KEEP`) quedaba sin enviar hasta el siguiente reporte o reinicio.
+- **Espera entre reintentos lineal** (30 s, 60 s, 90 s…), no exponencial: con la exponencial, tras una racha de fallos la espera llega a horas justo cuando vuelve la conexión.
+- **Al abrir la app** se asegura que haya un envío encolado (`KEEP`: no se apilan) y en «Mis reportes» hay un botón **«Enviar ahora»** que descarta la espera y reintenta enseguida.
+- **Cada intento deja constancia en el reporte** (solo en el teléfono, nunca se manda al servidor): número de intentos, momento del último, momento en que el servidor lo aceptó, último motivo de fallo (con su código HTTP) y la conexión que había al guardar y en el último intento (`SIN_RED`, `WIFI`, `DATOS_MOVILES`, `SIN_INTERNET` —una red que Android no valida— u `OTRA`). Es lo que permite medir el indicador *«Reportes guardados y sincronizados según condición de red, ≥ 95 % en cada condición»* (Anexo 2) sin depender de la memoria de quien hace la prueba.
+- Si el ciudadano **elimina un reporte mientras se envía**, el resultado del envío no lo vuelve a crear.
 
 #### Contrato del mapa público: `GET /puntos-criticos` (definido por el cliente el 2026-09-19; el servidor lo implementa desde ese día de forma **provisional**, siempre con una colección vacía)
 
@@ -337,6 +359,8 @@ erDiagram
     }
 ```
 
+> **Solo en el teléfono (base local, versión 3)**: además de estos campos, la tabla `reporte` de Room guarda el seguimiento del envío —`intentosEnvio`, `ultimoIntentoEpochMillis`, `enviadoEpochMillis`, `motivoUltimoFallo`, `codigoHttpUltimoFallo`— y la conexión (`redAlGuardar`, `redAlUltimoIntento`). No forman parte del contrato con el servidor ni de este modelo, y no se envían: existen para explicar el estado al ciudadano y para las pruebas de confiabilidad ([ADR-0006](./adr/0006-envio-confiable-de-reportes.md)).
+
 > Nota: `id_anonimo` se genera localmente en el dispositivo (UUID v4) al aceptar el consentimiento informado (Anexo 9) y no se vincula a ningún dato personal. Su único propósito técnico es permitir el filtro de duplicados (RNF-07: mismo dispositivo, <30 min, <20 m) y el borrado de "mis reportes" (RNF-05).
 
 ---
@@ -347,14 +371,18 @@ erDiagram
 stateDiagram-v2
     [*] --> Pendiente: se crea en el dispositivo
     Pendiente --> Sincronizado: hay red y el servidor confirma recepción
-    Pendiente --> Pendiente: sin red (persiste en Room)
+    Pendiente --> Pendiente: sin red o fallo pasajero (persiste en Room; se reintenta)
+    Pendiente --> Rechazado: el servidor no lo aceptará nunca (400/410/413/415/422) o la foto ya no está
     Sincronizado --> Agrupado: DBSCAN lo asigna a un Punto_critico
     Sincronizado --> Descartado: queda como ruido espacial
     Agrupado --> Verificado: Observador confirma el foco en campo (Instrumento 2)
     Agrupado --> Descartado: Observador no encuentra el foco
     Verificado --> [*]
     Descartado --> [*]
+    Rechazado --> [*]
 ```
+
+> `Rechazado` es un estado **solo local**: lo pone la app cuando el envío termina en un rechazo definitivo (ver «Qué hace la app con cada respuesta», §4.2) y el servidor no lo conoce. El ciudadano lo ve como «No se pudo enviar» y puede eliminar el reporte y volver a reportar. Se añadió porque sin él un reporte que el servidor nunca aceptará se reenviaría para siempre y contaría como «pendiente» en las mediciones ([ADR-0006](./adr/0006-envio-confiable-de-reportes.md)). Es una ampliación de la lista `pendiente, sincronizado, agrupado, verificado, descartado` del Cap. IV que solo existe en el teléfono.
 
 ---
 

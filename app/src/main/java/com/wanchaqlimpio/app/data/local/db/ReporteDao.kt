@@ -3,6 +3,7 @@ package com.wanchaqlimpio.app.data.local.db
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.wanchaqlimpio.app.data.local.entity.ReporteEntity
 import com.wanchaqlimpio.app.domain.model.EstadoReporte
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +25,8 @@ interface ReporteDao {
     @Query("DELETE FROM reporte WHERE id = :id")
     suspend fun eliminar(id: Long)
 
-    @Query("SELECT * FROM reporte WHERE estado = :estado")
+    /** Del más antiguo al más nuevo: el envío respeta el orden en que se hicieron los reportes. */
+    @Query("SELECT * FROM reporte WHERE estado = :estado ORDER BY fechaHoraEpochMillis ASC, id ASC")
     suspend fun obtenerPorEstado(estado: EstadoReporte): List<ReporteEntity>
 
     @Query("UPDATE reporte SET estado = :nuevoEstado WHERE id = :id")
@@ -32,4 +34,11 @@ interface ReporteDao {
         id: Long,
         nuevoEstado: EstadoReporte,
     )
+
+    /**
+     * Guarda el resultado de un intento de envío. Si el reporte ya no existe (el ciudadano lo eliminó mientras se
+     * enviaba) no hace nada: `@Update` nunca lo vuelve a crear.
+     */
+    @Update
+    suspend fun actualizar(entity: ReporteEntity)
 }

@@ -25,8 +25,9 @@ const val ESCRITURA_SEGUNDOS = 60L
 const val LLAMADA_SEGUNDOS = 150L
 
 /**
- * @param nivelDeRegistro en depuración `BODY` (registra TODO, incluidos los identificadores de dispositivo y los bytes
- * de las fotos: nunca debe llegar a publicación); en publicación `NONE`.
+ * @param nivelDeRegistro en depuración `BASIC` (solo la línea de petición y el código de respuesta); en publicación
+ * `NONE`. `BODY` registraría TODO, incluidos los identificadores de dispositivo, las coordenadas y los bytes de las
+ * fotos: nunca debe llegar a publicación, y en depuración además copia las peticiones enteras y falsea los tiempos.
  */
 fun crearClienteHttp(nivelDeRegistro: HttpLoggingInterceptor.Level): OkHttpClient =
     OkHttpClient

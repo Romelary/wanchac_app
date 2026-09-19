@@ -1,5 +1,6 @@
 package com.wanchaqlimpio.app.data.repository
 
+import com.wanchaqlimpio.app.core.network.MonitorDeRed
 import com.wanchaqlimpio.app.core.sync.ProgramadorEliminacion
 import com.wanchaqlimpio.app.core.sync.ProgramadorSincronizacion
 import com.wanchaqlimpio.app.data.local.db.ReporteDao
@@ -26,6 +27,7 @@ class ReporteRepositoryImpl
         private val programadorSincronizacion: ProgramadorSincronizacion,
         private val programadorEliminacion: ProgramadorEliminacion,
         private val almacenFotos: AlmacenFotos,
+        private val monitorDeRed: MonitorDeRed,
     ) : ReporteRepository {
         override suspend fun crearReporte(
             idAnonimo: String,
@@ -51,6 +53,8 @@ class ReporteRepositoryImpl
                         fechaHoraEpochMillis = ahoraEpochMillis,
                         categoriaIa = sugerenciaIa?.categoria,
                         confianzaIa = sugerenciaIa?.confianza,
+                        // Dato técnico para las pruebas de confiabilidad: solo se guarda en el teléfono.
+                        redAlGuardar = monitorDeRed.actual(),
                     )
                 dao.insertar(reporte.aEntity())
                 // Encola la sincronización; WorkManager espera a que haya red
@@ -63,6 +67,8 @@ class ReporteRepositoryImpl
 
         override fun observarReportesDe(idAnonimo: String): Flow<List<Reporte>> =
             dao.observarPorDispositivo(idAnonimo).map { lista -> lista.map { it.aDominio() } }
+
+        override fun enviarPendientesAhora() = programadorSincronizacion.sincronizarAhora()
 
         override suspend fun eliminarReporte(id: Long) {
             val entity = dao.obtenerPorId(id) ?: return

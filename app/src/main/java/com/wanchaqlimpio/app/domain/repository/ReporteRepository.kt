@@ -32,4 +32,7 @@ interface ReporteRepository {
      * en el backend (RNF-05, ADR-0002). No hace nada si el reporte no existe.
      */
     suspend fun eliminarReporte(id: Long)
+
+    /** «Enviar ahora»: vuelve a intentar enseguida el envío de los reportes pendientes (si hay red). */
+    fun enviarPendientesAhora()
 }

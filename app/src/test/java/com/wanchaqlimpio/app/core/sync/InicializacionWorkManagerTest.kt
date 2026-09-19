@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.test.core.app.ApplicationProvider
-import androidx.work.WorkManager
+import androidx.work.Configuration
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -42,11 +42,12 @@ class InicializacionWorkManagerTest {
     }
 
     @Test
-    fun `WorkManager arranca con la configuracion de la aplicacion, con la fabrica de Hilt`() {
-        // Robolectric NO ejecuta el inicializador automático, así que esta prueba no delata su presencia (para eso
-        // está la anterior). Comprueba la otra mitad: que, sin él, WorkManager se inicia con lo que entrega
-        // WanchaqLimpioApp.
-        val fabrica = WorkManager.getInstance(contexto).configuration.workerFactory
+    fun `la configuracion de WorkManager que entrega la aplicacion trae la fabrica de Hilt`() {
+        // Se pide directamente a la aplicación y no a `WorkManager.getInstance`: WorkManager es un singleton del
+        // proceso y otras pruebas (con su propio WorkManager de prueba) pueden haberlo iniciado antes. Robolectric
+        // tampoco ejecuta el inicializador automático, así que esta prueba no delata su presencia (para eso está la
+        // anterior): comprueba que, sin él, WorkManager se inicia con lo que entrega WanchaqLimpioApp.
+        val fabrica = (contexto as Configuration.Provider).workManagerConfiguration.workerFactory
 
         assertTrue("fábrica en uso: ${fabrica.javaClass.name}", fabrica is HiltWorkerFactory)
     }

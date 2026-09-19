@@ -3,6 +3,7 @@ package com.wanchaqlimpio.app.data.repository
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.wanchaqlimpio.app.core.network.MonitorDeRed
 import com.wanchaqlimpio.app.core.sync.ProgramadorEliminacion
 import com.wanchaqlimpio.app.core.sync.ProgramadorSincronizacion
 import com.wanchaqlimpio.app.data.local.db.AppDatabase
@@ -10,6 +11,7 @@ import com.wanchaqlimpio.app.data.local.entity.ReporteEntity
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.EstadoReporte
 import com.wanchaqlimpio.app.domain.model.SugerenciaIa
+import com.wanchaqlimpio.app.domain.model.TipoDeRed
 import com.wanchaqlimpio.app.domain.model.Ubicacion
 import com.wanchaqlimpio.app.domain.usecase.ResultadoValidacionReporte
 import com.wanchaqlimpio.app.domain.usecase.ValidarNuevoReporte
@@ -31,10 +33,28 @@ private const val LONGITUD_DENTRO = -71.950
 private class ProgramadorSincronizacionFalso : ProgramadorSincronizacion {
     var vecesLlamado = 0
         private set
+    var vecesAlIniciar = 0
+        private set
+    var vecesAhora = 0
+        private set
 
     override fun programarSincronizacion() {
         vecesLlamado++
     }
+
+    override fun sincronizarAlIniciar() {
+        vecesAlIniciar++
+    }
+
+    override fun sincronizarAhora() {
+        vecesAhora++
+    }
+}
+
+private class MonitorDeRedFalso(
+    var red: TipoDeRed = TipoDeRed.WIFI,
+) : MonitorDeRed {
+    override fun actual(): TipoDeRed = red
 }
 
 private class ProgramadorEliminacionFalso : ProgramadorEliminacion {
@@ -55,6 +75,7 @@ class ReporteRepositoryImplTest {
     private lateinit var repositorio: ReporteRepositoryImpl
     private lateinit var programadorSincronizacion: ProgramadorSincronizacionFalso
     private lateinit var programadorEliminacion: ProgramadorEliminacionFalso
+    private val monitorDeRed = MonitorDeRedFalso()
     private lateinit var carpetaFotos: File
 
     @Before
@@ -75,6 +96,7 @@ class ReporteRepositoryImplTest {
                 programadorEliminacion,
                 // Almacén real (no un fake): así se comprueba que la foto se borra del disco de verdad.
                 AlmacenFotosImpl(contexto),
+                monitorDeRed,
             )
         carpetaFotos = File(contexto.cacheDir, "repo-test").apply { mkdirs() }
     }
@@ -198,6 +220,34 @@ class ReporteRepositoryImplTest {
             assertNull(guardado.categoriaIa)
             assertNull(guardado.confianzaIa)
         }
+
+    @Test
+    fun `al guardar se anota la conexion que habia y el envio empieza sin intentos`() =
+        runTest {
+            monitorDeRed.red = TipoDeRed.DATOS_MOVILES
+
+            repositorio.crearReporte(
+                idAnonimo = "device-1",
+                categoria = CategoriaResiduo.PLASTICO,
+                ubicacion = Ubicacion(LATITUD_DENTRO, LONGITUD_DENTRO, precisionMetros = 5f),
+                fotoPath = "foto.jpg",
+                ahoraEpochMillis = 0L,
+            )
+
+            val guardado = repositorio.observarReportesDe("device-1").first().single()
+            assertEquals(TipoDeRed.DATOS_MOVILES, guardado.redAlGuardar)
+            assertEquals(0, guardado.envio.intentos)
+            assertNull(guardado.envio.enviadoEpochMillis)
+            assertNull(guardado.envio.ultimoFallo)
+        }
+
+    @Test
+    fun `enviar ahora pide un envio inmediato y no encola uno normal`() {
+        repositorio.enviarPendientesAhora()
+
+        assertEquals(1, programadorSincronizacion.vecesAhora)
+        assertEquals(0, programadorSincronizacion.vecesLlamado)
+    }
 
     @Test
     fun `un reporte rechazado no se persiste`() =

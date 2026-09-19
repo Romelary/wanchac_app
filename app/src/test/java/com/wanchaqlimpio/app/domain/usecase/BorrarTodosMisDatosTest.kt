@@ -42,6 +42,8 @@ private class ReporteRepositoryFalso(
         check(id != fallaAlEliminar) { "fallo simulado al eliminar el reporte $id" }
         eventos += "eliminar:$id"
     }
+
+    override fun enviarPendientesAhora() = Unit
 }
 
 private class ConsentimientoRepositoryFalso(

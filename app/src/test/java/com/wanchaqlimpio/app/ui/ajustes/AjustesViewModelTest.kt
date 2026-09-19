@@ -40,6 +40,8 @@ private class ReporteRepositoryFalso : ReporteRepository {
     override fun observarReportesDe(idAnonimo: String): Flow<List<Reporte>> = flowOf(emptyList())
 
     override suspend fun eliminarReporte(id: Long) = Unit
+
+    override fun enviarPendientesAhora() = Unit
 }
 
 /** [compuerta] permite mantener "en curso" el borrado hasta que la prueba decida terminarlo. */
