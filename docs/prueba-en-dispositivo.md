@@ -292,13 +292,25 @@ Captura (los focos son inventados, sin datos personales): [mapa con los dos foco
 
 **Sin verificar**: G4 (arrastrar el mapa fuera del distrito: que tope), G5 (modo avión: «No se pudo conectar…» con **Reintentar**), G6 (girar la tablet y pantalla dividida), G8 (servidor dormido: hasta ≈ 1 min sin error) y **todo contra Render** (el servidor real). **Tampoco se puede saber desde aquí** si la clave está bien **restringida** (paquete + SHA-1 + solo *Maps SDK for Android*): el mapa se dibuja igual con una clave sin restringir; eso se revisa en la consola de Google Cloud.
 
+## 5e. Sesión 4 — 2026-09-19, Galaxy Tab S9+ (el GPS real, por primera vez)
+
+Compilación **normal** (`./gradlew installDebug -PbaseUrl=http://localhost:8000`, sin ubicación simulada; `Versión 1.0`), con los permisos de cámara y de ubicación **precisa** ya concedidos y la ubicación del sistema en «alta precisión». **Las coordenadas de la tablet no se leyeron ni se anotan aquí** (regla del proyecto); solo lo que la app muestra.
+
+| Escenario | Resultado | Observación |
+|---|---|---|
+| **H9** El aviso de GPS con la cámara abierta | **OK (en parte)** | Con la cámara recién abierta dijo «**GPS impreciso · ±25 m · espera unos segundos**» y a los pocos segundos «**GPS listo · ±4 m**», luego «±3 m»: el `ProveedorUbicacionFused` **real** entrega lecturas y la pantalla pasa de un estado al otro sola. **No fue un arranque en frío** (la tablet ya venía usando ubicación), así que **no mide** cuánto tarda un GPS apagado en llegar a 15 m |
+| **C7** Reportar **fuera de Wanchaq** (variante normal) | **OK** | Con la lectura ya buena (±3 a ±4 m), al tocar «Guardar reporte» respondió **a los 2 s**: «**Esta ubicación está fuera del distrito de Wanchaq.**» con «**Reintentar**» y **sin esperar** al GPS (no hacía falta). Es decir: **donde estaba la tablet no es Wanchaq** y el filtro del distrito funciona con coordenadas reales. Como es un rechazo real, la foto se borró (diseño de ADR-0007) |
+| **C8** GPS real **dentro** de Wanchaq y en exteriores | **Pendiente** | No se pudo: la tablet no estaba en el distrito. Hay que salir a un lugar despejado de Wanchaq (lo hará el equipo o el usuario) |
+
+**Lo que sigue sin verificar del GPS real**: la **espera de hasta 30 s** con mala señal y el estado «GPS impreciso» con «Reintentar ubicación» (aquí la lectura salió buena enseguida), el tiempo hasta el primer fijo **en frío**, y **un reporte aceptado** con coordenadas reales dentro de Wanchaq. Sirve de aviso para el equipo: **fuera del distrito la app rechaza a propósito** los reportes, así que los datos válidos **solo** se obtienen dentro de Wanchaq.
+
 ---
 
 ## 6. Dispositivos probados
 
 | Dispositivo | Android / One UI | Fecha | Resultado global | Notas |
 |---|---|---|---|---|
-| Galaxy Tab S9+ (SM-X810) | Android 16 / One UI 8.0.5 | 2026-09-18 y 2026-09-19 | *en curso* (ver 5b, 5c y 5d) | Sesión 1: instalación y consentimiento en horizontal. **Sesión 2**: migración de la base, envío y fallos contra un **servidor falso**, foto reducida, permisos, íconos; **Sesión 3**: el mapa con la clave real de Google Maps (G1, G2, G7); falta girar el equipo, el GPS real, modo avión / Wi-Fi sin salida / reinicio y el servidor real |
+| Galaxy Tab S9+ (SM-X810) | Android 16 / One UI 8.0.5 | 2026-09-18 y 2026-09-19 | *en curso* (ver 5b, 5c, 5d y 5e) | Sesión 1: instalación y consentimiento en horizontal. **Sesión 2**: migración de la base, envío y fallos contra un **servidor falso**, foto reducida, permisos, íconos; **Sesión 4**: el GPS real (lecturas de ±3 a ±25 m; fuera del distrito rechaza). **Sesión 3**: el mapa con la clave real de Google Maps (G1, G2, G7); falta girar el equipo, el GPS real, modo avión / Wi-Fi sin salida / reinicio y el servidor real |
 | Un teléfono (recomendado además de la tablet: las tabletas no representan a quien reporta en la calle) | | | *pendiente* | |
 
 ## 7. Problemas conocidos al preparar la prueba
