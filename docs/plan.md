@@ -190,6 +190,15 @@ flowchart TD
 - **Objetivo**: mostrar los `Punto_critico` con `estado_verificacion = confirmado`.
 - **Requisitos que satisface**: derivado de la corrección del punto 0 de `diseno.md` (visibilidad pública, no admin).
 - **Entregables**: pantalla de mapa (Google Maps SDK o Mapbox), consumo de `GET /puntos-criticos`, sin edición.
+- **Decisión pendiente (2026-09-18): dónde vive el mapa público.** El plan lo pone **dentro de la app**, pero la tesis menciona un **panel web con React/Leaflet** (`progreso.md`, Sesión 1). Son alcances distintos y hay que elegir antes de construir. Datos verificados el 2026-09-18:
+
+  | Opción | Qué exige | Ventajas | Inconvenientes |
+  |---|---|---|---|
+  | **A. En la app con Google Maps SDK** (Maps Compose) | Un proyecto de Google Cloud **con cuenta de facturación** (tarjeta), la SDK activada y una clave restringida por paquete y huella SHA-1 ([documentación de Google](https://developers.google.com/maps/documentation/android-sdk/get-api-key)). La clave viaja en el APK | Mejor experiencia nativa; es lo que dice el plan | Tarjeta y cuenta de Google Cloud; la tabla de precios de Google es ambigua para esta SDK ([precios](https://developers.google.com/maps/billing-and-pricing/pricing)): **no se pudo confirmar el costo** a esta escala |
+  | **B. Página web con Leaflet + teselas de OpenStreetMap** (la app la abre en el navegador o en un `WebView`) | Nada: sin cuenta, sin clave, sin tarjeta. Uso **ligero** de las teselas de OSM: atribución visible, `User-Agent` descriptivo, caché de al menos 7 días; prohibidos la descarga masiva y el uso sin conexión; **sin garantía de disponibilidad** ([política de OSM](https://operations.osmfoundation.org/policies/tiles/)) | Coincide con lo que menciona la tesis; pública y compartible por enlace sin instalar la app; el mismo mapa sirve al asesor y a la municipalidad | Menos "nativa"; depende de un servicio de teselas sin SLA (aceptable para un piloto pequeño) |
+  | **C. Mapbox o MapLibre** | Cuenta y token (Mapbox) o un proveedor de teselas (MapLibre) | Estilos propios | No investigado a fondo: más configuración que A o B |
+
+  **Recomendación (a consultar con el asesor)**: **B**, por costo cero, coherencia con la tesis y porque el requisito es *público y de solo lectura*. Cambiar el plan (que decía Google Maps o Mapbox) exigiría un ADR. Sea cual sea la opción, el mapa **necesita antes**: la Fase 2 del backend (agrupamiento → `Punto_critico`), **una forma de confirmar un foco en campo** (RF-07; hoy no hay ninguna tarea, ver `avance.md` A18) y `GET /puntos-criticos`. Además solo tendrá contenido tras semanas de reportes y verificación: **no hace falta para empezar la ventana de observación**.
 - **Depende de**: Módulo 4 + endpoint de backend disponible.
 - **Pruebas**: UI test de carga de marcadores con respuesta simulada (MockWebServer).
 

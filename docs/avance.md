@@ -16,10 +16,10 @@
 | **C.** Modelo de IA | 4 | 9 | `████░░░░░░` 44 % |
 | **D.** Pruebas en dispositivo y calidad | 3 | 10 | `███░░░░░░░` 30 % |
 | **E.** Publicación en Play Store | 1 | 9 | `█░░░░░░░░░` 11 % |
-| **F.** Asesor y documento de tesis | 0 | 11 | `░░░░░░░░░░` 0 % |
-| **Total** | **24** | **78** | `███░░░░░░░` **31 %** |
+| **F.** Asesor y documento de tesis | 0 | 12 | `░░░░░░░░░░` 0 % |
+| **Total** | **24** | **79** | `███░░░░░░░` **30 %** |
 
-**Pendientes: 54**, de las cuales **15 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 28** · **Claude 22** · **Asesor 14**.
+**Pendientes: 55**, de las cuales **15 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 29** · **Claude 22** · **Asesor 15**.
 <!-- RESUMEN:FIN -->
 
 > Es un **conteo de tareas, no de esfuerzo**: una tarea como "Fase 2 (DBSCAN)" pesa mucho más que "quitar un aviso". Sirve para ver el rumbo, no para medir horas.
@@ -74,7 +74,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **B11** Tiempos de espera de OkHttp (~60 s; por defecto 10 s y el arranque en frío de Render tarda ~1 min) — *Claude* · 🔴
 - [ ] **B12** `SyncWorker`: tratar 400/413/415/422 (y la foto faltante) como **rechazo definitivo** en vez de reintentar para siempre — *Claude* · 🟡
 - [ ] **B13** Reducir la foto antes de subirla (p. ej. lado largo 1 600 px, JPEG 85): menos datos móviles y menos cuota de Cloudinary — *Claude* · ⚪
-- [ ] **B14** Módulo 5 — **Mapa público** de puntos críticos confirmados (Google Maps SDK o Mapbox) — *Claude* · 🟡 · bloqueado por A14, A15 y A18
+- [ ] **B14** Módulo 5 — **Mapa público** de puntos críticos confirmados (Google Maps SDK o Mapbox) — *Claude* · 🟡 · bloqueado por A14, A15, A18 y F12
 - [ ] **B15** Íconos definitivos: navegación (hoy provisionales del asistente) e ícono de la app — *Claude* · ⚪
 - [ ] **B16** Revisión de **accesibilidad**: contraste, tamaños táctiles, lector de pantalla — *Claude* · 🟡
 - [ ] **B17** Estados de error y vacío en todas las pantallas — *Claude* · 🟡
@@ -132,4 +132,5 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **F8** Citar **TrashNet** (Thung y Yang, 2016) y declarar la procedencia y licencia de los datos de entrenamiento — *Usuario* · 🟡
 - [ ] **F9** Declarar en *Limitaciones* los límites de la infraestructura gratuita y suavizar **RNF-02** (99 % de disponibilidad, que esa infraestructura no puede sostener) — *Usuario + Asesor* · 🟡 · [despliegue.md §2](./despliegue.md)
 - [ ] **F10** Declarar en la metodología el **pinger** que evita el arranque en frío (riesgo sobre el indicador de sincronización) — *Usuario* · 🟡 · [diseno.md §4.1](./diseno.md)
+- [ ] **F12** Decidir **dónde vive el mapa público**: el plan lo pone dentro de la app (Google Maps o Mapbox) pero la tesis menciona un panel web con React/Leaflet; opciones, requisitos y recomendación en [plan.md](./plan.md) (Módulo 5) — *Asesor + Usuario* · 🟡
 - [ ] **F11** Poner la **zona horaria del PC en hora de Perú (UTC-5)**: hoy está en UTC-8 y las fechas de los commits (evidencia de tesis) salen 3 h atrasadas respecto a Perú — *Usuario* · ⚪
