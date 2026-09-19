@@ -21,7 +21,7 @@ Debe aparecer la tablet como `device` (no `unauthorized`, no `offline`). Si le p
 
 **Antes de probar el reporte** — dos cosas que se pasan por alto:
 
-- **Ubicación:** la app **rechaza a propósito** los reportes que caen fuera del distrito de Wanchaq (RF-02, CORR-007). Si pruebas en otro distrito verás *"Esta ubicación está fuera del distrito de Wanchaq"*; no es un fallo. Además, la precisión del GPS debe ser ≤ 15 m: en interiores suele no lograrse. Prueba el reporte **en exteriores dentro de Wanchaq**, o dilo y se agrega un modo solo-QA.
+- **Ubicación:** la app **rechaza a propósito** los reportes con error de GPS mayor de 15 m y los que caen fuera del distrito de Wanchaq (RF-02, CORR-007). En interiores el GPS casi nunca llega a 15 m, y fuera de Wanchaq siempre saldrá *"fuera del distrito"*: no es un fallo. Hay dos formas de probar el reporte: **(a) la real**, en exteriores dentro de Wanchaq con cielo despejado, o **(b) el modo de ubicación simulada** de la sección 2b, para ejercitar el resto del flujo estés donde estés.
 - **Sincronización:** el servidor todavía no existe (`BASE_URL` apunta a `10.0.2.2`, que solo vale en un emulador). En un dispositivo real los reportes se guardan y quedan **"Pendiente de envío"**: es lo esperado.
 
 ## 2. Instalar y ejecutar
@@ -30,6 +30,21 @@ Debe aparecer la tablet como `device` (no `unauthorized`, no `offline`). Si le p
 ./gradlew installDebug                  # instala la app en el dispositivo conectado
 ./gradlew connectedDebugAndroidTest     # ejecuta las pruebas de dispositivo (dejan la app instalada)
 ```
+
+## 2b. Modo de ubicación simulada (solo para pruebas)
+
+Sirve para probar guardar, Mis reportes, duplicados, etc. cuando el dispositivo **no está en Wanchaq o no tiene buena señal GPS**. Es una compilación de **depuración** con la ubicación falsa: cada reporte lleva una coordenada dentro de Wanchaq con 5 m de precisión, que se corre ≈ 33 m al norte en cada uso (así dos reportes seguidos no se descartan como duplicados).
+
+```bash
+./gradlew installDebug -PubicacionSimulada=true    # instala la variante de PRUEBA (ubicación falsa)
+./gradlew installDebug                             # vuelve a la variante NORMAL (ubicación real)
+```
+
+- **Cómo saber cuál está instalada:** *Ajustes → Versión*. La de prueba dice `1.0-ubicacion-simulada`.
+- **Desde el botón Run de Android Studio:** agrega la línea `ubicacionSimulada=true` a tu `gradle.properties` **de usuario** (`%USERPROFILE%\.gradle\gradle.properties`), **nunca** al del proyecto (ese sí se sube al repositorio). Quítala al terminar.
+- **No puede llegar a una versión de publicación:** en `release` la bandera está fija en `false` y, además, `assembleRelease` y `bundleRelease` **fallan** con un mensaje claro si la propiedad está activa (verificado).
+- **Los datos son falsos:** esos reportes no sirven como datos de la investigación. Cuando exista el servidor, una compilación de prueba debe apuntar a un servidor de desarrollo, no al real.
+- **Lo que NO prueba:** el GPS real, ni el filtro de 15 m con lecturas reales. Eso solo se prueba con la variante normal, en exteriores dentro de Wanchaq (escenario C8).
 
 ## 3. Escenarios de prueba
 
@@ -62,7 +77,9 @@ Marca cada uno con **OK**, **FALLA** o **N/A** y anota lo observado en la secci�
 | C4 | Pantalla de confirmación | Foto, categoría sugerida (o "No pude sugerir…"), las 6 categorías y los botones "Guardar reporte" / "Tomar otra foto" |
 | C5 | Cambiar la categoría y guardar | Mensaje de éxito; aparece en "Mis reportes" con la categoría **que elegiste** |
 | C6 | "Tomar otra foto" | Vuelve a la cámara; la foto descartada no queda guardada |
-| C7 | Reportar fuera de Wanchaq / con GPS impreciso / dos veces el mismo lugar en < 30 min | Mensaje de rechazo claro y botón "Reintentar" |
+| C7 | Reportar fuera de Wanchaq / con GPS impreciso / dos veces el mismo lugar en < 30 min | Mensaje de rechazo claro y botón "Reintentar" (con la variante **normal**) |
+| C8 | **GPS real:** variante normal, **en exteriores dentro de Wanchaq** con cielo despejado; esperar unos 30 s con la cámara abierta y reportar | Se acepta (error ≤ 15 m). Anota los segundos que tardó y, si se rechaza, la precisión que dice el mensaje |
+| C9 | **Ubicación simulada:** variante de prueba, guardar dos reportes seguidos | Ambos se guardan (el segundo no es duplicado) y aparecen en "Mis reportes" |
 
 ### D. Clasificador de IA (modelo v1 provisional)
 Ver la nota de la sección 4. Para cada foto anota: qué era, qué sugirió, qué categoría propuso la app y cuánto tardó.
@@ -169,4 +186,17 @@ Dispositivo: **Galaxy Tab S9+ Wi-Fi (SM-X810)**, Android 16 (API 36), One UI 8.0
 3. Si el problema persiste, copia el **primer** mensaje de error de la pestaña *Sync* o *Build* (no la lista de "Unresolved reference": esos son consecuencia).
 
 **Alternativa sin el IDE** (siempre funciona): `./gradlew installDebug` con la tablet conectada, o pedirle a Claude que instale el APK por `adb`.
+
+### La app dice que el GPS es insuficiente / no asigna la ubicación
+
+**Qué significa**: el reporte se rechaza porque el error de posición que informa el sistema es **mayor de 15 m** (RF-02). No es que la app "no asigne" la ubicación: la obtiene y la descarta por imprecisa. Se ve **al final** del flujo (al pulsar "Guardar reporte"), después de la foto y de la sugerencia de la IA.
+
+**Qué se encontró en la primera sesión (2026-09-18, Galaxy Tab S9+, dentro de un edificio)** — leído de la propia tablet con `adb shell dumpsys location`:
+- La tablet **sí tiene receptor GPS** (`android.hardware.location.gps`), la ubicación estaba en alta precisión y la app tenía el permiso de ubicación precisa.
+- Su última lectura GPS tenía **≈ 52 m de error, con solo 5 satélites y señal débil**; la de red (Wi-Fi/celular), ≈ 116 m. Es lo normal bajo techo; con cielo abierto suele bajar de 10 m. El tiempo medio hasta el primer fijo de esa tablet es de ≈ 6 s.
+- Además, esa ubicación estaba a **decenas de kilómetros de Wanchaq**: aunque el GPS hubiera sido perfecto, el siguiente rechazo habría sido *"fuera del distrito"*.
+
+**Qué hacer**: para probar el flujo en cualquier lugar, la variante de la sección 2b. Para probar el GPS de verdad, salir a un lugar despejado dentro de Wanchaq (escenario C8).
+
+**Pendiente, decidir con evidencia** (no antes): hoy el código toma **la primera lectura** que devuelve el servicio de ubicación de Google y la valida; no espera a que la precisión mejore. Si en exteriores con cielo despejado el reporte sigue rechazándose por precisión, hay que hacer que la app **espere hasta ≈ 30 s a una lectura ≤ 15 m** (mostrando "Buscando señal GPS…") antes de rechazar, sin cambiar el criterio de 15 m. No se cambió todavía porque no hay evidencia de que haga falta: el fallo observado se explica por estar en interiores.
 

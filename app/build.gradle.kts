@@ -7,6 +7,13 @@ plugins {
     alias(libs.plugins.detekt)
 }
 
+// Modo de prueba: ubicación SIMULADA dentro de Wanchaq, para probar el reporte en un dispositivo que no está en el
+// distrito o sin buena señal GPS (RF-02 rechaza a propósito lo que no cumple). SOLO existe en compilaciones de
+// depuración y está apagado por defecto: se activa con -PubicacionSimulada=true (ver docs/prueba-en-dispositivo.md).
+// Nunca puede llegar a una versión de publicación: release fija la bandera en false y, además, assembleRelease y
+// bundleRelease FALLAN si la propiedad está activa (ver verificarSinUbicacionSimulada, abajo).
+val ubicacionSimulada = providers.gradleProperty("ubicacionSimulada").map { it.toBoolean() }.getOrElse(false)
+
 android {
     namespace = "com.wanchaqlimpio.app"
     compileSdk {
@@ -31,7 +38,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("boolean", "UBICACION_SIMULADA", "$ubicacionSimulada")
+            // Visible en Ajustes → "Versión 1.0-ubicacion-simulada": nadie puede olvidar que la ubicación es falsa.
+            if (ubicacionSimulada) versionNameSuffix = "-ubicacion-simulada"
+        }
         release {
+            buildConfigField("boolean", "UBICACION_SIMULADA", "false")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -168,6 +181,18 @@ val verificarCorreoContacto by tasks.registering {
     }
 }
 
+// Segundo seguro (el primero es que release fija UBICACION_SIMULADA en false): que quien compile una versión de
+// publicación con la propiedad activa se entere, en vez de que el modo de prueba pase inadvertido.
+val verificarSinUbicacionSimulada by tasks.registering {
+    val activa = providers.gradleProperty("ubicacionSimulada").orElse("false")
+    doLast {
+        check(!activa.get().toBoolean()) {
+            "'ubicacionSimulada' está activa: es un modo de PRUEBA y no debe usarse al compilar una versión de " +
+                "publicación. Quita -PubicacionSimulada (o esa línea de tu gradle.properties de usuario)."
+        }
+    }
+}
+
 tasks
     .matching { it.name == "assembleRelease" || it.name == "bundleRelease" }
-    .configureEach { dependsOn(verificarCorreoContacto) }
+    .configureEach { dependsOn(verificarCorreoContacto, verificarSinUbicacionSimulada) }

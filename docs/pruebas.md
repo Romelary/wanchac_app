@@ -204,6 +204,16 @@ Robolectric puede simular el tamaño de ventana (`@Config(qualifiers = ...)`) y 
 
 **Lo que NO cubre**: las barras del sistema reales y los recortes de pantalla, la rotación física (incluido el giro de 180° de la cámara), el modo de pantalla dividida y ventana flotante de Samsung, el riel de navegación en pantalla ancha y el aspecto real (colores, espacios). Todo eso está en el protocolo de la prueba en dispositivo.
 
+## Modo de ubicación simulada (solo depuración)
+
+| Archivo | Caso de prueba | Qué verifica | Requisito / dimensión relacionada |
+|---|---|---|---|
+| `ProveedorUbicacionSimuladoTest.kt` (4) | todas las ubicaciones de un ciclo completo (80) caen **dentro de Wanchaq** · la precisión simulada cumple el filtro de 15 m · **dos reportes seguidos no se descartan como duplicados** (con `ValidarNuevoReporte` real, no una copia) · tras un ciclo vuelve al punto inicial | Que el modo de prueba **pasa las reglas de aceptación reales**: si no las pasara, no permitiría probar nada | RF-02, RNF-07 |
+
+**Verificación manual del seguro de publicación** (no automatizada; se ejecutó el 2026-09-18): `./gradlew verificarSinUbicacionSimulada -PubicacionSimulada=true` **falla** con el mensaje *"'ubicacionSimulada' está activa: es un modo de PRUEBA…"*; sin la propiedad **pasa**; y `assembleRelease --dry-run` muestra que depende de `verificarCorreoContacto` **y** `verificarSinUbicacionSimulada`. Además `release` fija `UBICACION_SIMULADA = false`, así que el modo no puede activarse en publicación ni siquiera saltándose el seguro.
+
+**Lo que NO cubre**: que la variante de prueba instalada use de hecho la ubicación simulada al guardar en el dispositivo (se comprobó solo la versión instalada, `1.0-ubicacion-simulada`), ni nada del GPS real.
+
 ---
 
 ## Cómo usar este archivo
