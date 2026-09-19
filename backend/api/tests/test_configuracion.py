@@ -105,6 +105,41 @@ class FalloRapidoTest(SimpleTestCase):
         self.assertEqual(salida, "['wanchaq-limpio-api.onrender.com']")
 
 
+class CloudinaryUrlMalFormadaTest(SimpleTestCase):
+    """Con el SDK REAL de Cloudinary (que valida la URL al importarse) y en un proceso limpio, para que ningún mock
+    oculte que `import cloudinary` lanza ValueError. Valores FALSOS: nunca se usan credenciales reales en las pruebas."""
+
+    LLAMADA = "__import__('api.servicios', fromlist=['x']).comprobar_cloudinary()"
+
+    def _diagnosticar(self, valor):
+        return _evaluar_ajustes(self.LLAMADA, SECRET_KEY="una-clave", DATABASE_URL=POSTGRES, CLOUDINARY_URL=valor)
+
+    def test_la_linea_repetida_da_una_explicacion_y_no_un_traceback(self):
+        # El error real de un usuario: pegó `CLOUDINARY_URL=cloudinary://…` DENTRO del valor de CLOUDINARY_URL.
+        codigo, salida, err = self._diagnosticar("CLOUDINARY_URL=cloudinary://111111:falsosecreto@nube-de-ejemplo")
+        self.assertEqual(codigo, 0, f"no debe lanzar excepción: {err[-300:]}")
+        self.assertIn("'ok': False", salida)
+        self.assertIn("CLOUDINARY_URL mal formada", salida)
+        self.assertIn("repetiste", salida)
+
+    def test_otras_urls_que_el_sdk_rechaza_tambien_se_explican(self):
+        for valor in ("https://111111:falsosecreto@nube", '"cloudinary://111111:falsosecreto@nube"'):
+            with self.subTest(valor=valor.split("falsosecreto")[0]):
+                codigo, salida, _ = self._diagnosticar(valor)
+                self.assertEqual(codigo, 0)
+                self.assertIn("CLOUDINARY_URL mal formada", salida)
+
+    def test_el_diagnostico_no_copia_el_valor_ni_el_mensaje_del_sdk(self):
+        _, salida, _ = self._diagnosticar("CLOUDINARY_URL=cloudinary://111111:falsosecreto@nube-de-ejemplo")
+        for resto in ("falsosecreto", "111111", "nube-de-ejemplo", "Invalid CLOUDINARY_URL scheme"):
+            self.assertNotIn(resto, salida)
+
+    def test_una_url_incompleta_sin_excepcion_sigue_dando_su_propio_mensaje(self):
+        # cloudinary://111111:falsosecreto (sin @nube) no hace lanzar al SDK: la atrapa la comprobación de "incompleta".
+        _, salida, _ = self._diagnosticar("cloudinary://111111:falsosecreto")
+        self.assertIn("ausente o mal formada", salida)
+
+
 class CoherenciaDeArchivosTest(SimpleTestCase):
     """Los tres sitios donde se nombran las variables (código, plantilla local y Blueprint) no pueden desincronizarse."""
 

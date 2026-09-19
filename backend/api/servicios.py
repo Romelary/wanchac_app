@@ -58,10 +58,21 @@ def comprobar_base_de_datos():
 def comprobar_cloudinary():
     """Comprueba que CLOUDINARY_URL está bien formada y que Cloudinary acepta las credenciales (`api.ping`)."""
     # Importación diferida: el SDK lee CLOUDINARY_URL al importarse y `settings` debe haber cargado `.env` antes.
-    import cloudinary
-    import cloudinary.api
+    try:
+        import cloudinary
+        import cloudinary.api
 
-    configuracion = cloudinary.config()
+        configuracion = cloudinary.config()
+    except ValueError:
+        # El SDK VALIDA la URL al importarse y lanza ValueError si no empieza por "cloudinary://". Es lo que ocurre al
+        # pegar la línea entera dentro del valor (CLOUDINARY_URL=CLOUDINARY_URL=cloudinary://…), con una URL https:// o
+        # con comillas incluidas en el valor. Sin este `except` el usuario vería un traceback (y /health/servicios un
+        # error 500) en vez de la explicación. No se copia el mensaje de la excepción (regla de oro de este módulo).
+        return _resultado(
+            False,
+            "CLOUDINARY_URL mal formada: debe empezar por cloudinary:// (¿repetiste 'CLOUDINARY_URL=' dentro del valor, "
+            "o lleva comillas?)",
+        )
     if not (configuracion.cloud_name and configuracion.api_key and configuracion.api_secret):
         return _resultado(False, "CLOUDINARY_URL ausente o mal formada (debe ser cloudinary://clave:secreto@nombre)")
     if _contiene_alguna((configuracion.cloud_name, configuracion.api_key, configuracion.api_secret), _PLANTILLA_CLOUDINARY):
