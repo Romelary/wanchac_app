@@ -12,15 +12,15 @@
 | Área | Hechas | Total | Avance |
 |---|---:|---:|---|
 | **A.** Infraestructura y backend | 8 | 20 | `████░░░░░░` 40 % |
-| **B.** App Android | 18 | 25 | `███████░░░` 72 % |
+| **B.** App Android | 19 | 26 | `███████░░░` 73 % |
 | **C.** Modelo de IA | 4 | 9 | `████░░░░░░` 44 % |
 | **D.** Pruebas en dispositivo y calidad | 5 | 13 | `████░░░░░░` 38 % |
-| **E.** Publicación en Play Store | 1 | 9 | `█░░░░░░░░░` 11 % |
+| **E.** Publicación en Play Store | 1 | 10 | `█░░░░░░░░░` 10 % |
 | **F.** Asesor y documento de tesis | 1 | 13 | `█░░░░░░░░░` 8 % |
 | **G.** Confiabilidad de los instrumentos | 0 | 14 | `░░░░░░░░░░` 0 % |
-| **Total** | **37** | **103** | `████░░░░░░` **36 %** |
+| **Total** | **38** | **105** | `████░░░░░░` **36 %** |
 
-**Pendientes: 66**, de las cuales **18 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 41** · **Claude 23** · **Asesor 18**.
+**Pendientes: 67**, de las cuales **19 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 42** · **Claude 24** · **Asesor 18**.
 <!-- RESUMEN:FIN -->
 
 > Es un **conteo de tareas, no de esfuerzo**: una tarea como "Fase 2 (DBSCAN)" pesa mucho más que "quitar un aviso". Sirve para ver el rumbo, no para medir horas.
@@ -90,6 +90,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [x] **B23** **GPS en caliente**: con la cámara abierta se muestra «GPS listo ±N m», la lectura de la foto viaja con la confirmación, se espera hasta 30 s a una lectura ≤ 15 m (sin relajar el criterio), **la foto se conserva** si el GPS no converge («Reintentar ubicación») y los permisos (precisa + aproximada) tienen salida a los Ajustes ([ADR-0007](./adr/0007-gps-en-caliente-y-foto-reducida.md)) — *Claude* · **sin GPS real** (ver D5)
 - [x] **B24** **Registro de envíos**: Ajustes → «Compartir registro de envíos» manda un CSV (un renglón por reporte: intentos, cuándo llegó, red, motivo del fallo) **sin coordenadas, fotos ni código anónimo** — *Claude* · *el selector de compartir no se ha probado en el dispositivo* (H11)
 - [x] **B25** **Servidor falso local** (`herramientas/servidor_falso.py`) para provocar fallos de red a voluntad, y configuración de red **solo de depuración** que permite `http://` únicamente hacia `localhost`, `127.0.0.1` y `10.0.2.2` — *Claude* · [prueba-en-dispositivo.md §2c](./prueba-en-dispositivo.md)
+- [x] **B26** **Firma de la versión de publicación** con la llave del usuario (`RELEASE_*` en `local.properties`), `versionCode`/`versionName` por propiedad y un seguro más: `assembleRelease` **falla con un mensaje claro** sin llave — *Claude* · verificado con una llave de mentira (APK firmado, no depurable); **falta probarlo con la llave real** (E9) · [distribucion-apk.md](./distribucion-apk.md)
 
 ## C. Modelo de IA (clasificador de residuos)
 
@@ -130,6 +131,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **E6** Recursos de la ficha: ícono, capturas, descripciones corta y larga — *Usuario + Claude* · ⚪
 - [ ] **E7** **Prueba cerrada**: mínimo 12 testers durante 14 días; se propone usar a los 38 del SUS y correrla en paralelo a la ventana de observación — *Usuario* · 🔴 empezar con antelación
 - [ ] **E8** Activar y revisar la minificación (R8), hoy apagada — *Claude* · ⚪
+- [ ] **E9** **APK firmado para repartir al equipo** (distribución directa, **antes** de Play Store): servidor desplegado (A10), `baseUrl` https (A19), `contactEmail` (E1), **llave de firma propia con copia de seguridad**, su SHA-1 en la restricción de la clave de Maps, y una **prueba de humo con el servidor real** — *Usuario + Claude* · 🔴 · [distribucion-apk.md](./distribucion-apk.md)
 
 ## F. Asesor y documento de tesis
 

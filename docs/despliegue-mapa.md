@@ -76,5 +76,5 @@ Para ver el motivo exacto: Android Studio → **Logcat** → filtra por `Google 
 ## 5. Para publicar (Módulo 9)
 
 - `assembleRelease` y `bundleRelease` **fallan** si falta `MAPS_API_KEY` o si `baseUrl` no es `https://`: es a propósito, para no publicar una app con el mapa gris o apuntando al emulador.
-- La clave necesita la **huella SHA-1 de la firma de publicación** en su restricción (o la de *Play App Signing*, que Google Play muestra en la consola de Play). Sin ella, el mapa **funciona en depuración pero sale gris en la app publicada**. Está en la tarea E3.
+- La clave necesita la **huella SHA-1 de la firma de publicación** en su restricción (o la de *Play App Signing*, que Google Play muestra en la consola de Play). Sin ella, el mapa **funciona en depuración pero sale gris en la app publicada**. Está en la tarea E3. **Para el APK que se reparte al equipo antes de Play Store**, los pasos están en [`distribucion-apk.md`](./distribucion-apk.md) §1 (paso 6).
 - Antes de publicar, confirma el presupuesto y las alertas de facturación (paso 1.2).
