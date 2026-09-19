@@ -1,0 +1,36 @@
+# Blueprint de Render para el backend de Wanchaq Limpio (ver docs/despliegue.md y docs/adr/0004-*.md).
+#
+# Este archivo se sube a git, así que NO contiene ningún secreto: las variables con `sync: false` solo declaran el
+# NOMBRE; su contenido lo escribes tú en el panel de Render cuando el Blueprint te lo pide.
+services:
+  - type: web
+    name: wanchaq-limpio-api
+    runtime: python
+    plan: free
+    # DEBE ser la misma región (o la más cercana) que la de tu proyecto en Neon: cada consulta cruza esa distancia.
+    # Opciones de Render: oregon, ohio, virginia, frankfurt, singapore.
+    region: oregon
+    # Solo se construye la carpeta backend/: los commits que solo tocan la app Android no redespliegan el servicio.
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    # 1 proceso con 4 hilos: el plan gratuito tiene 512 MB de RAM. --timeout 60 cubre el arranque en frío de Neon.
+    startCommand: gunicorn wanchaq_limpio.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 60
+    # Render lo consulta para saber que el servicio está vivo; /health no toca la base de datos a propósito.
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      # Django 6.1 exige Python 3.12 o superior. Versión completa (x.y.z), como pide Render en esta variable.
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      # Render inventa un valor aleatorio la primera vez; nunca hace falta conocerlo ni copiarlo.
+      - key: SECRET_KEY
+        generateValue: true
+      # Cadena de conexión de Neon (la escribes tú en el panel).
+      - key: DATABASE_URL
+        sync: false
+      # Credenciales de Cloudinary (las escribes tú en el panel).
+      - key: CLOUDINARY_URL
+        sync: false
+      # Token de /health/servicios: el MISMO que pusiste en backend/.env (lo escribes tú en el panel).
+      - key: HEALTH_TOKEN
+        sync: false

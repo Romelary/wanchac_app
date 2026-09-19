@@ -23,3 +23,13 @@ __pycache__/
 /ml/salida_colab/
 # Fotos de calle para probar el modelo (pueden traer rostros o placas): NUNCA a git
 /ml/prueba_calle/
+
+# Backend (Django): secretos y artefactos locales. `backend/.env` guarda contrasenas y claves: NUNCA a git.
+# Se ignora `.env` en cualquier carpeta; `.env.example` (solo marcadores de posicion) SI se versiona.
+.env
+.env.*
+!.env.example
+/backend/.venv/
+/backend/venv/
+/backend/db.sqlite3
+*.sqlite3

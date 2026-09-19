@@ -1,0 +1,8 @@
+# Versiones fijas (verificadas en PyPI el 2026-09-18) para que Render construya exactamente lo que se probó aquí.
+# Django 6.1 exige Python >= 3.12 (por eso render.yaml fija PYTHON_VERSION).
+Django==6.1.1
+gunicorn==26.2.0
+psycopg[binary]==3.3.6
+dj-database-url==3.1.2
+cloudinary==1.46.2
+python-dotenv==1.2.3
