@@ -14,13 +14,13 @@
 | **A.** Infraestructura y backend | 8 | 20 | `████░░░░░░` 40 % |
 | **B.** App Android | 18 | 25 | `███████░░░` 72 % |
 | **C.** Modelo de IA | 4 | 9 | `████░░░░░░` 44 % |
-| **D.** Pruebas en dispositivo y calidad | 4 | 13 | `███░░░░░░░` 31 % |
+| **D.** Pruebas en dispositivo y calidad | 5 | 13 | `████░░░░░░` 38 % |
 | **E.** Publicación en Play Store | 1 | 9 | `█░░░░░░░░░` 11 % |
 | **F.** Asesor y documento de tesis | 1 | 13 | `█░░░░░░░░░` 8 % |
 | **G.** Confiabilidad de los instrumentos | 0 | 14 | `░░░░░░░░░░` 0 % |
-| **Total** | **36** | **103** | `███░░░░░░░` **35 %** |
+| **Total** | **37** | **103** | `████░░░░░░` **36 %** |
 
-**Pendientes: 67**, de las cuales **18 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 42** · **Claude 24** · **Asesor 18**.
+**Pendientes: 66**, de las cuales **18 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 41** · **Claude 23** · **Asesor 18**.
 <!-- RESUMEN:FIN -->
 
 > Es un **conteo de tareas, no de esfuerzo**: una tarea como "Fase 2 (DBSCAN)" pesa mucho más que "quitar un aviso". Sirve para ver el rumbo, no para medir horas.
@@ -68,7 +68,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [x] **B1** Módulo 0 — Fundamentos (Hilt, Room, Retrofit, ktlint/detekt, estructura) — *Claude*
 - [x] **B2** Módulo 1 — Onboarding y consentimiento informado, `id_anonimo` (ADR-0001) — *Claude*
 - [x] **B3** Módulo 2 — Captura offline-first (cámara, GPS, filtro de 15 m, distrito, duplicados) — *Claude*
-- [x] **B4** Módulo 3b — Clasificador de IA dentro de la app (LiteRT, sugerencia guardada aparte, CORR-010) — *Claude* · *sin ejecutar en un dispositivo*
+- [x] **B4** Módulo 3b — Clasificador de IA dentro de la app (LiteRT, sugerencia guardada aparte, CORR-010) — *Claude* · *ejecutado en la tablet el 2026-09-19: carga, sugiere y coincide con Python en la entrada; ver D7*
 - [x] **B5** Módulo 4 — Sincronización diferida (cliente, WorkManager) — *Claude*
 - [x] **B6** Módulo 6 — Mis reportes, con eliminación (ADR-0002) — *Claude*
 - [x] **B7** Módulo 7 — Ajustes y "borrar todos mis datos" — *Claude*
@@ -111,8 +111,8 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **D4** **Protocolo completo en la tablet (32 escenarios A–F)**: solo se verificó el consentimiento en horizontal — *Usuario* · 🟡 · [prueba-en-dispositivo.md](./prueba-en-dispositivo.md) · *avance: en la Sesión 25 se verificaron los escenarios C1 a C6, C9, C10 (contra un servidor falso), E2 y H8 y H10 en parte; ver [§5c](./prueba-en-dispositivo.md)*
 - [ ] **D5** **GPS real en exteriores dentro de Wanchaq** (escenario C8): variante normal, cielo despejado, ~30 s; si aún rechaza por precisión, hacer que la app espere una lectura ≤ 15 m — *Usuario* · 🔴
 - [ ] **D6** Probar en un **teléfono real**, no solo la tablet — *Usuario* · 🟡
-- [ ] **D7** Ejecutar `./gradlew connectedDebugAndroidTest` (las pruebas de UI y de referencia del clasificador compilan pero nunca se ejecutaron) — *Usuario + Claude* · 🟡
-- [ ] **D8** Medir la latencia del clasificador y comprobar que las librerías nativas cargan en el dispositivo — *Usuario* · 🟡
+- [x] **D7** `./gradlew connectedDebugAndroidTest` ejecutado por primera vez en la tablet: **26 de 26 en verde** tras corregir 4 fallos (2 de la prueba del consentimiento por no desplazarse en horizontal; 2 de la referencia del clasificador, cuya tolerancia era estrecha: el modelo en el teléfono difiere hasta 0,08 de Python con la misma entrada) — *Usuario + Claude* · [pruebas.md](./pruebas.md)
+- [ ] **D8** Medir la latencia del clasificador y comprobar que las librerías nativas cargan en el dispositivo — *Usuario* · 🟡 · *avance (2026-09-19): las librerías nativas **cargan** y el modelo corre en la tablet; la **latencia** sigue sin medirse*
 - [ ] **D9** **Primer reporte real de punta a punta**: teléfono → Render → Neon, visible en la base (escenario **C10** del protocolo; es también la **primera vez** que WorkManager crea un trabajo de sincronización en un dispositivo, B22) — *Usuario + Claude* · 🔴 · necesita A10 y `baseUrl` (A19); B10 y B11 ya están hechos
 - [ ] **D10** Ronda de prueba piloto interna antes de aplicar el Instrumento 1 (SUS, 38 participantes) — *Usuario* · 🟡
 - [ ] **D11** **Ver el mapa en un dispositivo** con la clave real (escenarios G1 a G8 del protocolo): que no salga gris, el encuadre en Wanchaq, el límite de desplazamiento, el error sin red y el marcador de un foco de prueba — *Usuario* · 🟡 · necesita A19 · [prueba-en-dispositivo.md](./prueba-en-dispositivo.md)

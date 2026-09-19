@@ -8,7 +8,8 @@
 # Unitarias (JVM, incluye Robolectric donde haga falta)
 ./gradlew testDebugUnitTest
 
-# De UI / instrumentadas (requieren emulador o dispositivo conectado)
+# De UI / instrumentadas (requieren emulador o dispositivo conectado, con la pantalla encendida y desbloqueada;
+# al terminar DESINSTALAN la app del dispositivo y borran sus datos)
 ./gradlew connectedDebugAndroidTest
 
 # Todo junto con lint y compilación, tal como se verifica antes de cada commit
@@ -84,7 +85,7 @@ No se agregaron pruebas de negocio propias; se usó el test placeholder del wiza
 | | `estadoGuardadoMuestraElMensajeDeExito` | Confirmación visual tras guardar | Usabilidad percibida |
 | | `estadoProcesandoUbicacionMuestraElTextoDeCarga` | Estado de carga visible mientras se obtiene el GPS | Usabilidad percibida |
 
-**Estado**: 15 pruebas unitarias en verde (`ValidarNuevoReporteTest` 7, `ReporteRepositoryImplTest` 3, `ReporteViewModelTest` 5). 3 pruebas de UI (`ReporteEstadoContentTest`) compilan pero no se ejecutaron por no haber emulador disponible. **No se prueba automáticamente** la captura real de cámara (CameraX) ni la obtención real de GPS (`ProveedorUbicacionFused`) — son wrappers delgados sobre hardware/Google Play Services, por diseño se dejan para prueba manual en dispositivo real (ver la nota de "qué se prueba y qué no" al inicio de este archivo). **Esa prueba manual todavía no se ha hecho** en ningún dispositivo/emulador — pendiente antes de dar el Módulo 2 por verificado end-to-end (ver `progreso.md`, pendientes). Lo que sí queda exhaustivamente probado en automático es toda la lógica de negocio que consume esos datos (validación, persistencia, máquina de estados).
+**Estado**: 15 pruebas unitarias en verde (`ValidarNuevoReporteTest` 7, `ReporteRepositoryImplTest` 3, `ReporteViewModelTest` 5). 3 pruebas de UI (`ReporteEstadoContentTest`) compilan pero no se ejecutaron por no haber emulador disponible. **No se prueba automáticamente** la captura real de cámara (CameraX) ni la obtención real de GPS (`ProveedorUbicacionFused`) — son wrappers delgados sobre hardware/Google Play Services, por diseño se dejan para prueba manual en dispositivo real (ver la nota de "qué se prueba y qué no" al inicio de este archivo). **Esa prueba manual todavía no se ha hecho** en ningún dispositivo/emulador — pendiente antes de dar el Módulo 2 por verificado end-to-end (ver `progreso.md`, pendientes). Lo que sí queda exhaustivamente probado en automático es toda la lógica de negocio que consume esos datos (validación, persistencia, máquina de estados). **[Actualización 2026-09-19: las pruebas de UI se ejecutaron en la tablet, 26 de 26 en verde tras corregir 4 fallos; ver «Pruebas instrumentadas en el dispositivo».]**
 
 ## Módulo 4 — Sincronización diferida
 
@@ -163,7 +164,7 @@ Alcance: el cliente Android contra un servidor de mentira (`MockWebServer3`) **y
 | | `eliminarPideConfirmacionYSoloAlConfirmarSeInvocaElCallback` | Eliminar exige confirmación explícita: nada se borra al primer toque | RNF-05, prevención de borrado accidental |
 | | `cancelarElDialogoNoEliminaNada` | Cancelar no elimina | RNF-05 |
 
-**Estado**: 11 pruebas unitarias nuevas en verde (4 en `ReporteRepositoryImplTest`, 4 en `EliminarReporteWorkerTest`, 3 en `MisReportesViewModelTest`). Las 3 pruebas de UI (`MisReportesContentTest`) compilan pero no se ejecutaron por no haber emulador — se suman a las pendientes de correr en un dispositivo real (`OnboardingContentTest`, `ReporteEstadoContentTest`). **No hay prueba contra un backend real**: la eliminación remota solo se verificó contra `MockWebServer3`, así que el comportamiento real (lápida, `410 Gone`, etc.) depende de que el backend implemente `diseno.md` §4.2.
+**Estado**: 11 pruebas unitarias nuevas en verde (4 en `ReporteRepositoryImplTest`, 4 en `EliminarReporteWorkerTest`, 3 en `MisReportesViewModelTest`). Las 3 pruebas de UI (`MisReportesContentTest`) compilan pero no se ejecutaron por no haber emulador — se suman a las pendientes de correr en un dispositivo real (`OnboardingContentTest`, `ReporteEstadoContentTest`). **No hay prueba contra un backend real**: la eliminación remota solo se verificó contra `MockWebServer3`, así que el comportamiento real (lápida, `410 Gone`, etc.) depende de que el backend implemente `diseno.md` §4.2. **[Actualización 2026-09-19: las pruebas de UI se ejecutaron en la tablet, 26 de 26 en verde tras corregir 4 fallos; ver «Pruebas instrumentadas en el dispositivo».]**
 
 ## Módulo 7 — Ajustes y "borrar todos mis datos"
 
@@ -186,7 +187,7 @@ Alcance: el cliente Android contra un servidor de mentira (`MockWebServer3`) **y
 
 **Verificación adicional, no automatizada en JUnit — guardia de publicación del correo de contacto** (`verificarCorreoContacto` en `app/build.gradle.kts`): se comprobó manualmente con Gradle que (1) con `contactEmail` vacío la tarea **falla** con un mensaje explicativo, (2) con `-PcontactEmail=...` **pasa**, y (3) `assembleRelease`/`bundleRelease` dependen de ella (`--dry-run`). Así el pendiente "definir el correo de contacto" no puede olvidarse: publicar sin él es imposible.
 
-**Estado**: 14 pruebas unitarias nuevas en verde (4 `AlmacenFotosImplTest`, 3 `BorrarTodosMisDatosTest`, 3 `AjustesViewModelTest`, 4 nuevas en `ReporteViewModelTest`). **Total del proyecto: 51 pruebas unitarias** en verde (50 propias + el `ExampleUnitTest` del wizard). Las 5 pruebas de UI de `AjustesContentTest` compilan pero no se ejecutaron (sin emulador). En total hay **4 clases de prueba de UI pendientes de correr en un dispositivo real**: `OnboardingContentTest`, `ReporteEstadoContentTest`, `MisReportesContentTest` y `AjustesContentTest`. Lo que **no** se puede verificar en automático es que el borrado remoto llegue a un servidor real (no existe todavía) ni el envío del correo (`Intent` a una app de correo real).
+**Estado**: 14 pruebas unitarias nuevas en verde (4 `AlmacenFotosImplTest`, 3 `BorrarTodosMisDatosTest`, 3 `AjustesViewModelTest`, 4 nuevas en `ReporteViewModelTest`). **Total del proyecto: 51 pruebas unitarias** en verde (50 propias + el `ExampleUnitTest` del wizard). Las 5 pruebas de UI de `AjustesContentTest` compilan pero no se ejecutaron (sin emulador). En total hay **4 clases de prueba de UI pendientes de correr en un dispositivo real**: `OnboardingContentTest`, `ReporteEstadoContentTest`, `MisReportesContentTest` y `AjustesContentTest`. Lo que **no** se puede verificar en automático es que el borrado remoto llegue a un servidor real (no existe todavía) ni el envío del correo (`Intent` a una app de correo real). **[Actualización 2026-09-19: las pruebas de UI se ejecutaron en la tablet, 26 de 26 en verde tras corregir 4 fallos; ver «Pruebas instrumentadas en el dispositivo».]**
 
 ## Registro de envíos (Ajustes → «Compartir registro de envíos»)
 
@@ -258,6 +259,19 @@ Aquí conviven pruebas de JVM (todas **ejecutadas**) y pruebas de dispositivo (*
 **Estado**: **116 pruebas unitarias en verde** (antes 51). ktlint y detekt limpios; `assembleDebug` y `assembleDebugAndroidTest` compilan. Las **11 pruebas de dispositivo** de este módulo (6 + 1 + 4) compilan pero **no se han ejecutado**; se suman a las pendientes de correr en un teléfono (`OnboardingContentTest`, `ReporteEstadoContentTest`, `MisReportesContentTest`, `AjustesContentTest`).
 
 **Lo que NO cubren estas pruebas**, dicho sin rodeos: que LiteRT cargue y corra en un teléfono real, la decodificación de una foto real de cámara con EXIF (`BitmapFactory` solo existe en Android), el flujo cámara → confirmar de punta a punta, la latencia y la memoria, y el redimensionado de fotos grandes (las referencias miden justo 224 px; la app reduce con `inSampleSize` + escalado bilineal y Python con `tf.image.resize`: una diferencia pequeña que solo se cuantifica con fotos reales).
+
+## Pruebas instrumentadas en el dispositivo (primera ejecución: 2026-09-19)
+
+`./gradlew connectedDebugAndroidTest` se ejecutó **por primera vez** en la Galaxy Tab S9+ (Android 16): **26 pruebas** (Compose UI Testing de las pantallas y las del clasificador de referencia). **Cuatro fallaron; ninguna era un defecto de la app**, pero dos mostraron algo que había que saber:
+
+| Prueba que falló | Causa (medida, no supuesta) | Qué se hizo |
+|---|---|---|
+| `OnboardingContentTest` (2): el botón «Aceptar y continuar» sigue deshabilitado tras tocar la casilla · `onAceptar()` no se invoca | En una tablet **en horizontal** (1752 px de alto) la casilla y el botón quedan **por debajo del borde visible** de un contenido que se desplaza; el toque de la prueba cae fuera de la zona visible y no hace nada | Las dos pruebas ahora se desplazan hasta el nodo (`performScrollTo`) antes de tocarlo, como ya hacía `AjustesContentTest`. **Es un defecto de la prueba, no de la app** (el ciudadano se desplaza) |
+| `ClasificadorResiduoReferenciaTest` (2): las probabilidades de la app difieren de las de Python; la confianza también | **La entrada al modelo es idéntica** (se comprobó con una prueba de diagnóstico que compara las 150 528 cifras de cada imagen contra las que prepara PIL: diferencia **0,0** en las 4 imágenes) **y el modelo es el mismo** (`sha256`). Aun así, con esa entrada, 2 imágenes dan las mismas probabilidades hasta la cuarta cifra y **2 no**: el degradado rojo-azul da 0,17 / 0,14 / **0,68** / 0,00 en Python y 0,23 / 0,16 / **0,60** / 0,00 en el teléfono (hasta **0,08** en la confianza; `franjas_marron_beige`, 0,957 frente a 0,984). Es la forma en que el **intérprete del teléfono calcula el modelo**, no el preprocesado | La tolerancia de la prueba pasó de 0,05 (la «sugerida» por `generar_referencias.py`) a **0,10**, con la medición escrita en el código: sigue detectando lo que debe (canales BGR, escala 0–1 o EXIF ignorado cambian las probabilidades en 0,3 o más). **Lo que no se resolvió**: por qué difiere el intérprete (¿precisión de los núcleos en ARM?). **Consecuencia para la investigación**: el umbral de confianza (0,70, provisional) debe **calibrarse con las cifras del teléfono**, no solo con las de Python (`ml/README.md`, limitación 7) |
+
+**Resultado final: 26 de 26 en verde en el dispositivo.** Dos avisos: (1) `connectedDebugAndroidTest` **desinstala la app al terminar** y con ella sus datos (lo que la guía decía al revés); (2) la pantalla debe estar **encendida y desbloqueada** durante la corrida.
+
+Lo que sí quedó demostrado por primera vez en un dispositivo: las librerías nativas de LiteRT **cargan y ejecutan** el modelo; el preprocesado (canales RGB, escala 0–255, **orientación EXIF**) coincide con el entrenamiento; y las pantallas de Ajustes, Mis reportes, Reporte y consentimiento se comportan como en la JVM.
 
 ## Adaptación a pantallas grandes (preparación de la prueba en tablet)
 

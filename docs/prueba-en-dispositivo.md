@@ -28,8 +28,10 @@ Debe aparecer la tablet como `device` (no `unauthorized`, no `offline`). Si le p
 
 ```bash
 ./gradlew installDebug                  # instala la app en el dispositivo conectado
-./gradlew connectedDebugAndroidTest     # ejecuta las pruebas de dispositivo (dejan la app instalada)
+./gradlew connectedDebugAndroidTest     # ejecuta las 26 pruebas de dispositivo; AL TERMINAR DESINSTALA LA APP y se borran sus datos
 ```
+
+**Aviso (medido el 2026-09-19):** `connectedDebugAndroidTest` **desinstala la app al terminar**, y con ella la base de datos, las fotos y el consentimiento. No correrlo en un teléfono con reportes que importen, y volver a instalar con `installDebug` después. La pantalla debe estar **encendida y desbloqueada** durante la corrida (las pruebas abren pantallas de verdad); con el bloqueo puesto, fallarían por eso.
 
 ## 2b. Modo de ubicación simulada (solo para pruebas)
 
@@ -210,7 +212,7 @@ adb logcat -d -s ClasificadorResiduo ReporteScreen AlmacenFotos DecodificadorFot
 | F1–F4 | ☐ | |
 | G1–G8 | ☐ | requiere la clave de Google Maps |
 | H1–H11 | ☐ | H9 necesita la variante **normal** y exteriores; H1 a H8 y H11, la de ubicación simulada; H6 y H4, servidor real |
-| `connectedDebugAndroidTest` | ☐ | pruebas ejecutadas: ___ · fallidas: ___ |
+| `connectedDebugAndroidTest` | **OK** (2026-09-19) | 26 ejecutadas en la Galaxy Tab S9+ · **4 fallaron la primera vez** (2 del consentimiento: la casilla y el botón quedan bajo el borde visible en horizontal y había que desplazarse hasta ellos; 2 de la referencia del clasificador: tolerancia demasiado estrecha, ver `pruebas.md`) → corregidas, **26 de 26 en verde** |
 
 ## 5b. Sesión 1 — 2026-09-18, Galaxy Tab S9+ (solo lo que se verificó)
 
@@ -250,7 +252,7 @@ Dispositivo: el mismo (**SM-X810**, Android 16 / API 36, One UI 8.0.5, pantalla 
 | Servidor que **no contesta** | **OK** | A los **90 009 ms** `SocketTimeoutException` → «TIEMPO_AGOTADO» → «el servidor tardó demasiado en responder». **Mientras tanto el siguiente reporte esperó** (defecto 4) |
 | «**Enviar ahora**» con una petición colgada | **OK** | Canceló la petición colgada (`Socket closed` tras 85 s) y **mandó los dos reportes en 3 segundos**; el aviso «2 reportes sin enviar» desapareció. La petición cancelada **no** contó como intento |
 | H10 Permisos (en parte) | **Parcial** | Sin cámara y con solo la ubicación **aproximada**: «Permisos necesarios», «Conceder permisos» y la ayuda «La ubicación debe ser «precisa»…»; «Abrir los ajustes de la app» abre los Ajustes de Android; tras conceder (con `adb`) y volver con Atrás, **la cámara aparece sola**. **Falta**: el diálogo del sistema y la doble negativa |
-| H3 Cinco reportes seguidos | **No concluyente** | El intento reveló el defecto 2 (ubicación simulada repetida tras un reinicio). Corregido; **hay que repetirlo** |
+| H3 Cinco reportes seguidos | **No concluyente → OK** | El primer intento reveló el defecto 2 (ubicación simulada repetida tras un reinicio); corregido y **repetido con la versión final: OK** (tabla de abajo) |
 
 **Defectos hallados en esta sesión** (ninguno lo habían visto las pruebas automáticas; detalle y correcciones en `progreso.md`, Sesión 25):
 1. **«Enviado» se anotaba con la hora de salida de la petición**, no con la de la respuesta (un envío de 25 s quedó anotado 25 s antes). **Corregido**, con prueba.
@@ -258,9 +260,21 @@ Dispositivo: el mismo (**SM-X810**, Android 16 / API 36, One UI 8.0.5, pantalla 
 3. **Un intento interrumpido no se cuenta** en `intentos`. **Documentado** (`pruebas-de-confiabilidad.md` §9).
 4. **Un envío que no termina retrasa a los demás** hasta 90 s. **Documentado**, con la alternativa.
 
-**Después de esta sesión** se cambió la forma de leer las fotos en disco (`decodificarArchivo`, por un problema de las pruebas en Windows: ver `pruebas.md`, «Notas técnicas») y se **reinstaló la versión final**, pero **la tablet se bloqueó** y no se pudo repetir con ella la foto, el envío ni H3. **Pendiente al desbloquearla**: una foto nueva (peso y orientación), la clasificación de la IA, H3 y H11.
+**Versión final (con `decodificarArchivo`) verificada en la misma sesión**, cuando se pudo desbloquear la tablet:
 
-**Sin verificar en la tablet** (necesitan al usuario o al GPS): girar el equipo y pantalla dividida (B1, B2, C3), modo avión, Wi-Fi sin salida y reinicio (H1 a H4), servidor dormido (H6), fecha mal puesta (H7), **GPS real** (C8, H9), compartir el registro de envíos (H11), un teléfono, y **todo contra Render**.
+| Escenario | Resultado | Observación |
+|---|---|---|
+| Foto nueva, clasificación y guardado | **OK** | Foto de **1600 × 1200 px y 246 769 bytes, sin EXIF**; «Sugerencia automática: Plástico»; el servidor la recibió |
+| **H3 Cinco reportes seguidos** | **OK** | Los 5 guardados en ≈ 20 s cada uno (cadencia del script); **los 5 llegaron** (2xx ×5), todos `SINCRONIZADO` con **`intentos` = 1**, sin repetidos y sin el rechazo por «mismo lugar» (el defecto 2 quedó corregido) |
+| Ajustes: sección «Registro de envíos» | **OK** | Entre «Contacto» y «Tus datos», con el texto que dice qué no incluye |
+| **H11 Compartir el registro** | **Parcial** | Se abre el selector «Compartir texto» de Android y su vista previa muestra las líneas de cabecera (`# Wanchaq Limpio 1.0-ubicacion-simulada`, `# samsung SM-X810, Android 16 (API 36)…`). **No se envió a nadie** ni se comprobó el texto completo en un correo o chat |
+| `connectedDebugAndroidTest` (D7) | **OK tras corregir** | 26 pruebas de UI y de referencia del clasificador en el dispositivo: la primera vez 22 pasaron y 4 fallaron; ver `pruebas.md`, «Pruebas instrumentadas en el dispositivo» |
+
+Capturas (sin datos personales): [«Mis reportes» con un rechazo 422 y los enviados](./evidencia/2026-09-19_tab-s9plus_mis-reportes-rechazado-y-enviados.jpg) y [con un pendiente por servidor no disponible](./evidencia/2026-09-19_tab-s9plus_mis-reportes-pendiente-503.jpg).
+
+**Otra consecuencia de esa corrida**: `connectedDebugAndroidTest` **desinstaló la app** de la tablet (y con ella los reportes de prueba). Hubo que reinstalarla con `installDebug`.
+
+**Sin verificar en la tablet** (necesitan al usuario o al GPS): girar el equipo y pantalla dividida (B1, B2, C3), modo avión, Wi-Fi sin salida y reinicio (H1 a H4), servidor dormido (H6), fecha mal puesta (H7), **GPS real** (C8, H9), que el registro de envíos llegue completo a un correo o chat (H11), un teléfono, y **todo contra Render**.
 
 ---
 
