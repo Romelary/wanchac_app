@@ -40,6 +40,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- WorkManager se inicializa "bajo demanda" con la configuración de WanchaqLimpioApp (la fábrica de Hilt, sin la
+             cual SyncWorker y EliminarReporteWorker no se pueden crear). Esa configuración solo se usa si se quita el
+             inicializador automático: si no, WorkManager arranca solo, con la configuración por defecto, y la ignora.
+             Ver InicializacionWorkManagerTest. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
     </application>
 
 </manifest>
