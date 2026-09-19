@@ -40,11 +40,17 @@ Los nombres de los menús pueden variar un poco; los pasos son los de la [docume
 
 ## 3. Comprobar que funciona
 
+**Paso previo: que Render tenga el endpoint del mapa.** Abre en el navegador `https://TU-SERVICIO.onrender.com/puntos-criticos` (la primera vez puede tardar ≈ 1 min): debe mostrar `{"type": "FeatureCollection", "features": []}`. Si da **404**, todavía no desplegaste la versión que lo trae (`git push` y esperar a que Render construya): en la app verías «El servidor tuvo un problema» con *Reintentar* y **el mapa no se dibujaría**, aunque la clave esté bien.
+
 1. Abre la app y toca **Mapa** (icono de alfiler, primera pestaña de la barra).
 2. Debes ver el **mapa de Wanchaq** (calles, no un fondo gris). Con la app recién instalada, sin ningún foco confirmado, aparece además la tarjeta **"Aún no hay focos confirmados"**: es lo **normal** (ver ADR-0005: hoy nada produce focos confirmados).
 3. Si ves un **aviso rojo** arriba diciendo que falta la clave, `MAPS_API_KEY` no llegó a la compilación (línea mal escrita o no se recompiló).
 
 ## 4. Si el mapa sale gris
+
+**Si en vez del mapa ves «El servidor tuvo un problema»**, no es un problema de la clave: la app no pudo leer la lista de focos (Render no tiene todavía `/puntos-criticos`, está dormido o está caído). Prueba esa dirección en el navegador (sección 3, paso previo) y toca *Reintentar*: el mapa solo se dibuja cuando la lista llega.
+
+Si el mapa se ve **gris** (o sin calles):
 
 | Causa probable | Qué revisar |
 |---|---|

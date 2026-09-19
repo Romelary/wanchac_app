@@ -194,19 +194,20 @@ La app trata **cualquier respuesta no exitosa como "reintentar"** (`SyncWorker`)
 
 **Pendiente en el cliente**: hoy `SyncWorker` reintenta **para siempre** cualquier respuesta no exitosa, incluidos los errores permanentes (400, 413, 415, 422). Hay que hacer que trate esos códigos como rechazo definitivo (ver `progreso.md`).
 
-#### Contrato del mapa público: `GET /puntos-criticos` (definido por el cliente el 2026-09-19; **el servidor aún no lo implementa**)
+#### Contrato del mapa público: `GET /puntos-criticos` (definido por el cliente el 2026-09-19; el servidor lo implementa desde ese día de forma **provisional**, siempre con una colección vacía)
 
 Como con `POST /reportes`, el cliente (Módulo 5, [ADR-0005](./adr/0005-mapa-publico-dentro-de-la-app-con-google-maps.md)) lo define **antes** de que exista el backend, para que este se construya contra un contrato explícito. Las pruebas del cliente lo simulan con `MockWebServer`.
 
 | Aspecto | Contrato |
 |---|---|
 | Petición | `GET /puntos-criticos`, **sin parámetros ni identificador de dispositivo**: los focos son públicos. `plan.md` decía `?estado=confirmado`; el servidor puede admitir ese único valor por compatibilidad (cualquier otro, 400), pero **solo devuelve focos confirmados aunque se pida otra cosa** (CORR-003) |
-| Respuesta 200 | GeoJSON `FeatureCollection` (RFC 7946, RNF-06). **Una colección vacía (`features: []`) es válida y es el estado normal** mientras ningún foco esté confirmado en campo |
+| Respuesta 200 | GeoJSON `FeatureCollection` (RFC 7946, RNF-06), con `Content-Type: application/geo+json`. **Una colección vacía (`features: []`) es válida y es el estado normal** mientras ningún foco esté confirmado en campo |
 | Cada `Feature` | `geometry`: `Point` con `[longitud, latitud]` = centroide del foco. `properties`: `id` (entero), `numReportes` (entero), `categoriaPredominante` (texto, una de las 6 categorías en mayúsculas; opcional), `fechaDeteccionEpochMillis` (entero) |
 | Lo que **no** debe llevar | `idAnonimo`, `idLocal`, fotos ni reportes individuales; tampoco las métricas internas de calidad del agrupamiento (`coeficiente_silueta`, `proporcion_ruido`) |
 | Tolerancia del cliente | Descarta un foco mal formado (sin id, sin geometría `Point`, coordenadas imposibles) **sin tumbar la lista**; una categoría desconocida deja el foco sin categoría; ignora campos que no conoce |
 | Errores | Cualquier no-2xx = "el servidor tuvo un problema" (pantalla con *Reintentar*); sin respuesta = "sin conexión"; 2xx con un cuerpo que no es JSON, vacío, cortado o de otra forma (p. ej. un `id` como texto) = "respuesta inválida" (**no** se descarta solo ese foco: un tipo equivocado es una violación del contrato, no un dato raro); 2xx sin cuerpo (204) tampoco es un mapa vacío |
-| Caché sugerida | `Cache-Control: public, max-age=60` (opcional; la app pide la lista cada vez que se abre la pestaña) |
+| Caché | El servidor envía `Cache-Control: public, max-age=60` (la app pide la lista cada vez que se abre la pestaña; un foco nuevo puede tardar hasta 1 min en verse) |
+| Estado del servidor | **Provisional (2026-09-19)**: responde siempre `200` con `features: []`, **sin consultar la base** (no existen la tabla `punto_critico` ni una forma de confirmar un foco, tarea A18). Sirve para que la app distinga «aún no hay focos» de «el servidor no tiene el endpoint» (un 404 se vería como error del servidor y **sin mapa**). Se sustituirá por la consulta real en la Fase 3 ([ADR-0004 #17](./adr/0004-backend-django-sin-geodjango.md)) |
 
 ```json
 {"type": "FeatureCollection", "features": [

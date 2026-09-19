@@ -38,6 +38,6 @@ Un destino **"Mapa"** en la barra de navegación de la app, con **Google Maps SD
 - **Requiere cuenta de facturación (tarjeta)** y el costo no está confirmado → presupuesto y alertas en Google Cloud.
 - **Dispositivos sin Google Play services** (p. ej. algunos de Huawei) no mostrarán el mapa; no se verificó cómo se ve exactamente.
 - **`maps-compose` queda fijado en 7.0.0**: subirlo a 8.4+ exige subir Kotlin (y probablemente el BOM de Compose y otras dependencias).
-- **El mapa estará vacío durante semanas por diseño**: solo muestra focos confirmados en campo, y hoy nada los produce (faltan la Fase 2, la Fase 3 y **una forma de confirmar un foco**; tareas A14, A15 y A18 del tablero). La pantalla muestra un mensaje que lo explica.
+- **El mapa estará vacío durante semanas por diseño**: solo muestra focos confirmados en campo, y hoy nada los produce (faltan la Fase 2, la Fase 3 y **una forma de confirmar un foco**; tareas A14, A15 y A18 del tablero). La pantalla muestra un mensaje que lo explica. El servidor tiene un endpoint **provisional** (siempre vacío, [ADR-0004 #17](./0004-backend-django-sin-geodjango.md)) para que el mapa se dibuje y diga «Aún no hay focos confirmados» en vez de mostrar un error 404 sin mapa.
 - **La tesis menciona un panel web con React/Leaflet** que sigue sin hacerse: hay que **avisar al asesor** de que el mapa público quedó en la app (tarea F13 del tablero).
 - **Solo Android**: no hay forma de ver el mapa sin instalar la app (la opción web lo habría permitido).

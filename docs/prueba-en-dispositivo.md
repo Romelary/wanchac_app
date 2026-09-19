@@ -112,12 +112,12 @@ Ver la nota de la sección 4. Para cada foto anota: qué era, qué sugirió, qu�
 | # | Qué hacer | Esperado |
 |---|---|---|
 | G1 | Tocar la pestaña **Mapa** (la primera de la barra) con la clave configurada | Se ve el **mapa de Wanchaq** con calles, **no un fondo gris**; controles de zoom visibles |
-| G2 | Sin ningún foco confirmado (lo normal hoy) | El mapa del distrito y una tarjeta "Aún no hay focos confirmados"; el botón **Actualizar** responde |
+| G2 | Sin ningún foco confirmado (lo normal hoy; **necesita el endpoint provisional desplegado**, `despliegue-mapa.md` §3) | El mapa del distrito y una tarjeta "Aún no hay focos confirmados"; el botón **Actualizar** responde |
 | G3 | Sin `MAPS_API_KEY` en `local.properties`, en una compilación de depuración | Aviso **rojo** arriba diciendo que falta la clave; el resto de la app funciona |
 | G4 | Arrastrar y alejar el mapa hacia fuera del distrito | No deja irse a más de ≈ 1 km de Wanchaq ni alejar más allá del zoom mínimo |
 | G5 | Modo avión y tocar **Mapa** (o **Actualizar**) | "No se pudo conectar con el servidor…" con **Reintentar**; al volver la red, Reintentar carga |
 | G6 | Girar la tablet y usar pantalla dividida con el mapa abierto | El mapa y las tarjetas se adaptan; nada queda tras una barra del sistema; las tarjetas no se estiran de borde a borde |
-| G7 | Con un foco de prueba en el servidor (cuando exista `GET /puntos-criticos`; ver `avance.md` A15) | Aparece su marcador; al tocarlo muestra categoría, nº de reportes y fecha; el contador dice "1 foco confirmado" |
+| G7 | Con un foco de prueba en el servidor (hoy el endpoint es **provisional y siempre devuelve vacío**: hace falta la Fase 3 real, `avance.md` A15, o un dato de prueba) | Aparece su marcador; al tocarlo muestra categoría, nº de reportes y fecha; el contador dice "1 foco confirmado" |
 | G8 | Abrir **Mapa** tras un rato sin usar la app (servidor dormido) | La primera petición puede tardar hasta ≈ 1 min (Render despierta) y **no** da error de tiempo agotado |
 
 ## 4. Lo que se espera que falle o haya que mirar (hipótesis antes de probar)

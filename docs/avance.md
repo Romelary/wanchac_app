@@ -11,13 +11,13 @@
 <!-- RESUMEN:INICIO -->
 | Área | Hechas | Total | Avance |
 |---|---:|---:|---|
-| **A.** Infraestructura y backend | 7 | 19 | `████░░░░░░` 37 % |
+| **A.** Infraestructura y backend | 8 | 20 | `████░░░░░░` 40 % |
 | **B.** App Android | 13 | 22 | `██████░░░░` 59 % |
 | **C.** Modelo de IA | 4 | 9 | `████░░░░░░` 44 % |
 | **D.** Pruebas en dispositivo y calidad | 3 | 11 | `███░░░░░░░` 27 % |
 | **E.** Publicación en Play Store | 1 | 9 | `█░░░░░░░░░` 11 % |
 | **F.** Asesor y documento de tesis | 1 | 13 | `█░░░░░░░░░` 8 % |
-| **Total** | **29** | **83** | `███░░░░░░░` **35 %** |
+| **Total** | **30** | **84** | `████░░░░░░` **36 %** |
 
 **Pendientes: 54**, de las cuales **14 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 31** · **Claude 19** · **Asesor 15**.
 <!-- RESUMEN:FIN -->
@@ -29,7 +29,7 @@
 La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) empieza en días; esto es lo que decide si se puede empezar:
 
 1. **A8 + A9** — cerrar Render y la seguridad de Cloudinary (falta la evidencia de Render y confirmar la rotación de la clave).
-2. **A10** — desplegar la Fase 1 y ejecutar `--reporte-de-prueba`: es la primera vez que la API real guarda un reporte.
+2. **A10** — desplegar la Fase 1 y ejecutar `--reporte-de-prueba`: es la primera vez que la API real guarda un reporte. El mismo `git push` publica el endpoint provisional del mapa (A20).
 3. **A19** — configurar en `local.properties` la dirección del servidor (`baseUrl`) y la clave de Google Maps (`MAPS_API_KEY`): la app **ya** apunta a donde se le diga y aguanta el arranque en frío de Render (B10 y B11 hechos el 2026-09-19).
 4. **D9** — primer reporte real de punta a punta: teléfono → Render → Neon.
 5. **D5** — GPS real en exteriores dentro de Wanchaq (hoy solo se probó con ubicación simulada).
@@ -54,7 +54,8 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **A12** Decidir la **limitación de uso** del `POST`/`DELETE` sin login (por IP, clave embebida, alertas de cuota): hoy cualquiera puede enviar basura — *Asesor* · 🟡 · [ADR-0004](./adr/0004-backend-django-sin-geodjango.md)
 - [ ] **A13** Polígono oficial del distrito de Wanchaq (catastro/INEI) y validación con `ST_Within` en el servidor — *Usuario + Claude* · 🟡 (hoy es un rectángulo, igual en app y servidor)
 - [ ] **A14** Fase 2 — agrupamiento **DBSCAN** (ε 50 m, MinSamples 4), coeficiente de silueta y proporción de ruido (RF-05/RF-06), tabla `Punto_critico` (CORR-004) — *Claude* · 🔴 para la tesis
-- [ ] **A15** Fase 3 — `GET /puntos-criticos?estado=confirmado` para el mapa — *Claude* · 🟡
+- [ ] **A15** Fase 3 — `GET /puntos-criticos?estado=confirmado` **con focos reales** (hoy el endpoint es provisional y devuelve siempre una colección vacía: A20) — *Claude* · 🟡
+- [x] **A20** `GET /puntos-criticos` **provisional**: siempre `200` con una colección GeoJSON vacía y sin tocar la base, para que la app muestre «Aún no hay focos confirmados» en vez de un error 404 (sin la ruta, la app **no dibujaría el mapa**); 7 pruebas y 11 mutaciones detectadas — *Claude* · **falta desplegarlo** (el `git push` de A10) · [ADR-0004 #17](./adr/0004-backend-django-sin-geodjango.md)
 - [ ] **A16** Columna `geography` + índice GiST y **prueba de integración contra PostgreSQL real** (rama de desarrollo de Neon), al llegar la primera consulta espacial — *Claude* · ⚪ (Fase 2/3)
 - [ ] **A17** Rama de desarrollo en Neon para no probar contra producción cuando haya datos reales — *Usuario* · ⚪
 - [ ] **A18** **Hueco de planificación: cómo se confirma un foco (RF-07 / Instrumento 2).** El diseño dice que el observador registra `estado_verificacion` y el mapa solo muestra los `confirmado`, pero **no hay ninguna tarea, módulo ni fase** que lo construya (¿script de importación de la ficha de campo, formulario web, panel mínimo?). Sin esto el Módulo 5 quedaría vacío — *Asesor + Claude* · 🔴 · [diseno.md](./diseno.md) (RF-07 y secuencia del observador)
@@ -101,7 +102,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 
 - [x] **D1** Instalar en la Galaxy Tab S9+ y comprobar la adaptación de pantalla (botón de 592 dp centrado en horizontal) — *Usuario + Claude*
 - [x] **D2** Suite de la app en la JVM: 174 pruebas unitarias en verde (44 son del mapa, con 30 mutaciones deliberadas: 29 detectadas y 1 equivalente; 2 de la inicialización de WorkManager), ktlint y detekt limpios — *Claude* · [pruebas.md](./pruebas.md)
-- [x] **D3** Suite del backend: 202 pruebas y 141 mutaciones deliberadas — *Claude* · [pruebas.md](./pruebas.md)
+- [x] **D3** Suite del backend: 209 pruebas y 152 mutaciones deliberadas — *Claude* · [pruebas.md](./pruebas.md)
 - [ ] **D4** **Protocolo completo en la tablet (32 escenarios A–F)**: solo se verificó el consentimiento en horizontal — *Usuario* · 🟡 · [prueba-en-dispositivo.md](./prueba-en-dispositivo.md)
 - [ ] **D5** **GPS real en exteriores dentro de Wanchaq** (escenario C8): variante normal, cielo despejado, ~30 s; si aún rechaza por precisión, hacer que la app espere una lectura ≤ 15 m — *Usuario* · 🔴
 - [ ] **D6** Probar en un **teléfono real**, no solo la tablet — *Usuario* · 🟡
