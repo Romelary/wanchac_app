@@ -46,6 +46,16 @@ Los nombres de los menús pueden variar un poco; los pasos son los de la [docume
 2. Debes ver el **mapa de Wanchaq** (calles, no un fondo gris). Con la app recién instalada, sin ningún foco confirmado, aparece además la tarjeta **"Aún no hay focos confirmados"**: es lo **normal** (ver ADR-0005: hoy nada produce focos confirmados).
 3. Si ves un **aviso rojo** arriba diciendo que falta la clave, `MAPS_API_KEY` no llegó a la compilación (línea mal escrita o no se recompiló).
 
+**Para ver el mapa (y hasta un marcador) sin esperar a Render**, usa el servidor falso local (verificado el 2026-09-19 en la tablet; [`prueba-en-dispositivo.md`](./prueba-en-dispositivo.md) §2c y §5d):
+
+```bash
+python herramientas/servidor_falso.py                       # escribe «focos» en herramientas/modo.txt para ver 2 marcadores
+adb reverse tcp:8000 tcp:8000
+./gradlew installDebug -PbaseUrl=http://localhost:8000
+```
+
+En «Mapa» toca **Actualizar**. En modo `focos` salen **2 focos inventados** (no los enseñes como reales); con el modo normal, la tarjeta «Aún no hay focos confirmados».
+
 ## 4. Si el mapa sale gris
 
 **Si en vez del mapa ves «El servidor tuvo un problema»**, no es un problema de la clave: la app no pudo leer la lista de focos (Render no tiene todavía `/puntos-criticos`, está dormido o está caído). Prueba esa dirección en el navegador (sección 3, paso previo) y toca *Reintentar*: el mapa solo se dibuja cuando la lista llega.

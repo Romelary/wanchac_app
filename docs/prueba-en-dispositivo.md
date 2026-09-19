@@ -70,6 +70,7 @@ Su comportamiento se cambia **sin reiniciar**, escribiendo una palabra en `herra
 | `corta` | Corta la conexión a mitad del envío | «sin conexión» y reintenta |
 | `perdida` | **Guarda** el reporte y corta **sin responder** | Cree que falló y reintenta; con `ok` el servidor contesta 200 y **no duplica** |
 | `colgado` | Acepta y no contesta nunca | A los **90 s** «el servidor tardó demasiado en responder» |
+| `focos` | `GET /puntos-criticos` devuelve **2 focos INVENTADOS** dentro de Wanchaq (los `POST` se portan como `ok`) | El mapa dibuja 2 marcadores y dice «2 focos confirmados» (escenario G7). **Son datos de prueba: no enseñarlos como reales** |
 
 El servidor escribe una línea por petición (`idLocal`, categoría, tamaño de la foto, código devuelto y cuántos reportes distintos lleva) y guarda las fotos que recibe en `herramientas/recibidas/`. **No imprime coordenadas** ni el código anónimo completo. Después, para volver a la configuración normal: `./gradlew installDebug` (sin `-PbaseUrl`) y `adb reverse --remove tcp:8000`.
 
@@ -147,7 +148,7 @@ Ver la nota de la sección 4. Para cada foto anota: qué era, qué sugirió, qu�
 | G4 | Arrastrar y alejar el mapa hacia fuera del distrito | No deja irse a más de ≈ 1 km de Wanchaq ni alejar más allá del zoom mínimo |
 | G5 | Modo avión y tocar **Mapa** (o **Actualizar**) | "No se pudo conectar con el servidor…" con **Reintentar**; al volver la red, Reintentar carga |
 | G6 | Girar la tablet y usar pantalla dividida con el mapa abierto | El mapa y las tarjetas se adaptan; nada queda tras una barra del sistema; las tarjetas no se estiran de borde a borde |
-| G7 | Con un foco de prueba en el servidor (hoy el endpoint es **provisional y siempre devuelve vacío**: hace falta la Fase 3 real, `avance.md` A15, o un dato de prueba) | Aparece su marcador; al tocarlo muestra categoría, nº de reportes y fecha; el contador dice "1 foco confirmado" |
+| G7 | Con un foco de prueba en el servidor (hoy el endpoint es **provisional y siempre devuelve vacío**: hace falta la Fase 3 real, `avance.md` A15, o un dato de prueba) | Aparece su marcador; al tocarlo muestra categoría, nº de reportes y fecha; el contador dice "1 foco confirmado"  · *Con el servidor falso en modo `focos` (§2c) se ven 2 focos inventados, sin esperar a la Fase 3.* |
 | G8 | Abrir **Mapa** tras un rato sin usar la app (servidor dormido) | La primera petición puede tardar hasta ≈ 1 min (Render despierta) y **no** da error de tiempo agotado |
 
 ### H. Confiabilidad del envío y del GPS (protocolo completo en [`pruebas-de-confiabilidad.md`](./pruebas-de-confiabilidad.md))
@@ -210,7 +211,7 @@ adb logcat -d -s ClasificadorResiduo ReporteScreen AlmacenFotos DecodificadorFot
 | D1–D5 | ☐ | |
 | E1–E4 | ☐ | |
 | F1–F4 | ☐ | |
-| G1–G8 | ☐ | requiere la clave de Google Maps |
+| G1–G8 | **Parcial** (2026-09-19) | **G1, G2 y G7 OK** con la clave real (§5d). G3 no aplica (la clave ya está). **Pendientes**: G4 (límite de desplazamiento), G5 (sin red), G6 (girar y pantalla dividida), G8 (servidor dormido) |
 | H1–H11 | ☐ | H9 necesita la variante **normal** y exteriores; H1 a H8 y H11, la de ubicación simulada; H6 y H4, servidor real |
 | `connectedDebugAndroidTest` | **OK** (2026-09-19) | 26 ejecutadas en la Galaxy Tab S9+ · **4 fallaron la primera vez** (2 del consentimiento: la casilla y el botón quedan bajo el borde visible en horizontal y había que desplazarse hasta ellos; 2 de la referencia del clasificador: tolerancia demasiado estrecha, ver `pruebas.md`) → corregidas, **26 de 26 en verde** |
 
@@ -276,13 +277,28 @@ Capturas (sin datos personales): [«Mis reportes» con un rechazo 422 y los envi
 
 **Sin verificar en la tablet** (necesitan al usuario o al GPS): girar el equipo y pantalla dividida (B1, B2, C3), modo avión, Wi-Fi sin salida y reinicio (H1 a H4), servidor dormido (H6), fecha mal puesta (H7), **GPS real** (C8, H9), que el registro de envíos llegue completo a un correo o chat (H11), un teléfono, y **todo contra Render**.
 
+## 5d. Sesión 3 — 2026-09-19, Galaxy Tab S9+ (el mapa con la clave real de Google Maps)
+
+La clave (`MAPS_API_KEY`) la puso el usuario en `local.properties`; **no se leyó ni se imprimió** (solo se comprobó, contando líneas, que existe y tiene el formato de una clave de Google, sin comillas ni espacios). App: compilación de depuración con ubicación simulada, apuntando al servidor falso local (`-PbaseUrl=http://localhost:8000`), porque **Render todavía no tiene `/puntos-criticos`** (falta el `git push`). El mapa no usa la ubicación del teléfono.
+
+| Escenario | Resultado | Observación |
+|---|---|---|
+| **G1** Pestaña «Mapa» con la clave | **OK** | Se dibuja el **mapa de Google** de Cusco y Wanchaq **con calles y nombres** (no un fondo gris), los controles de zoom, el logotipo «Google» y «©2026 Google». Sin el aviso rojo de «falta la clave» |
+| **G2** Sin focos | **OK** | La tarjeta «**Aún no hay focos confirmados**» con su explicación y el botón «**Actualizar**»; el servidor falso registró `GET /puntos-criticos → 200 (vacío)`. «Actualizar» **hace una petición nueva** |
+| **G7** Con focos | **OK** | Con el servidor falso en modo `focos` (2 focos **inventados**), «Actualizar» los trae: aparece el aviso «**2 focos confirmados**», el mapa se **encuadra** para mostrar los dos marcadores y, al tocar uno, sale «**Cartón** · 4 reportes · detectado el 17 sept 2026, 4:48 p.m.» |
+| Autorización de Google en `logcat` | **OK** | Ningún aviso de autorización (`Authorization failure`…); `MapsInitializer` cargó el renderizador `LATEST`. (Las líneas de `logcat` que traen la clave se **enmascaran** antes de mirarlas.) |
+
+Captura (los focos son inventados, sin datos personales): [mapa con los dos focos de prueba](./evidencia/2026-09-19_tab-s9plus_mapa-con-focos-de-prueba.jpg).
+
+**Sin verificar**: G4 (arrastrar el mapa fuera del distrito: que tope), G5 (modo avión: «No se pudo conectar…» con **Reintentar**), G6 (girar la tablet y pantalla dividida), G8 (servidor dormido: hasta ≈ 1 min sin error) y **todo contra Render** (el servidor real). **Tampoco se puede saber desde aquí** si la clave está bien **restringida** (paquete + SHA-1 + solo *Maps SDK for Android*): el mapa se dibuja igual con una clave sin restringir; eso se revisa en la consola de Google Cloud.
+
 ---
 
 ## 6. Dispositivos probados
 
 | Dispositivo | Android / One UI | Fecha | Resultado global | Notas |
 |---|---|---|---|---|
-| Galaxy Tab S9+ (SM-X810) | Android 16 / One UI 8.0.5 | 2026-09-18 y 2026-09-19 | *en curso* (ver 5b y 5c) | Sesión 1: instalación y consentimiento en horizontal. **Sesión 2**: migración de la base, envío y fallos contra un **servidor falso**, foto reducida, permisos, íconos; falta girar el equipo, el GPS real, modo avión / Wi-Fi sin salida / reinicio y el servidor real |
+| Galaxy Tab S9+ (SM-X810) | Android 16 / One UI 8.0.5 | 2026-09-18 y 2026-09-19 | *en curso* (ver 5b, 5c y 5d) | Sesión 1: instalación y consentimiento en horizontal. **Sesión 2**: migración de la base, envío y fallos contra un **servidor falso**, foto reducida, permisos, íconos; **Sesión 3**: el mapa con la clave real de Google Maps (G1, G2, G7); falta girar el equipo, el GPS real, modo avión / Wi-Fi sin salida / reinicio y el servidor real |
 | Un teléfono (recomendado además de la tablet: las tabletas no representan a quien reporta en la calle) | | | *pendiente* | |
 
 ## 7. Problemas conocidos al preparar la prueba
