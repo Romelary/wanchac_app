@@ -28,6 +28,9 @@ workManager = "2.11.2"
 hiltWork = "1.4.0"
 # LiteRT (antes TensorFlow Lite). 1.4.2 = ultima de la linea con la API Interpreter; ver ADR-0003.
 litert = "1.4.2"
+# Mapa publico (Modulo 5, ADR-0005). 7.0.0 se compilo contra el MISMO BOM de Compose que usa el proyecto (2025.12.00).
+# NO subir a 8.4+ sin subir Kotlin: esas versiones se compilaron con Kotlin 2.4 y este proyecto usa 2.2.10.
+mapsCompose = "7.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -80,6 +83,7 @@ androidx-work-testing = { group = "androidx.work", name = "work-testing", versio
 androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWork" }
 androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltWork" }
 litert = { group = "com.google.ai.edge.litert", name = "litert", version.ref = "litert" }
+maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
 gson = { group = "com.google.code.gson", name = "gson", version = "2.14.0" }
 okhttp-mockwebserver3 = { group = "com.squareup.okhttp3", name = "mockwebserver3", version.ref = "okhttp" }
 

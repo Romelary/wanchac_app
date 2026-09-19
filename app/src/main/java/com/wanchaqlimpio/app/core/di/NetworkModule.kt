@@ -2,6 +2,8 @@ package com.wanchaqlimpio.app.core.di
 
 import com.google.gson.Gson
 import com.wanchaqlimpio.app.BuildConfig
+import com.wanchaqlimpio.app.core.network.crearClienteHttp
+import com.wanchaqlimpio.app.data.remote.api.PuntosCriticosApi
 import com.wanchaqlimpio.app.data.remote.api.ReportesApi
 import dagger.Module
 import dagger.Provides
@@ -22,21 +24,10 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        val logging =
-            HttpLoggingInterceptor().apply {
-                level =
-                    if (BuildConfig.DEBUG) {
-                        HttpLoggingInterceptor.Level.BODY
-                    } else {
-                        HttpLoggingInterceptor.Level.NONE
-                    }
-            }
-        return OkHttpClient
-            .Builder()
-            .addInterceptor(logging)
-            .build()
-    }
+    fun provideOkHttpClient(): OkHttpClient =
+        crearClienteHttp(
+            if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE,
+        )
 
     @Provides
     @Singleton
@@ -54,4 +45,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideReportesApi(retrofit: Retrofit): ReportesApi = retrofit.create(ReportesApi::class.java)
+
+    @Provides
+    @Singleton
+    fun providePuntosCriticosApi(retrofit: Retrofit): PuntosCriticosApi = retrofit.create(PuntosCriticosApi::class.java)
 }

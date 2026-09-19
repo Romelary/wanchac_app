@@ -27,4 +27,15 @@ object LimiteDistritalWanchaq {
     ): Boolean =
         latitud in LATITUD_MINIMA..LATITUD_MAXIMA &&
             longitud in LONGITUD_MINIMA..LONGITUD_MAXIMA
+
+    /*
+     * Esquinas y centro del rectángulo, como pares (latitud, longitud), para encuadrar el mapa (Módulo 5). El
+     * dominio se mantiene en Kotlin puro: la pantalla del mapa los convierte a los tipos de Google Maps. Son los
+     * mismos límites aproximados de arriba, con la misma advertencia.
+     */
+    val suroeste: Pair<Double, Double> get() = LATITUD_MINIMA to LONGITUD_MINIMA
+    val noreste: Pair<Double, Double> get() = LATITUD_MAXIMA to LONGITUD_MAXIMA
+    val centro: Pair<Double, Double> get() =
+        (LATITUD_MINIMA + LATITUD_MAXIMA) / 2 to
+            (LONGITUD_MINIMA + LONGITUD_MAXIMA) / 2
 }

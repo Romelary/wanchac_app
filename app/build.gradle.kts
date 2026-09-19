@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -6,6 +8,28 @@ plugins {
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
 }
+
+// Valores de CONFIGURACIÓN LOCAL: se leen de `local.properties` (ignorado por git) o de -P<nombre> en la línea de
+// comandos. `local.properties` es el sitio de la clave de Google Maps: NUNCA va a git ni al chat (docs/despliegue-mapa.md).
+val propiedadesLocales =
+    Properties().apply {
+        val archivo = rootProject.file("local.properties")
+        if (archivo.exists()) archivo.inputStream().use { load(it) }
+    }
+
+fun propiedadLocal(nombre: String): String? {
+    val valor = providers.gradleProperty(nombre).orNull ?: propiedadesLocales.getProperty(nombre)
+    return valor?.trim()?.takeIf { it.isNotEmpty() }
+}
+
+// Dirección del backend (Render). NO es un secreto, pero cambia por entorno: depuración usa por defecto la del emulador
+// (10.0.2.2 = el PC anfitrión); para probar contra Render o con un teléfono real se define `baseUrl` en local.properties.
+// Release EXIGE una dirección https (ver verificarDireccionDelServidor, abajo). Retrofit exige la "/" final.
+val baseUrl: String? = propiedadLocal("baseUrl")?.trimEnd('/')?.plus("/")
+
+// Clave de Google Maps SDK para Android (SECRETO de facturación: va restringida a este paquete y a su huella SHA-1).
+// Sin ella la app compila y funciona, pero el mapa se ve gris (en depuración se avisa en pantalla).
+val claveDeMaps: String? = propiedadLocal("MAPS_API_KEY")
 
 // Modo de prueba: ubicación SIMULADA dentro de Wanchaq, para probar el reporte en un dispositivo que no está en el
 // distrito o sin buena señal GPS (RF-02 rechaza a propósito lo que no cumple). SOLO existe en compilaciones de
@@ -29,9 +53,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Backend aun no desplegado (ver docs/plan.md #4). Apunta a un servidor
-        // mock local (json-server o similar) corriendo en el host de desarrollo.
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8000/\"")
+        // Dirección del backend: `baseUrl` de local.properties, o la del emulador si no se define (ver arriba).
+        buildConfigField("String", "BASE_URL", "\"${baseUrl ?: "http://10.0.2.2:8000/"}\"")
+
+        // La clave de Maps se inyecta en el manifiesto (meta-data com.google.android.geo.API_KEY); nunca se escribe en el
+        // código. La bandera solo sirve para AVISAR en pantalla, en depuración, que falta configurarla.
+        manifestPlaceholders["MAPS_API_KEY"] = claveDeMaps ?: "CLAVE_DE_MAPS_NO_CONFIGURADA"
+        buildConfigField("boolean", "MAPS_CLAVE_CONFIGURADA", "${claveDeMaps != null}")
 
         // Correo de contacto público que se muestra en Ajustes (definido en gradle.properties).
         buildConfigField("String", "CONTACT_EMAIL", "\"${providers.gradleProperty("contactEmail").getOrElse("")}\"")
@@ -44,6 +72,8 @@ android {
             if (ubicacionSimulada) versionNameSuffix = "-ubicacion-simulada"
         }
         release {
+            // Publicación: NUNCA la dirección del emulador. Sin `baseUrl` la cadena queda vacía y assembleRelease falla.
+            buildConfigField("String", "BASE_URL", "\"${baseUrl ?: ""}\"")
             buildConfigField("boolean", "UBICACION_SIMULADA", "false")
             isMinifyEnabled = false
             proguardFiles(
@@ -129,6 +159,9 @@ dependencies {
     // Clasificación de residuos on-device (Módulo 3b, ver ADR-0003)
     implementation(libs.litert)
 
+    // Mapa público de focos confirmados (Módulo 5, ver ADR-0005)
+    implementation(libs.maps.compose)
+
     // Sincronización diferida (Módulo 4)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
@@ -193,6 +226,35 @@ val verificarSinUbicacionSimulada by tasks.registering {
     }
 }
 
+// Una versión de publicación que apunta al emulador (o a http sin cifrar) no podría hablar con el servidor real.
+val verificarDireccionDelServidor by tasks.registering {
+    val direccion = providers.provider { baseUrl.orEmpty() }
+    doLast {
+        check(direccion.get().startsWith("https://")) {
+            "Falta 'baseUrl' en local.properties (o -PbaseUrl=...), o no es https: no se puede compilar release " +
+                "sin la dirección HTTPS del servidor. Ejemplo: baseUrl=https://tu-servicio.onrender.com/"
+        }
+    }
+}
+
+// Una versión de publicación sin clave de Maps mostraría el mapa gris a todos los ciudadanos.
+val verificarClaveDeMaps by tasks.registering {
+    val clave = providers.provider { claveDeMaps.orEmpty() }
+    doLast {
+        check(clave.get().isNotBlank()) {
+            "Falta 'MAPS_API_KEY' en local.properties: no se puede compilar release sin la clave de Google Maps " +
+                "(restringida a com.wanchaqlimpio.app y a la huella SHA-1 de la firma de publicación). Ver docs/despliegue-mapa.md."
+        }
+    }
+}
+
 tasks
     .matching { it.name == "assembleRelease" || it.name == "bundleRelease" }
-    .configureEach { dependsOn(verificarCorreoContacto, verificarSinUbicacionSimulada) }
+    .configureEach {
+        dependsOn(
+            verificarCorreoContacto,
+            verificarSinUbicacionSimulada,
+            verificarDireccionDelServidor,
+            verificarClaveDeMaps,
+        )
+    }

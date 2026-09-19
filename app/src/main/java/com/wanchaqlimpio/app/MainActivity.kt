@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanchaqlimpio.app.ui.ajustes.AjustesScreen
+import com.wanchaqlimpio.app.ui.mapa.MapaScreen
 import com.wanchaqlimpio.app.ui.misreportes.MisReportesScreen
 import com.wanchaqlimpio.app.ui.onboarding.OnboardingScreen
 import com.wanchaqlimpio.app.ui.onboarding.OnboardingViewModel
@@ -72,7 +73,7 @@ private fun LoadingScreen() {
     }
 }
 
-// TODO(Módulo 5): reemplazar por la navegación real (Mapa, Reportar, Mis reportes, Ajustes).
+// La barra ya incluye el destino "Mapa" (Módulo 5); los íconos de los otros tres siguen siendo provisionales.
 @PreviewScreenSizes
 @Composable
 fun HomePlaceholder() {
@@ -96,6 +97,7 @@ fun HomePlaceholder() {
         },
     ) {
         when (currentDestination) {
+            AppDestinations.MAPA -> MapaScreen()
             AppDestinations.REPORTAR -> ReporteScreen()
             AppDestinations.MIS_REPORTES -> MisReportesScreen()
             AppDestinations.AJUSTES -> AjustesScreen()
@@ -103,12 +105,13 @@ fun HomePlaceholder() {
     }
 }
 
-// Los íconos y etiquetas de esta barra son temporales (vienen del wizard); el Módulo 5
-// (Mapa) agregará su destino y reemplazará esta navegación por la definitiva.
+// Los íconos de Reportar, Mis reportes y Ajustes son temporales (vienen del asistente de Android Studio) y quedan
+// pendientes de pulido (Módulo 8). El de Mapa es definitivo. La app sigue abriendo en REPORTAR.
 enum class AppDestinations(
     val label: String,
     val icon: Int,
 ) {
+    MAPA("Mapa", R.drawable.ic_map),
     REPORTAR("Reportar", R.drawable.ic_home),
     MIS_REPORTES("Mis reportes", R.drawable.ic_favorite),
     AJUSTES("Ajustes", R.drawable.ic_account_box),

@@ -69,4 +69,24 @@
     <string name="categoria_organico">Orgánico</string>
     <string name="categoria_escombros">Escombros</string>
     <string name="categoria_mixto">Mixto</string>
+
+    <!-- Mapa público de focos confirmados (Módulo 5) -->
+    <plurals name="mapa_focos_confirmados">
+        <item quantity="one">%1$d foco confirmado</item>
+        <item quantity="other">%1$d focos confirmados</item>
+    </plurals>
+    <string name="mapa_sin_focos_titulo">Aún no hay focos confirmados</string>
+    <string name="mapa_sin_focos_texto">Un foco aparece aquí cuando varios reportes cercanos son verificados en campo. Tus reportes ayudan a que eso ocurra.</string>
+    <string name="mapa_boton_actualizar">Actualizar</string>
+    <string name="mapa_boton_reintentar">Reintentar</string>
+    <string name="mapa_error_sin_conexion">No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo; si el servicio estaba en reposo, puede tardar hasta un minuto en responder.</string>
+    <string name="mapa_error_servidor">El servidor tuvo un problema. Inténtalo de nuevo en unos minutos.</string>
+    <string name="mapa_error_respuesta">No se pudo interpretar la respuesta del servidor.</string>
+    <string name="mapa_aviso_sin_clave">Falta la clave de Google Maps (MAPS_API_KEY en local.properties): el mapa se verá gris. Ver docs/despliegue-mapa.md.</string>
+    <string name="mapa_marcador_titulo">Foco de residuos</string>
+    <plurals name="mapa_marcador_reportes">
+        <item quantity="one">%1$d reporte</item>
+        <item quantity="other">%1$d reportes</item>
+    </plurals>
+    <string name="mapa_marcador_detalle">%1$s · detectado el %2$s</string>
 </resources>

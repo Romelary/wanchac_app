@@ -1,8 +1,10 @@
 package com.wanchaqlimpio.app.core.di
 
 import com.wanchaqlimpio.app.data.repository.ConsentimientoRepositoryImpl
+import com.wanchaqlimpio.app.data.repository.PuntosCriticosRepositoryImpl
 import com.wanchaqlimpio.app.data.repository.ReporteRepositoryImpl
 import com.wanchaqlimpio.app.domain.repository.ConsentimientoRepository
+import com.wanchaqlimpio.app.domain.repository.PuntosCriticosRepository
 import com.wanchaqlimpio.app.domain.repository.ReporteRepository
 import dagger.Binds
 import dagger.Module
@@ -20,4 +22,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindReporteRepository(impl: ReporteRepositoryImpl): ReporteRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPuntosCriticosRepository(impl: PuntosCriticosRepositoryImpl): PuntosCriticosRepository
 }
