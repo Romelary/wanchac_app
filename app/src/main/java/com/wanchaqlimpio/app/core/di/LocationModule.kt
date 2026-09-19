@@ -12,6 +12,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import kotlin.time.TimeSource
 
 private const val ETIQUETA_LOG = "ProveedorUbicacion"
 
@@ -36,4 +37,8 @@ object LocationModule {
         } else {
             ProveedorUbicacionFused(context)
         }
+
+    /** El reloj con el que se mide la edad de una lectura del GPS: monótono (no lo altera un cambio de hora). */
+    @Provides
+    fun provideFuenteDeTiempo(): TimeSource = TimeSource.Monotonic
 }

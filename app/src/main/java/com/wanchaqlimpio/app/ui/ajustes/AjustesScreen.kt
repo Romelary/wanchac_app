@@ -23,6 +23,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanchaqlimpio.app.BuildConfig
 import com.wanchaqlimpio.app.R
 import com.wanchaqlimpio.app.ui.common.ContenidoCentrado
+import kotlinx.coroutines.launch
 
 private const val ETIQUETA_LOG = "AjustesScreen"
 
@@ -42,6 +44,7 @@ private const val ETIQUETA_LOG = "AjustesScreen"
 fun AjustesScreen(viewModel: AjustesViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val alcance = rememberCoroutineScope()
 
     AjustesContent(
         uiState = uiState,
@@ -49,6 +52,11 @@ fun AjustesScreen(viewModel: AjustesViewModel = hiltViewModel()) {
         correoContacto = BuildConfig.CONTACT_EMAIL,
         onEscribirCorreo = { abrirCorreo(context, BuildConfig.CONTACT_EMAIL) },
         onBorrarTodo = viewModel::borrarTodo,
+        onCompartirRegistro = {
+            alcance.launch {
+                compartirRegistroDeEnvios(context, viewModel.generarRegistroDeEnvios(encabezadoDelRegistro()))
+            }
+        },
     )
 }
 
@@ -75,6 +83,7 @@ fun AjustesContent(
     correoContacto: String,
     onEscribirCorreo: () -> Unit,
     onBorrarTodo: () -> Unit,
+    onCompartirRegistro: () -> Unit = {},
 ) {
     // rememberSaveable: el diálogo de confirmación sobrevive a una rotación de pantalla.
     var confirmando by rememberSaveable { mutableStateOf(false) }
@@ -88,6 +97,7 @@ fun AjustesContent(
                 SeccionAcercaDe(versionName)
                 uiState.idAnonimo?.let { SeccionCodigo(it) }
                 SeccionContacto(correoContacto, onEscribirCorreo)
+                SeccionRegistroDeEnvios(onCompartirRegistro)
                 SeccionDatos(borrando = uiState.borrando, onBorrar = { confirmando = true })
             }
         }

@@ -56,6 +56,7 @@ class MisReportesEnvioContentTest {
     private fun mostrar(
         vararg reportes: Reporte,
         onEnviarAhora: () -> Unit = {},
+        onReintentar: (Long) -> Unit = {},
     ) {
         composeTestRule.setContent {
             WanchaqLimpioTheme {
@@ -63,9 +64,44 @@ class MisReportesEnvioContentTest {
                     uiState = MisReportesUiState.Lista(reportes.toList()),
                     onEliminar = {},
                     onEnviarAhora = onEnviarAhora,
+                    onReintentar = onReintentar,
                 )
             }
         }
+    }
+
+    private fun rechazado(
+        id: Long,
+        motivo: MotivoFalloEnvio,
+    ) = reporte(
+        id,
+        EstadoReporte.RECHAZADO,
+        SeguimientoDeEnvio(intentos = 1, ultimoFallo = FalloDeEnvio(motivo, 422)),
+    )
+
+    @Test
+    fun `un reporte que el servidor rechazo ofrece Reintentar y lo pide con su id`() {
+        var pedido: Long? = null
+        mostrar(rechazado(7, MotivoFalloEnvio.RECHAZADO_POR_EL_SERVIDOR), onReintentar = { pedido = it })
+
+        composeTestRule.onNodeWithText(texto(R.string.mis_reportes_boton_reintentar)).performClick()
+
+        assertEquals(7L, pedido)
+    }
+
+    @Test
+    fun `un reporte rechazado porque su foto ya no esta no ofrece Reintentar, solo Eliminar`() {
+        mostrar(rechazado(7, MotivoFalloEnvio.FOTO_NO_DISPONIBLE))
+
+        composeTestRule.onNodeWithText(texto(R.string.mis_reportes_boton_reintentar)).assertDoesNotExist()
+        composeTestRule.onNodeWithText(texto(R.string.mis_reportes_boton_eliminar)).assertIsDisplayed()
+    }
+
+    @Test
+    fun `un reporte pendiente o enviado no ofrece Reintentar`() {
+        mostrar(reporte(1), reporte(2, EstadoReporte.SINCRONIZADO))
+
+        composeTestRule.onNodeWithText(texto(R.string.mis_reportes_boton_reintentar)).assertDoesNotExist()
     }
 
     @Test

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- SOLO compilaciones de depuración: permite http:// (sin cifrar) únicamente hacia el PC de desarrollo, para probar el
+         envío contra un servidor falso local (ver docs/pruebas-de-confiabilidad.md). La versión de publicación no
+         incluye este archivo: allí Android bloquea todo tráfico sin cifrar, y además exige una dirección https. -->
+    <application android:networkSecurityConfig="@xml/network_security_config_debug" />
+
+</manifest>

@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.ExifInterface
 import android.util.Log
+import java.io.File
 import java.io.IOException
 
 private const val ETIQUETA_LOG = "DecodificadorFotos"
@@ -33,16 +34,39 @@ private fun decodificarReducida(
     fotoPath: String,
     ladoMinimo: Int,
 ): Bitmap? {
+    val archivo = File(fotoPath)
     val limites = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-    BitmapFactory.decodeFile(fotoPath, limites)
+    decodificarArchivo(archivo, limites)
     val esLegible = limites.outWidth > 0 && limites.outHeight > 0
     val opciones =
         BitmapFactory.Options().apply {
             inSampleSize = calcularMuestreo(limites.outWidth, limites.outHeight, ladoMinimo)
             inPreferredConfig = Bitmap.Config.ARGB_8888
         }
-    return if (esLegible) BitmapFactory.decodeFile(fotoPath, opciones) else null
+    return if (esLegible) decodificarArchivo(archivo, opciones) else null
 }
+
+/**
+ * Decodifica [archivo] con [opciones] leyéndolo desde un flujo propio, que se cierra siempre; devuelve `null` si no se
+ * puede (no existe, no es una imagen…), igual que `BitmapFactory.decodeFile`. Con [opciones] `inJustDecodeBounds`
+ * solo rellena el tamaño y devuelve `null`.
+ *
+ * Se usa en lugar de `decodeFile` porque en la JVM de las pruebas (Robolectric con gráficos nativos, en Windows) ese
+ * método deja el archivo abierto, y un archivo abierto no se puede reemplazar: fallaban las pruebas de
+ * `reducirFotoEnDisco` (se comprobó con una prueba de diagnóstico). En el teléfono no cambia nada.
+ */
+@Suppress("TooGenericExceptionCaught")
+internal fun decodificarArchivo(
+    archivo: File,
+    opciones: BitmapFactory.Options,
+): Bitmap? =
+    try {
+        archivo.inputStream().buffered().use { flujo -> BitmapFactory.decodeStream(flujo, null, opciones) }
+    } catch (e: Exception) {
+        // Como BitmapFactory.decodeFile: cualquier fallo es «no se pudo decodificar».
+        Log.w(ETIQUETA_LOG, "No se pudo decodificar ${archivo.name}", e)
+        null
+    }
 
 private fun orientar(
     original: Bitmap,

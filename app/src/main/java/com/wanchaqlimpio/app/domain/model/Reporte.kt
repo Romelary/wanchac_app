@@ -27,4 +27,11 @@ data class Reporte(
     val confianzaIa: Float? = null,
     val redAlGuardar: TipoDeRed? = null,
     val envio: SeguimientoDeEnvio = SeguimientoDeEnvio(),
-)
+) {
+    /**
+     * Un reporte rechazado se puede reintentar a mano (el rechazo pudo ser un error del servidor, no del reporte),
+     * salvo que la causa sea que la foto ya no está: sin foto no hay nada que reenviar.
+     */
+    val sePuedeReintentar: Boolean
+        get() = estado == EstadoReporte.RECHAZADO && envio.ultimoFallo?.motivo != MotivoFalloEnvio.FOTO_NO_DISPONIBLE
+}

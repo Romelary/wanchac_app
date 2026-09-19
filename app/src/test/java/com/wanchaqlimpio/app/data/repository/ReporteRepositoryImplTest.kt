@@ -10,6 +10,7 @@ import com.wanchaqlimpio.app.data.local.db.AppDatabase
 import com.wanchaqlimpio.app.data.local.entity.ReporteEntity
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.EstadoReporte
+import com.wanchaqlimpio.app.domain.model.MotivoFalloEnvio
 import com.wanchaqlimpio.app.domain.model.SugerenciaIa
 import com.wanchaqlimpio.app.domain.model.TipoDeRed
 import com.wanchaqlimpio.app.domain.model.Ubicacion
@@ -239,6 +240,71 @@ class ReporteRepositoryImplTest {
             assertEquals(0, guardado.envio.intentos)
             assertNull(guardado.envio.enviadoEpochMillis)
             assertNull(guardado.envio.ultimoFallo)
+        }
+
+    private suspend fun insertarConEnvio(
+        estado: EstadoReporte,
+        motivo: MotivoFalloEnvio?,
+    ): Long =
+        db.reporteDao().insertar(
+            ReporteEntity(
+                idAnonimo = "device-1",
+                categoria = CategoriaResiduo.PLASTICO,
+                estado = estado,
+                latitud = LATITUD_DENTRO,
+                longitud = LONGITUD_DENTRO,
+                fotoPath = "foto.jpg",
+                fechaHoraEpochMillis = 0L,
+                intentosEnvio = 1,
+                motivoUltimoFallo = motivo,
+                codigoHttpUltimoFallo = if (motivo == null) null else 422,
+            ),
+        )
+
+    @Test
+    fun `reintentar un reporte que el servidor rechazo lo devuelve a PENDIENTE y encola el envio`() =
+        runTest {
+            val id = insertarConEnvio(EstadoReporte.RECHAZADO, MotivoFalloEnvio.RECHAZADO_POR_EL_SERVIDOR)
+
+            repositorio.reintentarEnvio(id)
+
+            val reporte = db.reporteDao().obtenerPorId(id)!!
+            assertEquals(EstadoReporte.PENDIENTE, reporte.estado)
+            assertEquals("el historial de intentos se conserva", 1, reporte.intentosEnvio)
+            assertEquals(1, programadorSincronizacion.vecesLlamado)
+        }
+
+    @Test
+    fun `un reporte rechazado porque su foto ya no esta no se puede reintentar`() =
+        runTest {
+            val id = insertarConEnvio(EstadoReporte.RECHAZADO, MotivoFalloEnvio.FOTO_NO_DISPONIBLE)
+
+            repositorio.reintentarEnvio(id)
+
+            assertEquals(EstadoReporte.RECHAZADO, db.reporteDao().obtenerPorId(id)!!.estado)
+            assertEquals(0, programadorSincronizacion.vecesLlamado)
+        }
+
+    @Test
+    fun `reintentar un reporte que no esta rechazado no cambia nada`() =
+        runTest {
+            val pendiente = insertarConEnvio(EstadoReporte.PENDIENTE, MotivoFalloEnvio.SIN_CONEXION)
+            val enviado = insertarConEnvio(EstadoReporte.SINCRONIZADO, null)
+
+            repositorio.reintentarEnvio(pendiente)
+            repositorio.reintentarEnvio(enviado)
+
+            assertEquals(EstadoReporte.PENDIENTE, db.reporteDao().obtenerPorId(pendiente)!!.estado)
+            assertEquals(EstadoReporte.SINCRONIZADO, db.reporteDao().obtenerPorId(enviado)!!.estado)
+            assertEquals(0, programadorSincronizacion.vecesLlamado)
+        }
+
+    @Test
+    fun `reintentar un reporte que no existe no hace nada`() =
+        runTest {
+            repositorio.reintentarEnvio(id = 999L)
+
+            assertEquals(0, programadorSincronizacion.vecesLlamado)
         }
 
     @Test

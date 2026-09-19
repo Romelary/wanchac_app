@@ -70,9 +70,13 @@ class SyncWorker
 
         /** Envía UN reporte y guarda cómo salió. Devuelve `true` si dejó de estar pendiente (enviado o rechazado). */
         private suspend fun procesar(entity: ReporteEntity): Boolean {
-            val ahora = System.currentTimeMillis()
+            val inicio = System.currentTimeMillis()
             val red = monitorDeRed.actual() // la condición en la que empieza el intento
-            val actualizado = entity.conResultado(enviar(entity), ahora, red)
+            val resultado = enviar(entity)
+            // El envío se anota al TERMINAR: con una red lenta la petición tarda decenas de segundos, y «enviado» debe
+            // ser cuándo lo aceptó el servidor (de ahí sale «cuánto tardó»), no cuándo salió. Se vio en la tablet: un
+            // envío de 25 s quedaba anotado 25 s antes de que el servidor contestara.
+            val actualizado = entity.conResultado(resultado, inicio, System.currentTimeMillis(), red)
             reporteDao.actualizar(actualizado)
             return actualizado.estado != EstadoReporte.PENDIENTE
         }
@@ -106,19 +110,23 @@ class SyncWorker
         }
     }
 
-/** El reporte tal como queda tras un intento: siempre con un intento más y la red en la que se hizo. */
+/**
+ * El reporte tal como queda tras un intento: siempre con un intento más y la red en la que se hizo. El intento se
+ * anota con la hora en que EMPEZÓ ([inicioEpochMillis]); el envío, con la hora en que TERMINÓ ([finEpochMillis]).
+ */
 private fun ReporteEntity.conResultado(
     resultado: ResultadoEnvio,
-    ahoraEpochMillis: Long,
+    inicioEpochMillis: Long,
+    finEpochMillis: Long,
     red: TipoDeRed,
 ): ReporteEntity {
     val intento =
-        copy(intentosEnvio = intentosEnvio + 1, ultimoIntentoEpochMillis = ahoraEpochMillis, redAlUltimoIntento = red)
+        copy(intentosEnvio = intentosEnvio + 1, ultimoIntentoEpochMillis = inicioEpochMillis, redAlUltimoIntento = red)
     return when (resultado) {
         ResultadoEnvio.Exito ->
             intento.copy(
                 estado = EstadoReporte.SINCRONIZADO,
-                enviadoEpochMillis = ahoraEpochMillis,
+                enviadoEpochMillis = finEpochMillis,
                 motivoUltimoFallo = null,
                 codigoHttpUltimoFallo = null,
             )

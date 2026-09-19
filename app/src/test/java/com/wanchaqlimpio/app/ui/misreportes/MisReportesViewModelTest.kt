@@ -56,6 +56,12 @@ private class ReporteRepositoryFalso(
     override fun enviarPendientesAhora() {
         enviosAhora++
     }
+
+    val reintentados = mutableListOf<Long>()
+
+    override suspend fun reintentarEnvio(id: Long) {
+        reintentados += id
+    }
 }
 
 private class ConsentimientoRepositoryFalso(
@@ -151,5 +157,15 @@ class MisReportesViewModelTest {
         viewModel.enviarAhora()
 
         assertEquals(2, repositorio.enviosAhora)
+    }
+
+    @Test
+    fun `reintentar un reporte rechazado se lo pide al repositorio`() {
+        val repositorio = ReporteRepositoryFalso(listOf(reporte(1), reporte(2)))
+        val viewModel = MisReportesViewModel(repositorio, ConsentimientoRepositoryFalso("device-1"))
+
+        viewModel.reintentar(2L)
+
+        assertEquals(listOf(2L), repositorio.reintentados)
     }
 }

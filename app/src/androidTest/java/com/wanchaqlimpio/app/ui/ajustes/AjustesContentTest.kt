@@ -18,6 +18,7 @@ class AjustesContentTest {
         uiState: AjustesUiState = AjustesUiState(idAnonimo = "device-1"),
         correoContacto: String = "contacto@proyecto.test",
         onBorrarTodo: () -> Unit = {},
+        onCompartirRegistro: () -> Unit = {},
     ) {
         composeTestRule.setContent {
             WanchaqLimpioTheme {
@@ -27,6 +28,7 @@ class AjustesContentTest {
                     correoContacto = correoContacto,
                     onEscribirCorreo = {},
                     onBorrarTodo = onBorrarTodo,
+                    onCompartirRegistro = onCompartirRegistro,
                 )
             }
         }
@@ -80,5 +82,20 @@ class AjustesContentTest {
         mostrar(uiState = AjustesUiState(idAnonimo = "device-1", borrando = true))
 
         composeTestRule.onNodeWithText("Borrando…").performScrollTo().assertIsNotEnabled()
+    }
+
+    @Test
+    fun compartirElRegistroDeEnviosInvocaElCallbackYExplicaQueNoLlevaFotosNiUbicaciones() {
+        var compartido = false
+        mostrar(onCompartirRegistro = { compartido = true })
+
+        composeTestRule.onNodeWithText("Registro de envíos").performScrollTo().assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText("No incluye fotos, ubicaciones ni tu código anónimo", substring = true)
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithText("Compartir registro de envíos").performScrollTo().performClick()
+
+        assert(compartido) { "Se esperaba que se invocara onCompartirRegistro()" }
     }
 }

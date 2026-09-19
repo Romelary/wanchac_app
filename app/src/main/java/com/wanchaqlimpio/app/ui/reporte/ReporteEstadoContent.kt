@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,7 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.wanchaqlimpio.app.R
+import com.wanchaqlimpio.app.domain.usecase.PRECISION_MAXIMA_METROS
 import com.wanchaqlimpio.app.ui.common.ContenidoCentrado
+import kotlin.math.roundToInt
 
 /**
  * Contenido "stateless" de los estados posteriores a la captura de la foto
@@ -31,13 +34,15 @@ import com.wanchaqlimpio.app.ui.common.ContenidoCentrado
 fun ReporteEstadoContent(
     uiState: ReporteUiState,
     onReintentar: () -> Unit,
+    onReintentarUbicacion: () -> Unit = {},
+    onTomarOtraFoto: () -> Unit = {},
 ) {
     Scaffold { innerPadding ->
         ContenidoCentrado(modifier = Modifier.padding(innerPadding)) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
             ) {
                 when (uiState) {
                     ReporteUiState.Capturando, is ReporteUiState.Confirmando -> Unit
@@ -45,10 +50,13 @@ fun ReporteEstadoContent(
                         CircularProgressIndicator()
                         Text(stringResource(R.string.reporte_clasificando))
                     }
-                    ReporteUiState.ProcesandoUbicacion -> {
-                        CircularProgressIndicator()
-                        Text(stringResource(R.string.reporte_procesando_ubicacion))
-                    }
+                    is ReporteUiState.ProcesandoUbicacion -> ProcesandoUbicacion(uiState.precisionActualMetros)
+                    is ReporteUiState.GpsImpreciso ->
+                        GpsImpreciso(
+                            precisionMetros = uiState.precisionMetros,
+                            onReintentarUbicacion = onReintentarUbicacion,
+                            onTomarOtraFoto = onTomarOtraFoto,
+                        )
                     is ReporteUiState.Rechazado -> {
                         Text(uiState.mensaje)
                         Button(onClick = onReintentar) {
@@ -65,4 +73,38 @@ fun ReporteEstadoContent(
             }
         }
     }
+}
+
+@Composable
+private fun ProcesandoUbicacion(precisionActualMetros: Float?) {
+    CircularProgressIndicator()
+    Text(stringResource(R.string.reporte_procesando_ubicacion))
+    precisionActualMetros?.let {
+        Text(
+            stringResource(
+                R.string.reporte_procesando_ubicacion_precision,
+                it.roundToInt(),
+                PRECISION_MAXIMA_METROS.roundToInt(),
+            ),
+        )
+    }
+}
+
+/** La foto se conserva: con unos segundos más a cielo abierto el GPS mejora y no hace falta repetir todo. */
+@Composable
+private fun GpsImpreciso(
+    precisionMetros: Float?,
+    onReintentarUbicacion: () -> Unit,
+    onTomarOtraFoto: () -> Unit,
+) {
+    val maximo = PRECISION_MAXIMA_METROS.roundToInt()
+    Text(
+        if (precisionMetros == null) {
+            stringResource(R.string.reporte_gps_sin_senal)
+        } else {
+            stringResource(R.string.reporte_gps_impreciso, precisionMetros.roundToInt(), maximo)
+        },
+    )
+    Button(onClick = onReintentarUbicacion) { Text(stringResource(R.string.reporte_boton_reintentar_ubicacion)) }
+    OutlinedButton(onClick = onTomarOtraFoto) { Text(stringResource(R.string.reporte_boton_otra_foto)) }
 }

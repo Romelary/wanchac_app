@@ -58,7 +58,7 @@ class ReporteEstadoContentTest {
     fun estadoProcesandoUbicacionMuestraElTextoDeCarga() {
         composeTestRule.setContent {
             WanchaqLimpioTheme {
-                ReporteEstadoContent(uiState = ReporteUiState.ProcesandoUbicacion, onReintentar = {})
+                ReporteEstadoContent(uiState = ReporteUiState.ProcesandoUbicacion(), onReintentar = {})
             }
         }
 

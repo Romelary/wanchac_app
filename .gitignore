@@ -33,3 +33,7 @@ __pycache__/
 /backend/venv/
 /backend/db.sqlite3
 *.sqlite3
+
+# Herramienta de pruebas de la app (herramientas/servidor_falso.py): las fotos que recibio y el modo elegido NO se versionan.
+/herramientas/recibidas/
+/herramientas/modo.txt

@@ -3,7 +3,9 @@ package com.wanchaqlimpio.app.ui.ajustes
 import app.cash.turbine.test
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.ConsentimientoEstado
+import com.wanchaqlimpio.app.domain.model.EstadoReporte
 import com.wanchaqlimpio.app.domain.model.Reporte
+import com.wanchaqlimpio.app.domain.model.SeguimientoDeEnvio
 import com.wanchaqlimpio.app.domain.model.SugerenciaIa
 import com.wanchaqlimpio.app.domain.model.Ubicacion
 import com.wanchaqlimpio.app.domain.repository.AlmacenFotos
@@ -27,7 +29,12 @@ import org.junit.Before
 import org.junit.Test
 import java.io.File
 
-private class ReporteRepositoryFalso : ReporteRepository {
+private class ReporteRepositoryFalso(
+    private val reportes: List<Reporte> = emptyList(),
+) : ReporteRepository {
+    /** Los códigos anónimos con los que se pidieron reportes (solo deben pedirse los de este teléfono). */
+    val consultados = mutableListOf<String>()
+
     override suspend fun crearReporte(
         idAnonimo: String,
         categoria: CategoriaResiduo,
@@ -37,11 +44,16 @@ private class ReporteRepositoryFalso : ReporteRepository {
         sugerenciaIa: SugerenciaIa?,
     ): ResultadoValidacionReporte = ResultadoValidacionReporte.Valido
 
-    override fun observarReportesDe(idAnonimo: String): Flow<List<Reporte>> = flowOf(emptyList())
+    override fun observarReportesDe(idAnonimo: String): Flow<List<Reporte>> {
+        consultados += idAnonimo
+        return flowOf(reportes)
+    }
 
     override suspend fun eliminarReporte(id: Long) = Unit
 
     override fun enviarPendientesAhora() = Unit
+
+    override suspend fun reintentarEnvio(id: Long) = Unit
 }
 
 /** [compuerta] permite mantener "en curso" el borrado hasta que la prueba decida terminarlo. */
@@ -87,11 +99,14 @@ class AjustesViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun crearViewModel(consentimiento: ConsentimientoRepositoryFalso) =
-        AjustesViewModel(
-            consentimientoRepository = consentimiento,
-            borrarTodosMisDatos = BorrarTodosMisDatos(ReporteRepositoryFalso(), consentimiento, AlmacenFotosFalso()),
-        )
+    private fun crearViewModel(
+        consentimiento: ConsentimientoRepositoryFalso,
+        reportes: ReporteRepositoryFalso = ReporteRepositoryFalso(),
+    ) = AjustesViewModel(
+        consentimientoRepository = consentimiento,
+        reporteRepository = reportes,
+        borrarTodosMisDatos = BorrarTodosMisDatos(reportes, consentimiento, AlmacenFotosFalso()),
+    )
 
     @Test
     fun `muestra el codigo anonimo del consentimiento`() =
@@ -148,5 +163,45 @@ class AjustesViewModelTest {
                 cancelAndIgnoreRemainingEvents()
             }
             assertEquals("solo debe ejecutarse un borrado", 1, consentimiento.revocaciones)
+        }
+
+    @Test
+    fun `generarRegistroDeEnvios devuelve la tabla de los reportes de este telefono con sus comentarios`() =
+        runTest {
+            val reporte =
+                Reporte(
+                    id = 4,
+                    idAnonimo = "device-1",
+                    categoria = CategoriaResiduo.VIDRIO,
+                    estado = EstadoReporte.SINCRONIZADO,
+                    latitud = -13.53,
+                    longitud = -71.95,
+                    fotoPath = "foto.jpg",
+                    fechaHoraEpochMillis = 1_700_000_000_000L,
+                    envio = SeguimientoDeEnvio(intentos = 2, enviadoEpochMillis = 1_700_000_012_000L),
+                )
+            val reportes = ReporteRepositoryFalso(listOf(reporte))
+            val viewModel = crearViewModel(ConsentimientoRepositoryFalso("device-1"), reportes)
+
+            val csv = viewModel.generarRegistroDeEnvios(listOf("Wanchaq Limpio 1.0"))
+
+            val lineas = csv.lines()
+            assertEquals("# Wanchaq Limpio 1.0", lineas[0])
+            assertTrue(lineas[1].startsWith("id_local,"))
+            assertEquals("4,2023-11-14T22:13:20Z,VIDRIO,,,SINCRONIZADO,2,,2023-11-14T22:13:32Z,12,,,,", lineas[2])
+            assertEquals("solo se pidieron los reportes de este teléfono", listOf("device-1"), reportes.consultados)
+        }
+
+    @Test
+    fun `sin consentimiento el registro sale solo con el encabezado y no consulta reportes`() =
+        runTest {
+            val reportes = ReporteRepositoryFalso(emptyList())
+            val viewModel = crearViewModel(ConsentimientoRepositoryFalso(idAnonimo = null), reportes)
+
+            val csv = viewModel.generarRegistroDeEnvios(emptyList())
+
+            assertEquals(1, csv.lines().count { it.isNotEmpty() })
+            assertTrue(csv.startsWith("id_local,"))
+            assertTrue("no debe consultar reportes sin código anónimo", reportes.consultados.isEmpty())
         }
 }

@@ -41,7 +41,12 @@ import com.wanchaqlimpio.app.ui.common.formatearFechaHora
 @Composable
 fun MisReportesScreen(viewModel: MisReportesViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    MisReportesContent(uiState = uiState, onEliminar = viewModel::eliminar, onEnviarAhora = viewModel::enviarAhora)
+    MisReportesContent(
+        uiState = uiState,
+        onEliminar = viewModel::eliminar,
+        onEnviarAhora = viewModel::enviarAhora,
+        onReintentar = viewModel::reintentar,
+    )
 }
 
 /**
@@ -53,6 +58,7 @@ fun MisReportesContent(
     uiState: MisReportesUiState,
     onEliminar: (Long) -> Unit,
     onEnviarAhora: () -> Unit = {},
+    onReintentar: (Long) -> Unit = {},
 ) {
     // rememberSaveable: el diálogo de confirmación sobrevive a una rotación de pantalla.
     var idPorConfirmar by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -74,6 +80,7 @@ fun MisReportesContent(
                             reportes = uiState.reportes,
                             onEliminar = { idPorConfirmar = it },
                             onEnviarAhora = onEnviarAhora,
+                            onReintentar = onReintentar,
                         )
                     }
             }
@@ -96,6 +103,7 @@ private fun ListaDeReportes(
     reportes: List<Reporte>,
     onEliminar: (Long) -> Unit,
     onEnviarAhora: () -> Unit,
+    onReintentar: (Long) -> Unit,
 ) {
     val pendientes = reportes.count { it.estado == EstadoReporte.PENDIENTE }
 
@@ -108,7 +116,11 @@ private fun ListaDeReportes(
             item(key = "aviso-pendientes") { AvisoDePendientes(cantidad = pendientes, onEnviarAhora = onEnviarAhora) }
         }
         items(reportes, key = { it.id }) { reporte ->
-            TarjetaDeReporte(reporte = reporte, onEliminar = { onEliminar(reporte.id) })
+            TarjetaDeReporte(
+                reporte = reporte,
+                onEliminar = { onEliminar(reporte.id) },
+                onReintentar = { onReintentar(reporte.id) },
+            )
         }
     }
 }
@@ -141,6 +153,7 @@ private fun AvisoDePendientes(
 private fun TarjetaDeReporte(
     reporte: Reporte,
     onEliminar: () -> Unit,
+    onReintentar: () -> Unit,
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -154,8 +167,15 @@ private fun TarjetaDeReporte(
                 Text(text = reporte.estado.etiqueta(), style = MaterialTheme.typography.labelMedium)
                 reporte.detalleDeEnvio()?.let { Text(text = it, style = MaterialTheme.typography.bodySmall) }
             }
-            OutlinedButton(onClick = onEliminar) {
-                Text(stringResource(R.string.mis_reportes_boton_eliminar))
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (reporte.sePuedeReintentar) {
+                    OutlinedButton(onClick = onReintentar) {
+                        Text(stringResource(R.string.mis_reportes_boton_reintentar))
+                    }
+                }
+                OutlinedButton(onClick = onEliminar) {
+                    Text(stringResource(R.string.mis_reportes_boton_eliminar))
+                }
             }
         }
     }

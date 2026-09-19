@@ -1,6 +1,7 @@
 package com.wanchaqlimpio.app.ui.reporte
 
 import com.wanchaqlimpio.app.core.location.ProveedorUbicacion
+import com.wanchaqlimpio.app.core.location.RastreadorDeUbicacion
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
 import com.wanchaqlimpio.app.domain.model.ConsentimientoEstado
 import com.wanchaqlimpio.app.domain.model.EstadoReporte
@@ -10,11 +11,14 @@ import com.wanchaqlimpio.app.domain.model.Ubicacion
 import com.wanchaqlimpio.app.domain.repository.AlmacenFotos
 import com.wanchaqlimpio.app.domain.repository.ClasificadorResiduo
 import com.wanchaqlimpio.app.domain.repository.ConsentimientoRepository
+import com.wanchaqlimpio.app.domain.repository.ReductorDeFotos
 import com.wanchaqlimpio.app.domain.repository.ReporteRepository
 import com.wanchaqlimpio.app.domain.usecase.ResultadoValidacionReporte
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -27,6 +31,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.io.File
+import kotlin.time.TestTimeSource
 
 private const val ID_ANONIMO = "device-1"
 private const val FOTO = "foto.jpg"
@@ -45,6 +50,9 @@ private class ReporteRepositoryFalso(
     /** Todo lo que se le pidió guardar, para verificar categoría final y sugerencia de la IA. */
     val creados = mutableListOf<Triple<CategoriaResiduo, SugerenciaIa?, String>>()
 
+    /** La ubicación con la que se intentó guardar cada reporte. */
+    val ubicaciones = mutableListOf<Ubicacion>()
+
     override suspend fun crearReporte(
         idAnonimo: String,
         categoria: CategoriaResiduo,
@@ -54,6 +62,7 @@ private class ReporteRepositoryFalso(
         sugerenciaIa: SugerenciaIa?,
     ): ResultadoValidacionReporte {
         creados += Triple(categoria, sugerenciaIa, fotoPath)
+        ubicaciones += ubicacion
         return resultado
     }
 
@@ -62,6 +71,8 @@ private class ReporteRepositoryFalso(
     override suspend fun eliminarReporte(id: Long) = Unit
 
     override fun enviarPendientesAhora() = Unit
+
+    override suspend fun reintentarEnvio(id: Long) = Unit
 }
 
 private class ConsentimientoRepositoryFalso(
@@ -75,10 +86,29 @@ private class ConsentimientoRepositoryFalso(
     override suspend fun revocarConsentimiento() = Unit
 }
 
+/** Cada vez que se le piden lecturas entrega el siguiente guion; el último se repite (y sin guion: sin lecturas). */
 private class ProveedorUbicacionFalso(
-    private val ubicacion: Ubicacion?,
+    private val guiones: List<Flow<Ubicacion>>,
 ) : ProveedorUbicacion {
-    override suspend fun obtenerUbicacionActual(): Ubicacion? = ubicacion
+    constructor(ubicacion: Ubicacion?) : this(listOf(if (ubicacion == null) emptyFlow() else flowOf(ubicacion)))
+
+    /** Cuántas veces se le pidieron lecturas. */
+    var pedidas = 0
+        private set
+
+    override fun lecturas(): Flow<Ubicacion> = guiones.getOrElse(pedidas++) { guiones.lastOrNull() ?: emptyFlow() }
+}
+
+private class ReductorDeFotosFalso(
+    private val eventos: MutableList<String>? = null,
+) : ReductorDeFotos {
+    val reducidas = mutableListOf<String>()
+
+    override suspend fun reducir(fotoPath: String): Boolean {
+        reducidas += fotoPath
+        eventos?.add("reducir:$fotoPath")
+        return true
+    }
 }
 
 private class AlmacenFotosFalso : AlmacenFotos {
@@ -105,15 +135,19 @@ private class AlmacenFotosFalso : AlmacenFotos {
 private class ClasificadorFalso(
     private val sugerencia: SugerenciaIa?,
     private val compuerta: CompletableDeferred<Unit>? = null,
+    private val eventos: MutableList<String>? = null,
 ) : ClasificadorResiduo {
     val fotosClasificadas = mutableListOf<String>()
 
     override suspend fun clasificar(fotoPath: String): SugerenciaIa? {
         fotosClasificadas += fotoPath
+        eventos?.add("clasificar:$fotoPath")
         compuerta?.await()
         return sugerencia
     }
 }
+
+private fun lectura(precisionMetros: Float) = Ubicacion(-13.530, -71.950, precisionMetros)
 
 class ReporteViewModelTest {
     private val almacenFotos = AlmacenFotosFalso()
@@ -281,25 +315,26 @@ class ReporteViewModelTest {
     // --- Resultado del guardado (igual que antes, ahora tras confirmar) ---------------------------------
 
     @Test
-    fun `GPS impreciso termina en Rechazado y reintentar vuelve a Capturando`() =
+    fun `un GPS impreciso conserva la foto y deja reintentar la ubicacion sin repetir todo`() =
         runTest {
-            val viewModel =
-                crearViewModel(
-                    resultado = ResultadoValidacionReporte.PrecisionInsuficiente(30f),
-                    ubicacion = Ubicacion(-13.530, -71.950, precisionMetros = 30f),
-                )
+            val repositorio = ReporteRepositoryFalso(ResultadoValidacionReporte.PrecisionInsuficiente(30f))
+            val viewModel = crearViewModel(repositorio = repositorio, ubicacion = lectura(30f))
             viewModel.onFotoCapturada(FOTO)
 
             viewModel.confirmar()
-            assertTrue(viewModel.uiState.value is ReporteUiState.Rechazado)
 
-            viewModel.reintentar()
+            val estado = viewModel.uiState.value as ReporteUiState.GpsImpreciso
+            assertEquals(30f, estado.precisionMetros)
+            assertEquals(FOTO, estado.confirmacion.fotoPath)
+            assertEquals("la foto no se borra", emptyList<String>(), almacenFotos.borradas)
 
-            assertEquals(ReporteUiState.Capturando, viewModel.uiState.value)
+            viewModel.reintentarUbicacion()
+
+            assertEquals("se reintentó con la MISMA foto", listOf(FOTO, FOTO), repositorio.creados.map { it.third })
         }
 
     @Test
-    fun `sin senal de GPS termina en Rechazado sin llegar a validar en el repositorio`() =
+    fun `sin senal de GPS se avisa, se conserva la foto y no se llega a validar en el repositorio`() =
         runTest {
             val repositorio = ReporteRepositoryFalso(ResultadoValidacionReporte.Valido)
             val viewModel = crearViewModel(repositorio = repositorio, ubicacion = null)
@@ -307,9 +342,125 @@ class ReporteViewModelTest {
 
             viewModel.confirmar()
 
-            assertTrue(viewModel.uiState.value is ReporteUiState.Rechazado)
+            val estado = viewModel.uiState.value as ReporteUiState.GpsImpreciso
+            assertNull("sin lecturas no hay precisión que mostrar", estado.precisionMetros)
             assertTrue(repositorio.creados.isEmpty())
+            assertEquals(emptyList<String>(), almacenFotos.borradas)
         }
+
+    @Test
+    fun `tras un GPS impreciso, tomar otra foto borra la actual y vuelve a Capturando`() =
+        runTest {
+            val viewModel = crearViewModel(ubicacion = null)
+            viewModel.onFotoCapturada(FOTO)
+            viewModel.confirmar()
+
+            viewModel.descartarFoto()
+
+            assertEquals(ReporteUiState.Capturando, viewModel.uiState.value)
+            assertEquals(listOf(FOTO), almacenFotos.borradas)
+        }
+
+    @Test
+    fun `reintentar la ubicacion fuera de un GPS impreciso no hace nada`() {
+        val viewModel = crearViewModel()
+
+        viewModel.reintentarUbicacion()
+
+        assertEquals(ReporteUiState.Capturando, viewModel.uiState.value)
+    }
+
+    // --- GPS: esperar una buena lectura en vez de rendirse a la primera --------------------------------------
+
+    @Test
+    fun `la lectura del GPS de la foto viaja con la confirmacion y se usa al guardar sin esperar`() =
+        runTest {
+            val proveedor = ProveedorUbicacionFalso(listOf(flowOf(lectura(8f))))
+            val repositorio = ReporteRepositoryFalso(ResultadoValidacionReporte.Valido)
+            val viewModel = crearViewModel(repositorio = repositorio, proveedor = proveedor)
+            viewModel.vigilarGps() // la cámara estuvo abierta: el GPS ya tenía una lectura buena
+            viewModel.onFotoCapturada(FOTO)
+
+            assertEquals(lectura(8f), (viewModel.uiState.value as ReporteUiState.Confirmando).ubicacionAlCapturar)
+            viewModel.confirmar()
+
+            assertEquals(listOf(lectura(8f)), repositorio.ubicaciones)
+            assertEquals("no se volvió a pedir el GPS", 1, proveedor.pedidas)
+        }
+
+    @Test
+    fun `si la lectura de la foto es imprecisa se espera una buena antes de guardar`() =
+        runTest {
+            val proveedor = ProveedorUbicacionFalso(listOf(flowOf(lectura(40f)), flowOf(lectura(9f))))
+            val repositorio = ReporteRepositoryFalso(ResultadoValidacionReporte.Valido)
+            val viewModel = crearViewModel(repositorio = repositorio, proveedor = proveedor)
+            viewModel.vigilarGps() // en la cámara solo hubo una lectura de 40 m
+            viewModel.onFotoCapturada(FOTO)
+
+            viewModel.confirmar()
+
+            assertEquals("se guardó con la buena, no con la de la foto", listOf(lectura(9f)), repositorio.ubicaciones)
+            assertEquals(ReporteUiState.Guardado, viewModel.uiState.value)
+        }
+
+    @Test
+    fun `mientras se espera al GPS se ve la mejor precision conseguida`() =
+        runTest {
+            val compuerta = CompletableDeferred<Unit>()
+            val guion =
+                flow {
+                    emit(lectura(40f))
+                    compuerta.await() // el GPS sigue buscando...
+                    emit(lectura(9f))
+                }
+            val viewModel = crearViewModel(proveedor = ProveedorUbicacionFalso(listOf(guion)))
+            viewModel.onFotoCapturada(FOTO)
+
+            viewModel.confirmar()
+            assertEquals(ReporteUiState.ProcesandoUbicacion(precisionActualMetros = 40f), viewModel.uiState.value)
+
+            compuerta.complete(Unit)
+            assertEquals(ReporteUiState.Guardado, viewModel.uiState.value)
+        }
+
+    @Test
+    fun `la precision del GPS con la camara abierta se expone a la pantalla`() =
+        runTest {
+            val viewModel = crearViewModel(proveedor = ProveedorUbicacionFalso(listOf(flowOf(lectura(12f)))))
+            assertNull("antes de la primera lectura no hay nada que mostrar", viewModel.precisionGps.value)
+
+            viewModel.vigilarGps()
+
+            assertEquals(12f, viewModel.precisionGps.value)
+        }
+
+    // --- Fallos de la cámara y de la foto ------------------------------------------------------------------
+
+    @Test
+    fun `al tomar la foto se reduce antes de analizarla`() =
+        runTest {
+            val eventos = mutableListOf<String>()
+            val viewModel =
+                crearViewModel(
+                    clasificador = ClasificadorFalso(SUGERENCIA_SEGURA, eventos = eventos),
+                    reductor = ReductorDeFotosFalso(eventos),
+                )
+
+            viewModel.onFotoCapturada(FOTO)
+
+            assertEquals(listOf("reducir:$FOTO", "clasificar:$FOTO"), eventos)
+        }
+
+    @Test
+    fun `un error de la camara se le dice al ciudadano y reintentar vuelve a la camara`() {
+        val viewModel = crearViewModel()
+
+        viewModel.onErrorDeCaptura()
+
+        assertTrue(viewModel.uiState.value is ReporteUiState.Rechazado)
+        viewModel.reintentar()
+        assertEquals(ReporteUiState.Capturando, viewModel.uiState.value)
+    }
 
     @Test
     fun `sin consentimiento aceptado no se intenta crear el reporte`() =
@@ -347,17 +498,6 @@ class ReporteViewModelTest {
             viewModel.confirmar()
 
             assertTrue(viewModel.uiState.value is ReporteUiState.Rechazado)
-            assertEquals(listOf(FOTO), almacenFotos.borradas)
-        }
-
-    @Test
-    fun `si no hay GPS la foto tambien se borra en vez de quedar huerfana`() =
-        runTest {
-            val viewModel = crearViewModel(ubicacion = null)
-            viewModel.onFotoCapturada(FOTO)
-
-            viewModel.confirmar()
-
             assertEquals(listOf(FOTO), almacenFotos.borradas)
         }
 
@@ -411,12 +551,15 @@ class ReporteViewModelTest {
         clasificador: ClasificadorResiduo = ClasificadorFalso(SUGERENCIA_SEGURA),
         repositorio: ReporteRepositoryFalso = ReporteRepositoryFalso(resultado),
         reportesExistentes: List<Reporte> = emptyList(),
+        proveedor: ProveedorUbicacionFalso = ProveedorUbicacionFalso(ubicacion),
+        reductor: ReductorDeFotos = ReductorDeFotosFalso(),
     ) = ReporteViewModel(
         reporteRepository =
             if (reportesExistentes.isEmpty()) repositorio else ReporteRepositoryFalso(resultado, reportesExistentes),
         consentimientoRepository = ConsentimientoRepositoryFalso(idAnonimo),
-        proveedorUbicacion = ProveedorUbicacionFalso(ubicacion),
+        rastreador = RastreadorDeUbicacion(proveedor, TestTimeSource()),
         almacenFotos = almacenFotos,
         clasificador = clasificador,
+        reductorDeFotos = reductor,
     )
 }

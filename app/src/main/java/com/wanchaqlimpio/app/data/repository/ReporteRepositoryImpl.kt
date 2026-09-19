@@ -70,6 +70,14 @@ class ReporteRepositoryImpl
 
         override fun enviarPendientesAhora() = programadorSincronizacion.sincronizarAhora()
 
+        override suspend fun reintentarEnvio(id: Long) {
+            val entity = dao.obtenerPorId(id) ?: return
+            if (entity.aDominio().sePuedeReintentar) {
+                dao.actualizar(entity.copy(estado = EstadoReporte.PENDIENTE))
+                programadorSincronizacion.programarSincronizacion()
+            }
+        }
+
         override suspend fun eliminarReporte(id: Long) {
             val entity = dao.obtenerPorId(id) ?: return
 

@@ -167,9 +167,34 @@ class SyncWorkerTest {
             assertEquals(EstadoReporte.SINCRONIZADO, enviado.estado)
             assertEquals(1, enviado.intentosEnvio)
             assertTrue(enviado.enviadoEpochMillis!! in antes..despues)
-            assertEquals(enviado.enviadoEpochMillis, enviado.ultimoIntentoEpochMillis)
+            assertTrue(
+                "el intento empieza antes de terminar",
+                enviado.ultimoIntentoEpochMillis!! in antes..enviado.enviadoEpochMillis!!,
+            )
             assertEquals(TipoDeRed.DATOS_MOVILES, enviado.redAlUltimoIntento)
             assertNull(enviado.motivoUltimoFallo)
+        }
+
+    @Test
+    fun `el envio se anota cuando el servidor contesta y no cuando salio la peticion`() =
+        runTest {
+            val id = insertarReportePendiente()
+            mockWebServer.enqueue(
+                MockResponse
+                    .Builder()
+                    .code(201)
+                    .headersDelay(600, TimeUnit.MILLISECONDS)
+                    .build(),
+            )
+
+            crearWorker().doWork()
+
+            val enviado = reporte(id)
+            val milisegundosDeEspera = enviado.enviadoEpochMillis!! - enviado.ultimoIntentoEpochMillis!!
+            assertTrue(
+                "el servidor tardó 600 ms pero el envío se anotó $milisegundosDeEspera ms después de salir",
+                milisegundosDeEspera >= 500,
+            )
         }
 
     @Test

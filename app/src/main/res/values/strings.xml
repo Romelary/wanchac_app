@@ -23,6 +23,15 @@
     <string name="reporte_permisos_titulo">Permisos necesarios</string>
     <string name="reporte_permisos_texto">Para reportar un foco de residuos, la app necesita acceso a la cámara y a tu ubicación.</string>
     <string name="reporte_permisos_boton">Conceder permisos</string>
+    <string name="reporte_permisos_ayuda">Si ya los negaste, actívalos en Ajustes → Permisos. La ubicación debe ser «precisa», no aproximada.</string>
+    <string name="reporte_permisos_boton_ajustes">Abrir los ajustes de la app</string>
+    <string name="reporte_procesando_ubicacion_precision">Precisión actual: ~%1$d m (se necesitan %2$d m o menos). Espera unos segundos a cielo abierto.</string>
+    <string name="reporte_gps_impreciso">El GPS aún no es lo bastante preciso (~%1$d m; se exigen %2$d m o menos). Ponte a cielo abierto, espera unos segundos e inténtalo de nuevo. Tu foto se conserva.</string>
+    <string name="reporte_gps_sin_senal">No se pudo obtener tu ubicación. Comprueba que el GPS esté activado y que tengas cielo despejado. Tu foto se conserva.</string>
+    <string name="reporte_boton_reintentar_ubicacion">Reintentar ubicación</string>
+    <string name="gps_buscando">GPS: buscando señal…</string>
+    <string name="gps_listo">GPS listo · ±%1$d m</string>
+    <string name="gps_impreciso">GPS impreciso · ±%1$d m · espera unos segundos</string>
     <string name="reporte_categoria_titulo">Tipo de residuo</string>
     <string name="reporte_clasificando">Analizando la foto…</string>
     <string name="reporte_confirmar_titulo">Confirma el tipo de residuo</string>
@@ -48,6 +57,11 @@
     <string name="ajustes_contacto_texto">Para solicitar el acceso, la rectificación o la cancelación de tus datos, escríbenos a:</string>
     <string name="ajustes_contacto_boton">Escribir un correo</string>
     <string name="ajustes_contacto_sin_configurar">Correo de contacto sin configurar: falta definirlo antes de publicar la app.</string>
+    <string name="ajustes_registro_titulo">Registro de envíos</string>
+    <string name="ajustes_registro_texto">Una tabla con lo que pasó con el envío de cada reporte: cuántos intentos hicieron falta, cuándo llegó, con qué conexión y por qué falló, si falló. Sirve para las pruebas de confiabilidad. No incluye fotos, ubicaciones ni tu código anónimo.</string>
+    <string name="ajustes_registro_boton">Compartir registro de envíos</string>
+    <string name="ajustes_registro_asunto">Registro de envíos de Wanchaq Limpio</string>
+    <string name="ajustes_registro_elegir_app">Compartir con…</string>
     <string name="ajustes_datos_titulo">Tus datos</string>
     <string name="ajustes_datos_texto">Elimina de este teléfono todos tus reportes y sus fotos, solicita su eliminación del servidor y revoca tu consentimiento.</string>
     <string name="ajustes_borrar_boton">Borrar todos mis datos</string>
@@ -70,6 +84,7 @@
         <item quantity="other">%1$d reportes sin enviar</item>
     </plurals>
     <string name="mis_reportes_boton_enviar_ahora">Enviar ahora</string>
+    <string name="mis_reportes_boton_reintentar">Reintentar</string>
     <string name="envio_detalle_pendiente">Intentos: %1$d · último fallo: %2$s</string>
     <string name="envio_detalle_enviado">Enviado el %1$s</string>
     <string name="envio_detalle_rechazado">Motivo: %1$s. Puedes eliminarlo y volver a reportarlo.</string>

@@ -35,4 +35,10 @@ interface ReporteRepository {
 
     /** «Enviar ahora»: vuelve a intentar enseguida el envío de los reportes pendientes (si hay red). */
     fun enviarPendientesAhora()
+
+    /**
+     * Devuelve a `PENDIENTE` un reporte `RECHAZADO` (si [Reporte.sePuedeReintentar]) y encola su envío. Un rechazo
+     * definitivo no se reintenta solo, pero pudo deberse a un error del servidor y no debe dejar el reporte perdido.
+     */
+    suspend fun reintentarEnvio(id: Long)
 }

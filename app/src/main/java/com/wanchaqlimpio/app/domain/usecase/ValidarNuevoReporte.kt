@@ -6,7 +6,8 @@ import com.wanchaqlimpio.app.domain.model.Reporte
 import com.wanchaqlimpio.app.domain.model.Ubicacion
 import javax.inject.Inject
 
-private const val PRECISION_MAXIMA_METROS = 15.0
+/** El error de posicionamiento máximo de un reporte (RF-02). Lo usan también la espera del GPS y su indicador. */
+const val PRECISION_MAXIMA_METROS = 15f
 private const val RADIO_DUPLICADO_METROS = 20.0
 private const val VENTANA_DUPLICADO_MINUTOS = 30.0
 

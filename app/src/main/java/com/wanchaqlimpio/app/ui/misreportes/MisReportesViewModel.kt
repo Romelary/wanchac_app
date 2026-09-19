@@ -57,4 +57,11 @@ class MisReportesViewModel
 
         /** «Enviar ahora»: vuelve a intentar enseguida el envío de los reportes pendientes. */
         fun enviarAhora() = reporteRepository.enviarPendientesAhora()
+
+        /** «Reintentar» en un reporte que el servidor rechazó: vuelve a ponerlo en la cola de envío. */
+        fun reintentar(id: Long) {
+            viewModelScope.launch {
+                reporteRepository.reintentarEnvio(id)
+            }
+        }
     }

@@ -7,6 +7,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -19,7 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -81,7 +86,6 @@ private fun LoadingScreen() {
     }
 }
 
-// La barra ya incluye el destino "Mapa" (Módulo 5); los íconos de los otros tres siguen siendo provisionales.
 @PreviewScreenSizes
 @Composable
 fun HomePlaceholder() {
@@ -91,12 +95,7 @@ fun HomePlaceholder() {
         navigationSuiteItems = {
             AppDestinations.entries.forEach {
                 item(
-                    icon = {
-                        Icon(
-                            painterResource(it.icon),
-                            contentDescription = it.label,
-                        )
-                    },
+                    icon = { Icon(imageVector = it.icon, contentDescription = it.label) },
                     label = { Text(it.label) },
                     selected = it == currentDestination,
                     onClick = { currentDestination = it },
@@ -113,14 +112,14 @@ fun HomePlaceholder() {
     }
 }
 
-// Los íconos de Reportar, Mis reportes y Ajustes son temporales (vienen del asistente de Android Studio) y quedan
-// pendientes de pulido (Módulo 8). El de Mapa es definitivo. La app sigue abriendo en REPORTAR.
+// Íconos de Material que dicen lo que hace cada destino (antes eran una casa, un corazón y una cuenta, del asistente de
+// Android Studio). La app abre en REPORTAR.
 enum class AppDestinations(
     val label: String,
-    val icon: Int,
+    val icon: ImageVector,
 ) {
-    MAPA("Mapa", R.drawable.ic_map),
-    REPORTAR("Reportar", R.drawable.ic_home),
-    MIS_REPORTES("Mis reportes", R.drawable.ic_favorite),
-    AJUSTES("Ajustes", R.drawable.ic_account_box),
+    MAPA("Mapa", Icons.Default.Place),
+    REPORTAR("Reportar", Icons.Default.AddCircle),
+    MIS_REPORTES("Mis reportes", Icons.AutoMirrored.Filled.List),
+    AJUSTES("Ajustes", Icons.Default.Settings),
 }

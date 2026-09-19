@@ -15,18 +15,23 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,15 +42,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanchaqlimpio.app.R
-import com.wanchaqlimpio.app.ui.common.ContenidoCentrado
 import java.io.File
 
 private const val ETIQUETA_LOG = "ReporteScreen"
-private val PERMISOS_REQUERIDOS = arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION)
+
+/**
+ * Lo que se pide al ciudadano. Se pide TAMBIÉN la ubicación aproximada: Android 12+ ofrece «precisa» o «aproximada»
+ * en el mismo diálogo y una app debe declarar y pedir las dos. Para reportar se exige la precisa (ver [tienePermisos]).
+ */
+private val PERMISOS_A_PEDIR =
+    arrayOf(
+        Manifest.permission.CAMERA,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+    )
+private val PERMISOS_INDISPENSABLES = arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION)
 
 /** El botón de capturar no debe estirarse de borde a borde en una tablet. */
 private val ANCHO_MAXIMO_BOTON_CAPTURA = 400.dp
@@ -53,12 +70,16 @@ private val ANCHO_MAXIMO_BOTON_CAPTURA = 400.dp
 @Composable
 fun ReporteScreen(viewModel: ReporteViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val precisionGps by viewModel.precisionGps.collectAsStateWithLifecycle()
 
     when (val estado = uiState) {
         ReporteUiState.Capturando ->
             CapturaScreen(
+                precisionGps = precisionGps,
                 crearArchivoFoto = viewModel::crearArchivoFoto,
                 onFotoCapturada = viewModel::onFotoCapturada,
+                onErrorDeCaptura = viewModel::onErrorDeCaptura,
+                vigilarGps = viewModel::vigilarGps,
             )
         is ReporteUiState.Confirmando ->
             ReporteConfirmacionContent(
@@ -67,40 +88,72 @@ fun ReporteScreen(viewModel: ReporteViewModel = hiltViewModel()) {
                 onGuardar = viewModel::confirmar,
                 onDescartar = viewModel::descartarFoto,
             )
-        else -> ReporteEstadoContent(uiState = uiState, onReintentar = viewModel::reintentar)
+        else ->
+            ReporteEstadoContent(
+                uiState = uiState,
+                onReintentar = viewModel::reintentar,
+                onReintentarUbicacion = viewModel::reintentarUbicacion,
+                onTomarOtraFoto = viewModel::descartarFoto,
+            )
     }
 }
 
 @Composable
 private fun CapturaScreen(
+    precisionGps: Float?,
     crearArchivoFoto: () -> File,
     onFotoCapturada: (String) -> Unit,
+    onErrorDeCaptura: () -> Unit,
+    vigilarGps: suspend () -> Unit,
 ) {
     val context = LocalContext.current
     var permisosOtorgados by remember { mutableStateOf(tienePermisos(context)) }
     val lanzadorPermisos =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { resultados ->
-            permisosOtorgados = resultados.values.all { it }
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            permisosOtorgados = tienePermisos(context)
         }
+    // Al volver de Ajustes (donde el ciudadano pudo activar los permisos) se comprueban de nuevo.
+    AlVolverALaPantalla { permisosOtorgados = tienePermisos(context) }
 
     if (!permisosOtorgados) {
-        PermisosRequeridosContent(onSolicitar = { lanzadorPermisos.launch(PERMISOS_REQUERIDOS) })
+        PermisosRequeridosContent(
+            onSolicitar = { lanzadorPermisos.launch(PERMISOS_A_PEDIR) },
+            onAbrirAjustes = { abrirAjustesDeLaApp(context) },
+        )
         return
     }
 
+    // Con la cámara abierta el GPS se mantiene encendido: así, al tomar la foto, ya hay una lectura buena.
+    LaunchedEffect(Unit) { vigilarGps() }
+
     val imageCapture = remember { ImageCapture.Builder().build() }
     MantenerRotacionDeCaptura(imageCapture)
-    val lifecycleOwner = LocalLifecycleOwner.current
 
+    PantallaDeCamara(
+        precisionGps = precisionGps,
+        imageCapture = imageCapture,
+        onCapturar = { capturarFoto(context, imageCapture, crearArchivoFoto(), onFotoCapturada, onErrorDeCaptura) },
+    )
+}
+
+/** La vista previa, el estado del GPS arriba y el botón de capturar abajo. */
+@Composable
+private fun PantallaDeCamara(
+    precisionGps: Float?,
+    imageCapture: ImageCapture,
+    onCapturar: () -> Unit,
+) {
     Scaffold { innerPadding ->
-        Box(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
-        ) {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { ctx -> crearVistaPrevia(ctx, lifecycleOwner, imageCapture) },
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            VistaPreviaDeCamara(imageCapture)
+            IndicadorGps(
+                precisionMetros = precisionGps,
+                modifier =
+                    Modifier
+                        .align(Alignment.TopCenter)
+                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .padding(12.dp),
             )
-
             Column(
                 modifier =
                     Modifier
@@ -109,14 +162,34 @@ private fun CapturaScreen(
                         .fillMaxWidth()
                         .padding(16.dp),
             ) {
-                Button(
-                    onClick = { capturarFoto(context, imageCapture, crearArchivoFoto(), onFotoCapturada) },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
+                Button(onClick = onCapturar, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.reporte_boton_capturar))
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun VistaPreviaDeCamara(imageCapture: ImageCapture) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = { ctx -> crearVistaPrevia(ctx, lifecycleOwner, imageCapture) },
+    )
+}
+
+/** Ejecuta [accion] cada vez que la pantalla vuelve a primer plano (p. ej., tras cerrar los Ajustes del sistema). */
+@Composable
+private fun AlVolverALaPantalla(accion: () -> Unit) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val accionActual by rememberUpdatedState(accion)
+
+    DisposableEffect(lifecycleOwner) {
+        val observador =
+            LifecycleEventObserver { _, evento -> if (evento == Lifecycle.Event.ON_RESUME) accionActual() }
+        lifecycleOwner.lifecycle.addObserver(observador)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observador) }
     }
 }
 
@@ -153,8 +226,9 @@ private fun MantenerRotacionDeCaptura(imageCapture: ImageCapture) {
     }
 }
 
+/** La cámara y la ubicación PRECISA (la aproximada no sirve para el filtro de 15 m). */
 private fun tienePermisos(context: Context): Boolean =
-    PERMISOS_REQUERIDOS.all {
+    PERMISOS_INDISPENSABLES.all {
         ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
 
@@ -182,6 +256,7 @@ private fun capturarFoto(
     imageCapture: ImageCapture,
     archivo: File,
     onFotoCapturada: (String) -> Unit,
+    onErrorDeCaptura: () -> Unit,
 ) {
     val opciones = ImageCapture.OutputFileOptions.Builder(archivo).build()
 
@@ -194,29 +269,12 @@ private fun capturarFoto(
             }
 
             override fun onError(exception: ImageCaptureException) {
-                // Fallo de hardware/E-S de la cámara: no es un rechazo de negocio
-                // (ver ReporteUiState/ResultadoValidacionReporte), se registra para
-                // no perderlo silenciosamente.
+                // Fallo de hardware o de espacio al guardar: no es un rechazo de negocio (ver ReporteUiState /
+                // ResultadoValidacionReporte). Se registra y se le dice al ciudadano, para que no se quede
+                // tocando un botón que parece no hacer nada.
                 Log.e(ETIQUETA_LOG, "Error al capturar la foto", exception)
+                onErrorDeCaptura()
             }
         },
     )
-}
-
-@Composable
-private fun PermisosRequeridosContent(onSolicitar: () -> Unit) {
-    Scaffold { innerPadding ->
-        ContenidoCentrado(modifier = Modifier.padding(innerPadding)) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(stringResource(R.string.reporte_permisos_titulo))
-                Text(stringResource(R.string.reporte_permisos_texto))
-                Button(onClick = onSolicitar) {
-                    Text(stringResource(R.string.reporte_permisos_boton))
-                }
-            }
-        }
-    }
 }

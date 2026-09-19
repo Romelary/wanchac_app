@@ -44,6 +44,8 @@ private class ReporteRepositoryFalso(
     }
 
     override fun enviarPendientesAhora() = Unit
+
+    override suspend fun reintentarEnvio(id: Long) = Unit
 }
 
 private class ConsentimientoRepositoryFalso(
