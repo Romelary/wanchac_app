@@ -34,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanchaqlimpio.app.BuildConfig
 import com.wanchaqlimpio.app.R
+import com.wanchaqlimpio.app.ui.common.ContenidoCentrado
 
 private const val ETIQUETA_LOG = "AjustesScreen"
 
@@ -79,19 +80,16 @@ fun AjustesContent(
     var confirmando by rememberSaveable { mutableStateOf(false) }
 
     Scaffold { innerPadding ->
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-        ) {
-            SeccionAcercaDe(versionName)
-            uiState.idAnonimo?.let { SeccionCodigo(it) }
-            SeccionContacto(correoContacto, onEscribirCorreo)
-            SeccionDatos(borrando = uiState.borrando, onBorrar = { confirmando = true })
+        ContenidoCentrado(modifier = Modifier.padding(innerPadding)) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                SeccionAcercaDe(versionName)
+                uiState.idAnonimo?.let { SeccionCodigo(it) }
+                SeccionContacto(correoContacto, onEscribirCorreo)
+                SeccionDatos(borrando = uiState.borrando, onBorrar = { confirmando = true })
+            }
         }
     }
 

@@ -187,6 +187,23 @@ Aquí conviven pruebas de JVM (todas **ejecutadas**) y pruebas de dispositivo (*
 
 **Lo que NO cubren estas pruebas**, dicho sin rodeos: que LiteRT cargue y corra en un teléfono real, la decodificación de una foto real de cámara con EXIF (`BitmapFactory` solo existe en Android), el flujo cámara → confirmar de punta a punta, la latencia y la memoria, y el redimensionado de fotos grandes (las referencias miden justo 224 px; la app reduce con `inSampleSize` + escalado bilineal y Python con `tf.image.resize`: una diferencia pequeña que solo se cuantifica con fotos reales).
 
+## Adaptación a pantallas grandes (preparación de la prueba en tablet)
+
+Robolectric puede simular el tamaño de ventana (`@Config(qualifiers = ...)`) y Compose mide el contenido real, así que **la adaptación de pantalla se puede probar en la JVM sin dispositivo**. Es un complemento, no un sustituto, de probar en una tablet de verdad: aquí no hay cámara, barras del sistema reales ni rotación física (ver [`prueba-en-dispositivo.md`](./prueba-en-dispositivo.md)).
+
+| Archivo | Caso de prueba | Qué verifica | Requisito / dimensión relacionada |
+|---|---|---|---|
+| `AdaptabilidadTest.kt` (8, Robolectric + Compose) | en una tablet de 1000 dp el contenido mide **640 dp y queda centrado** (offset 180 dp) · en una tablet vertical de 700 dp también se limita a 640 dp · en un teléfono de 360 dp ocupa todo el ancho, **igual que antes** | El contenedor `ContenidoCentrado`: limita el ancho de lectura en pantallas grandes y no cambia nada en un teléfono | Usabilidad percibida (V1), Módulo 8 |
+| | el consentimiento en una tablet no estira el botón de borde a borde y lo deja centrado · en un teléfono conserva el botón a lo ancho (312 dp = 360 − 48) | Una pantalla real (`OnboardingContent`) usa el contenedor y el teléfono no cambia | Usabilidad percibida |
+| | un **mensaje largo** de rechazo se parte dentro de 592 dp en una tablet | Texto largo no se estira a ~950 dp; el botón "Reintentar" sigue visible | Usabilidad percibida |
+| | la confirmación en una tablet muestra las 6 categorías y los 2 botones · en un teléfono **horizontal** (360 dp de alto) los botones siguen alcanzables por desplazamiento | Nada queda inalcanzable cuando falta altura | Usabilidad percibida |
+
+**Prueba de mutación** (hecha a mano, no automatizada): se quitó el límite de ancho (5000 dp en vez de 640 dp) y **fallaron exactamente los 4 tests que miden ancho en tablet**; los otros 4 pasan porque miden otra cosa (teléfono, presencia, desplazamiento). En la primera versión, el test del mensaje de rechazo **pasaba incluso sin el límite** (el mensaje era corto y cabía igual): se detectó con esta misma prueba y se cambió por un mensaje largo. Un test que no puede fallar no prueba nada.
+
+**Estado**: 8 pruebas nuevas en verde; **total del proyecto: 124 pruebas unitarias en verde**, ktlint y detekt limpios, y compilan `assembleDebug` y `assembleDebugAndroidTest`. Se agregó la dependencia `androidx.compose.ui:ui-test-junit4` a las pruebas de JVM.
+
+**Lo que NO cubre**: las barras del sistema reales y los recortes de pantalla, la rotación física (incluido el giro de 180° de la cámara), el modo de pantalla dividida y ventana flotante de Samsung, el riel de navegación en pantalla ancha y el aspecto real (colores, espacios). Todo eso está en el protocolo de la prueba en dispositivo.
+
 ---
 
 ## Cómo usar este archivo

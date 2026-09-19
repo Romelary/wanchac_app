@@ -3,6 +3,7 @@ package com.wanchaqlimpio.app.ui.reporte
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.hardware.display.DisplayManager
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,10 +18,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -37,10 +41,14 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanchaqlimpio.app.R
+import com.wanchaqlimpio.app.ui.common.ContenidoCentrado
 import java.io.File
 
 private const val ETIQUETA_LOG = "ReporteScreen"
 private val PERMISOS_REQUERIDOS = arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION)
+
+/** El botón de capturar no debe estirarse de borde a borde en una tablet. */
+private val ANCHO_MAXIMO_BOTON_CAPTURA = 400.dp
 
 @Composable
 fun ReporteScreen(viewModel: ReporteViewModel = hiltViewModel()) {
@@ -81,6 +89,7 @@ private fun CapturaScreen(
     }
 
     val imageCapture = remember { ImageCapture.Builder().build() }
+    MantenerRotacionDeCaptura(imageCapture)
     val lifecycleOwner = LocalLifecycleOwner.current
 
     Scaffold { innerPadding ->
@@ -96,6 +105,7 @@ private fun CapturaScreen(
                 modifier =
                     Modifier
                         .align(Alignment.BottomCenter)
+                        .widthIn(max = ANCHO_MAXIMO_BOTON_CAPTURA)
                         .fillMaxWidth()
                         .padding(16.dp),
             ) {
@@ -107,6 +117,39 @@ private fun CapturaScreen(
                 }
             }
         }
+    }
+}
+
+/**
+ * CameraX fija la rotación de la foto cuando se crea el `ImageCapture`. Si la pantalla gira 180° (horizontal ↔
+ * horizontal invertido, algo normal en una tablet) Android NO recrea la actividad, y sin este aviso la foto se
+ * guardaría con la orientación EXIF equivocada, es decir, boca abajo. Es el patrón que recomienda la documentación
+ * de CameraX para tablets y plegables.
+ */
+@Composable
+private fun MantenerRotacionDeCaptura(imageCapture: ImageCapture) {
+    val context = LocalContext.current
+    val vista = LocalView.current
+
+    DisposableEffect(imageCapture, vista) {
+        val administrador = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        val escucha =
+            object : DisplayManager.DisplayListener {
+                override fun onDisplayAdded(displayId: Int) = Unit
+
+                override fun onDisplayRemoved(displayId: Int) = Unit
+
+                override fun onDisplayChanged(displayId: Int) {
+                    val pantalla = vista.display
+                    if (pantalla != null &&
+                        pantalla.displayId == displayId
+                    ) {
+                        imageCapture.targetRotation = pantalla.rotation
+                    }
+                }
+            }
+        administrador.registerDisplayListener(escucha, null)
+        onDispose { administrador.unregisterDisplayListener(escucha) }
     }
 }
 
@@ -162,14 +205,18 @@ private fun capturarFoto(
 
 @Composable
 private fun PermisosRequeridosContent(onSolicitar: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(stringResource(R.string.reporte_permisos_titulo))
-        Text(stringResource(R.string.reporte_permisos_texto))
-        Button(onClick = onSolicitar) {
-            Text(stringResource(R.string.reporte_permisos_boton))
+    Scaffold { innerPadding ->
+        ContenidoCentrado(modifier = Modifier.padding(innerPadding)) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(stringResource(R.string.reporte_permisos_titulo))
+                Text(stringResource(R.string.reporte_permisos_texto))
+                Button(onClick = onSolicitar) {
+                    Text(stringResource(R.string.reporte_permisos_boton))
+                }
+            }
         }
     }
 }

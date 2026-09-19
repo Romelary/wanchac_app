@@ -211,7 +211,7 @@ flowchart TD
 ### Módulo 8 — Pulido, accesibilidad y QA final
 
 - **Objetivo**: cerrar brechas de usabilidad antes de aplicar el Instrumento 1 (SUS) a los 38 participantes.
-- **Entregables**: revisión de accesibilidad (contraste, tamaños táctiles), manejo de estados de error/vacío en todas las pantallas, build de release firmado.
+- **Entregables**: revisión de accesibilidad (contraste, tamaños táctiles), manejo de estados de error/vacío en todas las pantallas, **adaptación a pantallas grandes** (ancho máximo de lectura, barras del sistema, rotación; ver `prueba-en-dispositivo.md`), build de release firmado.
 - **Depende de**: Módulos 3, 4, 5, 6, 7.
 - **Pruebas**: ronda de prueba piloto interna antes de la aplicación formal del instrumento.
 
@@ -276,5 +276,5 @@ Al terminar cada módulo, antes de pasar al siguiente:
 | 5. Mapa público | ⏳ No iniciado (bloqueado por backend) |
 | 6. Mis reportes | ✅ Completado (2026-09-18) — con eliminación, ver ADR-0002 |
 | 7. Ajustes | ✅ Completado (2026-09-18) — idioma diferido (CORR-009); correo de contacto pendiente y bloquea la publicación |
-| 8. Pulido y QA final | ⏳ No iniciado |
+| 8. Pulido y QA final | 🔶 Iniciado (2026-09-18): adaptación a pantallas grandes, pruebas de adaptación y [protocolo de prueba en dispositivo](./prueba-en-dispositivo.md); **falta ejecutarlo en una tablet y un teléfono**, revisar accesibilidad (contraste, tamaños táctiles) y reemplazar los íconos provisionales de la navegación |
 | 9. Publicación en Play Store | ⏳ No iniciado (`applicationId` ya fijado: `com.wanchaqlimpio.app`) |

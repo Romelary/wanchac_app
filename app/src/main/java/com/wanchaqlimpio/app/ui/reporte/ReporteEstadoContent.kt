@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.wanchaqlimpio.app.R
+import com.wanchaqlimpio.app.ui.common.ContenidoCentrado
 
 /**
  * Contenido "stateless" de los estados posteriores a la captura de la foto
@@ -21,37 +23,44 @@ import com.wanchaqlimpio.app.R
  * con Compose UI Testing — ver `ReporteScreen` para ese caso y `pruebas.md`
  * para el criterio de qué se prueba y qué no. Tampoco `Confirmando`, que tiene
  * su propio contenido: [ReporteConfirmacionContent].
+ *
+ * Usa `Scaffold` (respeta las barras del sistema, que con pantalla completa de borde a borde ya no
+ * "empujan" el contenido) y [ContenidoCentrado] (no se estira en una tablet).
  */
 @Composable
 fun ReporteEstadoContent(
     uiState: ReporteUiState,
     onReintentar: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        when (uiState) {
-            ReporteUiState.Capturando, is ReporteUiState.Confirmando -> Unit
-            ReporteUiState.Clasificando -> {
-                CircularProgressIndicator()
-                Text(stringResource(R.string.reporte_clasificando))
-            }
-            ReporteUiState.ProcesandoUbicacion -> {
-                CircularProgressIndicator()
-                Text(stringResource(R.string.reporte_procesando_ubicacion))
-            }
-            is ReporteUiState.Rechazado -> {
-                Text(uiState.mensaje)
-                Button(onClick = onReintentar) {
-                    Text(stringResource(R.string.reporte_boton_reintentar))
-                }
-            }
-            ReporteUiState.Guardado -> {
-                Text(stringResource(R.string.reporte_guardado))
-                Button(onClick = onReintentar) {
-                    Text(stringResource(R.string.reporte_boton_otro))
+    Scaffold { innerPadding ->
+        ContenidoCentrado(modifier = Modifier.padding(innerPadding)) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                when (uiState) {
+                    ReporteUiState.Capturando, is ReporteUiState.Confirmando -> Unit
+                    ReporteUiState.Clasificando -> {
+                        CircularProgressIndicator()
+                        Text(stringResource(R.string.reporte_clasificando))
+                    }
+                    ReporteUiState.ProcesandoUbicacion -> {
+                        CircularProgressIndicator()
+                        Text(stringResource(R.string.reporte_procesando_ubicacion))
+                    }
+                    is ReporteUiState.Rechazado -> {
+                        Text(uiState.mensaje)
+                        Button(onClick = onReintentar) {
+                            Text(stringResource(R.string.reporte_boton_reintentar))
+                        }
+                    }
+                    ReporteUiState.Guardado -> {
+                        Text(stringResource(R.string.reporte_guardado))
+                        Button(onClick = onReintentar) {
+                            Text(stringResource(R.string.reporte_boton_otro))
+                        }
+                    }
                 }
             }
         }

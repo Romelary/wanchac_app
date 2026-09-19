@@ -128,6 +128,9 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.room.testing)
     testImplementation(libs.robolectric)
+    // Compose UI Testing en la JVM (con Robolectric): pruebas de adaptación a distintos tamaños de pantalla
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
     // ApplicationProvider (necesario para Room in-memory con Robolectric)
     testImplementation(libs.androidx.junit)
     testImplementation(libs.androidx.work.testing)

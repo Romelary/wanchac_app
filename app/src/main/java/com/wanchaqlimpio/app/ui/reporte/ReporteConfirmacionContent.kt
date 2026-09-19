@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.wanchaqlimpio.app.R
 import com.wanchaqlimpio.app.core.util.decodificarFoto
 import com.wanchaqlimpio.app.domain.model.CategoriaResiduo
+import com.wanchaqlimpio.app.ui.common.ContenidoCentrado
 import com.wanchaqlimpio.app.ui.common.etiqueta
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -51,41 +53,45 @@ fun ReporteConfirmacionContent(
 ) {
     val foto by rememberFotoParaMostrar(estado.fotoPath)
 
-    Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        foto?.let {
-            Image(
-                bitmap = it,
-                contentDescription = stringResource(R.string.reporte_foto_descripcion),
-                modifier = Modifier.fillMaxWidth().heightIn(max = ALTO_MAXIMO_FOTO),
-                contentScale = ContentScale.Fit,
-            )
-        }
+    Scaffold { innerPadding ->
+        ContenidoCentrado(modifier = Modifier.padding(innerPadding)) {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                foto?.let {
+                    Image(
+                        bitmap = it,
+                        contentDescription = stringResource(R.string.reporte_foto_descripcion),
+                        modifier = Modifier.fillMaxWidth().heightIn(max = ALTO_MAXIMO_FOTO),
+                        contentScale = ContentScale.Fit,
+                    )
+                }
 
-        Text(stringResource(R.string.reporte_confirmar_titulo), style = MaterialTheme.typography.titleMedium)
-        Text(textoDeSugerencia(estado))
+                Text(stringResource(R.string.reporte_confirmar_titulo), style = MaterialTheme.typography.titleMedium)
+                Text(textoDeSugerencia(estado))
 
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            CategoriaResiduo.entries.forEach { categoria ->
-                FilterChip(
-                    selected = categoria == estado.seleccionada,
-                    onClick = { onSeleccionar(categoria) },
-                    label = { Text(categoria.etiqueta()) },
-                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CategoriaResiduo.entries.forEach { categoria ->
+                        FilterChip(
+                            selected = categoria == estado.seleccionada,
+                            onClick = { onSeleccionar(categoria) },
+                            label = { Text(categoria.etiqueta()) },
+                        )
+                    }
+                }
+
+                Button(onClick = onGuardar, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.reporte_boton_guardar))
+                }
+                OutlinedButton(onClick = onDescartar, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.reporte_boton_otra_foto))
+                }
             }
-        }
-
-        Button(onClick = onGuardar, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.reporte_boton_guardar))
-        }
-        OutlinedButton(onClick = onDescartar, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.reporte_boton_otra_foto))
         }
     }
 }

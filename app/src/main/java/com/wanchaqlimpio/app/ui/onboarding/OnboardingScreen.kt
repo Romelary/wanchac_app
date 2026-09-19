@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.wanchaqlimpio.app.R
+import com.wanchaqlimpio.app.ui.common.ContenidoCentrado
 
 @Composable
 fun OnboardingScreen(viewModel: OnboardingViewModel = hiltViewModel()) {
@@ -39,47 +40,44 @@ fun OnboardingContent(onAceptar: () -> Unit) {
     var aceptado by remember { mutableStateOf(false) }
 
     Scaffold { innerPadding ->
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text(text = stringResource(R.string.onboarding_titulo), style = MaterialTheme.typography.headlineSmall)
-            Text(text = stringResource(R.string.onboarding_intro))
-
-            OnboardingSeccion(
-                titulo = stringResource(R.string.onboarding_que_se_registra_titulo),
-                texto = stringResource(R.string.onboarding_que_se_registra_texto),
-            )
-            OnboardingSeccion(
-                titulo = stringResource(R.string.onboarding_para_que_se_usa_titulo),
-                texto = stringResource(R.string.onboarding_para_que_se_usa_texto),
-            )
-            OnboardingSeccion(
-                titulo = stringResource(R.string.onboarding_que_se_pide_titulo),
-                texto = stringResource(R.string.onboarding_que_se_pide_texto),
-            )
-            OnboardingSeccion(
-                titulo = stringResource(R.string.onboarding_derechos_titulo),
-                texto = stringResource(R.string.onboarding_derechos_texto),
-            )
-            Text(text = stringResource(R.string.onboarding_voluntaria_texto))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = aceptado, onCheckedChange = { aceptado = it })
-                Text(text = stringResource(R.string.onboarding_checkbox_texto))
-            }
-
-            Button(
-                onClick = onAceptar,
-                enabled = aceptado,
-                modifier = Modifier.fillMaxWidth(),
+        ContenidoCentrado(modifier = Modifier.padding(innerPadding)) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Text(text = stringResource(R.string.onboarding_boton_continuar))
+                Text(text = stringResource(R.string.onboarding_titulo), style = MaterialTheme.typography.headlineSmall)
+                Text(text = stringResource(R.string.onboarding_intro))
+
+                OnboardingSeccion(
+                    titulo = stringResource(R.string.onboarding_que_se_registra_titulo),
+                    texto = stringResource(R.string.onboarding_que_se_registra_texto),
+                )
+                OnboardingSeccion(
+                    titulo = stringResource(R.string.onboarding_para_que_se_usa_titulo),
+                    texto = stringResource(R.string.onboarding_para_que_se_usa_texto),
+                )
+                OnboardingSeccion(
+                    titulo = stringResource(R.string.onboarding_que_se_pide_titulo),
+                    texto = stringResource(R.string.onboarding_que_se_pide_texto),
+                )
+                OnboardingSeccion(
+                    titulo = stringResource(R.string.onboarding_derechos_titulo),
+                    texto = stringResource(R.string.onboarding_derechos_texto),
+                )
+                Text(text = stringResource(R.string.onboarding_voluntaria_texto))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = aceptado, onCheckedChange = { aceptado = it })
+                    Text(text = stringResource(R.string.onboarding_checkbox_texto))
+                }
+
+                Button(
+                    onClick = onAceptar,
+                    enabled = aceptado,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(text = stringResource(R.string.onboarding_boton_continuar))
+                }
             }
         }
     }

@@ -1,7 +1,6 @@
 package com.wanchaqlimpio.app.ui.misreportes
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -31,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanchaqlimpio.app.R
 import com.wanchaqlimpio.app.domain.model.Reporte
+import com.wanchaqlimpio.app.ui.common.ContenidoCentrado
 import com.wanchaqlimpio.app.ui.common.etiqueta
 import com.wanchaqlimpio.app.ui.common.formatearFechaHora
 
@@ -53,7 +53,7 @@ fun MisReportesContent(
     var idPorConfirmar by rememberSaveable { mutableStateOf<Long?>(null) }
 
     Scaffold { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        ContenidoCentrado(modifier = Modifier.padding(innerPadding)) {
             when (uiState) {
                 MisReportesUiState.Cargando ->
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
