@@ -37,3 +37,8 @@ __pycache__/
 # Herramienta de pruebas de la app (herramientas/servidor_falso.py): las fotos que recibio y el modo elegido NO se versionan.
 /herramientas/recibidas/
 /herramientas/modo.txt
+
+# Llaves de firma del APK (SECRETAS: se guardan fuera del repositorio) y los APK que se reparten al equipo.
+*.jks
+*.keystore
+/distribucion/

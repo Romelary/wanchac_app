@@ -38,6 +38,15 @@ val claveDeMaps: String? = propiedadLocal("MAPS_API_KEY")
 // bundleRelease FALLAN si la propiedad está activa (ver verificarSinUbicacionSimulada, abajo).
 val ubicacionSimulada = providers.gradleProperty("ubicacionSimulada").map { it.toBoolean() }.getOrElse(false)
 
+// Firma de la versión de publicación/distribución (el APK que se reparte al equipo). Los cuatro datos de la llave los
+// escribe el USUARIO en local.properties (nunca en git ni en el chat; ver docs/distribucion-apk.md). Sin ellos,
+// assembleRelease y bundleRelease FALLAN con un mensaje claro (ver verificarFirmaDeLaVersion, abajo): un APK sin firmar no
+// se puede instalar, y firmarlo con la llave de depuración (la de cada PC) impediría actualizarlo después.
+val datosDeFirma =
+    listOf("RELEASE_STORE_FILE", "RELEASE_STORE_PASSWORD", "RELEASE_KEY_ALIAS", "RELEASE_KEY_PASSWORD")
+        .associateWith { propiedadLocal(it) }
+val firmaCompleta = datosDeFirma.values.all { it != null }
+
 android {
     namespace = "com.wanchaqlimpio.app"
     compileSdk {
@@ -48,8 +57,10 @@ android {
         applicationId = "com.wanchaqlimpio.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        // Cada APK que se reparte debe tener un versionCode MAYOR que el anterior, o Android no lo instala encima
+        // (-PversionCode=2). Por defecto 1.
+        versionCode = providers.gradleProperty("versionCode").map { it.toInt() }.getOrElse(1)
+        versionName = providers.gradleProperty("versionName").getOrElse("1.0")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -65,6 +76,17 @@ android {
         buildConfigField("String", "CONTACT_EMAIL", "\"${providers.gradleProperty("contactEmail").getOrElse("")}\"")
     }
 
+    signingConfigs {
+        create("release") {
+            if (firmaCompleta) {
+                storeFile = file(datosDeFirma.getValue("RELEASE_STORE_FILE")!!)
+                storePassword = datosDeFirma.getValue("RELEASE_STORE_PASSWORD")
+                keyAlias = datosDeFirma.getValue("RELEASE_KEY_ALIAS")
+                keyPassword = datosDeFirma.getValue("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             buildConfigField("boolean", "UBICACION_SIMULADA", "$ubicacionSimulada")
@@ -75,6 +97,7 @@ android {
             // Publicación: NUNCA la dirección del emulador. Sin `baseUrl` la cadena queda vacía y assembleRelease falla.
             buildConfigField("String", "BASE_URL", "\"${baseUrl ?: ""}\"")
             buildConfigField("boolean", "UBICACION_SIMULADA", "false")
+            if (firmaCompleta) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -249,6 +272,23 @@ val verificarClaveDeMaps by tasks.registering {
     }
 }
 
+// Sin llave de firma no hay APK instalable. La llave se crea UNA vez, se guarda FUERA del repositorio y con copia de
+// seguridad: si se pierde, los teléfonos que ya tienen la app no podrán actualizarla (habría que desinstalarla).
+val verificarFirmaDeLaVersion by tasks.registering {
+    val faltantes = providers.provider { datosDeFirma.filterValues { it == null }.keys.toList() }
+    val archivoDeLlave = providers.provider { datosDeFirma["RELEASE_STORE_FILE"]?.let { file(it) } }
+    doLast {
+        check(faltantes.get().isEmpty()) {
+            "Falta la firma de la versión de publicación: define en local.properties " +
+                "${faltantes.get().joinToString()} (la llave se crea una vez con keytool; ver docs/distribucion-apk.md)."
+        }
+        check(archivoDeLlave.get()?.isFile == true) {
+            "El archivo de llave RELEASE_STORE_FILE no existe: ${archivoDeLlave.get()}. " +
+                "Revisa la ruta en local.properties."
+        }
+    }
+}
+
 tasks
     .matching { it.name == "assembleRelease" || it.name == "bundleRelease" }
     .configureEach {
@@ -257,5 +297,6 @@ tasks
             verificarSinUbicacionSimulada,
             verificarDireccionDelServidor,
             verificarClaveDeMaps,
+            verificarFirmaDeLaVersion,
         )
     }
