@@ -2,7 +2,7 @@
 
 > Guía paso a paso para dejar funcionando la infraestructura del backend de Wanchaq Limpio: la base de datos (Neon), las fotos (Cloudinary) y el servidor (Render). Es también evidencia de tesis: registra **qué se configuró, por qué así y cómo se comprobó**. Decisiones técnicas: [ADR-0004](./adr/0004-backend-django-sin-geodjango.md). Diseño general: [`diseno.md`](./diseno.md) §4.1.
 >
-> Estado (2026-09-18): el **esqueleto** del backend existe y está probado (88 pruebas); **Neon y Cloudinary están verificados con cuentas reales** (§11, evidencia en [`evidencia/`](./evidencia/2026-09-18_verificacion-neon-cloudinary.txt)). **Falta desplegarlo en Render** (§7) y el pinger (§8). La lógica de reportes (Fase 1) viene después.
+> Estado (2026-09-18): el **esqueleto** del backend existe y está probado (100 pruebas); **Neon y Cloudinary están verificados con cuentas reales** (§11, evidencia en [`evidencia/`](./evidencia/2026-09-18_verificacion-neon-cloudinary.txt)). **Falta desplegarlo en Render** (§7) y el pinger (§8). La lógica de reportes (Fase 1) viene después.
 
 ## 0. Reglas de seguridad (léelas primero)
 
@@ -51,7 +51,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe manage.py test
 ```
 
-La última línea debe terminar en `OK` (88 pruebas; no usan red ni tus claves). Se usa siempre `.\.venv\Scripts\python.exe` para no tener que "activar" el entorno (PowerShell suele bloquear el script de activación).
+La última línea debe terminar en `OK` (100 pruebas; no usan red ni tus claves). Se usa siempre `.\.venv\Scripts\python.exe` para no tener que "activar" el entorno (PowerShell suele bloquear el script de activación).
 
 Luego crea tu archivo de variables:
 
@@ -72,8 +72,8 @@ Genera el `HEALTH_TOKEN` (un secreto aleatorio que solo tú conoces) y pégalo e
 
 1. Entra en [console.neon.tech](https://console.neon.tech) y activa la verificación en dos pasos de tu cuenta.
 2. **Create project** → nombre `wanchaq-limpio` → versión de Postgres: la que venga por defecto → **región: AWS US East 1 (N. Virginia)**.
-   - ⚠️ **La región no se puede cambiar después** (documentación de Neon). Si ya creaste el proyecto en otra región y aún está vacío, bórralo y créalo de nuevo. Se elige Virginia porque Render tiene una región equivalente y es la más cercana a Perú entre las disponibles; con Render y Neon en la misma región, cada consulta a la base tarda milisegundos; entre regiones lejanas, decenas o cientos de ellos, y un reporte hace varias consultas.
-   - Si por algún motivo eliges otra región, cambia `region:` en [`render.yaml`](../render.yaml) a la equivalente (`ohio` ↔ us-east-2, `oregon` ↔ us-west-2, `frankfurt`, `singapore`).
+   - ⚠️ **La región no se puede cambiar después** (documentación de Neon). Si ya creaste el proyecto en otra región y aún está vacío, bórralo y créalo de nuevo. Se elige la costa este de EE. UU. porque es la más cercana a Perú entre las regiones de Render (Virginia u Ohio). **Neon y Render deben estar en la misma zona geográfica**: así cada consulta a la base tarda milisegundos; entre zonas lejanas, decenas o cientos de ellos, y un reporte hace varias consultas.
+   - Si eliges otra zona, cambia `region:` en [`render.yaml`](../render.yaml) a una de la misma zona: `virginia` u `ohio` (costa este), `oregon` (oeste), `frankfurt` o `singapore`. Render **no documenta** a qué región de AWS equivale cada una, por eso se compara por **zona** y no por nombre exacto; `verificar_servicios.py` imprime `INFO … misma zona` o un `AVISO` si no coinciden (lo lee del nombre del servidor de Neon, sin mostrar el resto de la cadena).
 3. **SQL Editor** (menú lateral) → ejecuta:
 
    ```sql
@@ -150,15 +150,16 @@ Render construye el servicio desde un repositorio de GitHub, y el proyecto todav
    ```
 
    Se abrirá una ventana del navegador para iniciar sesión en GitHub (Git Credential Manager). **No pegues ningún token en el chat.** Se pasa la rama a `main` porque así lo asume `plan.md` (PR hacia `main`).
-3. En [dashboard.render.com](https://dashboard.render.com) (con verificación en dos pasos): **New +** → **Blueprint** → conecta tu cuenta de GitHub y autoriza a Render **solo sobre este repositorio** → elige el repositorio y la rama `main`. Render lee [`render.yaml`](../render.yaml) y te muestra el servicio `wanchaq-limpio-api` (plan **Free**).
-4. Render te pedirá el valor de las variables marcadas `sync: false`. Escríbelas **tú**, en el panel:
+3. Antes de crear nada en Render, corre otra vez `verificar_servicios.py` y mira la línea de **región**: `INFO … misma zona` = bien; un `AVISO` = corrige `region:` en `render.yaml` **antes** de desplegar (una vez creado el servicio, su región tampoco se puede cambiar).
+4. En [dashboard.render.com](https://dashboard.render.com) (con verificación en dos pasos): **New > Blueprint** → junto a tu repositorio pulsa **Connect** (la primera vez autoriza a Render en GitHub **solo sobre este repositorio**) → en el formulario pon un nombre (p. ej. `wanchaq-limpio`), elige la rama `main` y deja vacío *Blueprint Path* (usa `render.yaml`) → Render muestra la lista de cambios (el servicio `wanchaq-limpio-api`, plan **Free**) → revísala ([documentación de Render](https://render.com/docs/infrastructure-as-code)).
+5. Render te pedirá el valor de las variables marcadas `sync: false`. Escríbelas **tú**, en el panel:
    - `DATABASE_URL` → la misma cadena de Neon de tu `.env`.
    - `CLOUDINARY_URL` → la misma de tu `.env`.
    - `HEALTH_TOKEN` → **el mismo** valor que pusiste en tu `.env`.
 
    `SECRET_KEY` la genera Render sola (no hace falta conocerla) y `DEBUG` **no** se define (por defecto está apagado). Si Render llegara a pedir un método de pago para un servicio del plan gratuito, es una decisión tuya: confírmalo en su documentación antes de aceptar.
-5. **Apply / Deploy**. La primera construcción tarda unos minutos. Cuando termine, el panel muestra la URL pública del servicio (algo como `https://wanchaq-limpio-api.onrender.com`).
-6. Comprueba el servicio **desplegado** (usa tu `HEALTH_TOKEN` del `.env`):
+6. Pulsa **Deploy Blueprint**. La primera construcción tarda unos minutos (instala las dependencias, que están todas disponibles ya compiladas para Linux: se comprobó en PyPI el 2026-09-18) y luego Render consulta `/health` (con el `Host` del subdominio `onrender.com` del servicio, que tu `ALLOWED_HOSTS` permite gracias a `RENDER_EXTERNAL_HOSTNAME`). Cuando termine, el panel muestra la URL pública del servicio (algo como `https://wanchaq-limpio-api.onrender.com`).
+7. Comprueba el servicio **desplegado** (usa tu `HEALTH_TOKEN` del `.env`):
 
    ```powershell
    .\.venv\Scripts\python.exe verificar_servicios.py --remoto https://TU-SERVICIO.onrender.com
@@ -209,6 +210,10 @@ No hace falta activarlo hasta que la app empiece a usarse de verdad; mientras de
 | `FALLO token rechazado … no coincide` | El `HEALTH_TOKEN` de tu `.env` y el de Render son distintos. | Iguálalos (el de Render se edita en *Environment*). |
 | `FALLO /health/servicios no existe` | Falta `HEALTH_TOKEN` en Render. | Añádelo en *Environment* y redespliega. |
 | Render: error de compilación con la versión de Python | `PYTHON_VERSION` de `render.yaml` no disponible. | Cámbiala por otra 3.12.x publicada (Django 6.1 exige ≥ 3.12). |
+| `AVISO Neon está en X (zona A) pero render.yaml usa 'Y' (zona B)` | Neon y Render están en zonas distintas: cada consulta a la base pagaría esa distancia. | Cambia `region:` en `render.yaml` a una de la zona de Neon **antes** de desplegar (después ya no se puede). |
+| Render: *Deploy failed* en el chequeo de salud, o `DisallowedHost` / 400 en el registro | Django rechazó el `Host` con el que Render consulta `/health`. Render usa el subdominio `onrender.com` del servicio (o un dominio propio verificado, si lo tuvieras). | Con el subdominio de Render funciona solo (`RENDER_EXTERNAL_HOSTNAME`). Si añades un dominio propio, ponlo en la variable `ALLOWED_HOSTS` (separado por comas) en el panel. |
+| Render: `ImproperlyConfigured: Falta … SECRET_KEY / DATABASE_URL` en el registro | Falta una variable en el panel (*Environment*). | Añádela y redespliega (**Manual Deploy**). Es el fallo rápido que buscamos: un servidor sin base de datos **no debe** arrancar. |
+| Render: `Could not find a version that satisfies the requirement Django==6.1.1` | Render usa un Python anterior a 3.12. | Comprueba que la variable `PYTHON_VERSION` del panel sea `3.12.10` (la de `render.yaml`). |
 
 ### Quitar una variable del entorno de Windows
 
@@ -238,7 +243,7 @@ Cambia `CLOUDINARY_URL` por el nombre de la variable que indique el aviso. Es un
 
 | Qué | Cómo se comprobó | Resultado |
 |---|---|---|
-| El código del backend, la configuración y el script | `python manage.py test` (88 pruebas) + 73 mutaciones deliberadas | ✅ en verde (2026-09-18) |
+| El código del backend, la configuración y el script | `python manage.py test` (100 pruebas) + 86 mutaciones deliberadas | ✅ en verde (2026-09-18) |
 | La aplicación WSGI real (la que carga gunicorn) por HTTP | Script de una sola vez con `wsgiref`: `/health` 200, `/health/servicios` 401 sin token y 503 con la base inalcanzable, sin filtrar la cadena de conexión | ✅ 2026-09-18 |
 | **Neon** y **Cloudinary** reales | El usuario ejecutó `verificar_servicios.py --subida` con sus credenciales: conexión con TLS, **PostGIS 3.6** operativo, credenciales aceptadas, subida **privada** (`authenticated`), URL pública **404**, URL firmada **200**, recurso borrado. Salida completa en [`evidencia/2026-09-18_verificacion-neon-cloudinary.txt`](./evidencia/2026-09-18_verificacion-neon-cloudinary.txt) | ✅ TODO OK (2026-09-18) |
 | Que se use el par de claves **nuevo** de Cloudinary | Pendiente: confirmar en *Settings → API Keys* que el par que se pegó por error en el chat está **desactivado o borrado** y volver a correr el verificador (si sigue en TODO OK, se usa el nuevo) | ⏳ |

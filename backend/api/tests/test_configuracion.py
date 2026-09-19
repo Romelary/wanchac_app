@@ -187,6 +187,35 @@ class CoherenciaDeArchivosTest(SimpleTestCase):
             self.assertIn("sync: false", bloques[nombre], f"{nombre} debe pedirse en el panel (sync: false)")
             self.assertIsNone(re.search(r"^\s+value:", bloques[nombre], re.MULTILINE), f"{nombre} NO puede llevar valor")
 
+    def test_render_yaml_arranca_gunicorn_donde_render_lo_espera(self):
+        import importlib
+
+        texto = (RAIZ / "render.yaml").read_text(encoding="utf-8")
+        comando = re.search(r"^\s*startCommand:\s*(.+)$", texto, re.MULTILINE).group(1)
+        self.assertIn("wanchaq_limpio.wsgi:application", comando)
+        # Render documenta PORT como opcional (10000 por defecto): sin el valor por defecto, si faltara, gunicorn
+        # recibiría "0.0.0.0:" y no arrancaría.
+        self.assertIn("0.0.0.0:${PORT:-10000}", comando)
+        self.assertRegex(texto, r"(?m)^\s*rootDir:\s*backend\s*$")
+        self.assertRegex(texto, r"(?m)^\s*healthCheckPath:\s*/health\s*$")
+        # El destino del comando de arranque existe y es invocable (lo que gunicorn importará en Render).
+        self.assertTrue(callable(importlib.import_module("wanchaq_limpio.wsgi").application))
+
+    def test_render_yaml_fija_python_completo_y_compatible_con_django(self):
+        texto = (RAIZ / "render.yaml").read_text(encoding="utf-8")
+        version = re.search(r"key: PYTHON_VERSION\s+value:\s*(\d+)\.(\d+)\.(\d+)\s*$", texto, re.MULTILINE)
+        self.assertIsNotNone(version, "PYTHON_VERSION debe ser x.y.z completa: así lo exige Render en esa variable")
+        self.assertGreaterEqual((int(version[1]), int(version[2])), (3, 12), "Django 6.1 exige Python >= 3.12")
+
+    def test_todas_las_dependencias_estan_fijadas_a_una_version_exacta(self):
+        lineas = [
+            l.strip() for l in (BACKEND / "requirements.txt").read_text(encoding="utf-8").splitlines()
+            if l.strip() and not l.strip().startswith("#")
+        ]
+        self.assertTrue(lineas)
+        for linea in lineas:
+            self.assertRegex(linea, r"^[A-Za-z0-9_.\[\]-]+==\d[\w.]*$", f"{linea!r}: lo que se probó es lo que se despliega")
+
     def test_render_yaml_genera_la_secret_key_y_no_activa_debug(self):
         bloques = self._bloques_de_render_yaml()
         self.assertIn("generateValue: true", bloques["SECRET_KEY"])

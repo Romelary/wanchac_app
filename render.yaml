@@ -7,16 +7,19 @@ services:
     name: wanchaq-limpio-api
     runtime: python
     plan: free
-    # DEBE coincidir con la región de tu proyecto en Neon (cada consulta cruza esa distancia): virginia <-> AWS us-east-1
-    # (N. Virginia), ohio <-> us-east-2. Es la más cercana a Perú entre las de Render. La región de Neon NO se puede
-    # cambiar después de crear el proyecto; ver docs/despliegue.md. Opciones de Render: oregon, ohio, virginia,
-    # frankfurt, singapore.
+    # Debe estar en la MISMA ZONA que tu proyecto de Neon (cada consulta a la base cruza esa distancia): virginia u ohio
+    # para la costa este de EE. UU. (Neon us-east-1 / us-east-2), oregon para us-west-2, frankfurt, singapore. Render NO
+    # documenta a qué región de AWS corresponde cada una, así que se compara por zona geográfica, no por nombre exacto.
+    # Virginia es la más cercana a Perú entre las de Render. Ni la región de Neon ni la de un servicio de Render se pueden
+    # cambiar después de creados (se recrean); `verificar_servicios.py` avisa si no coinciden. Ver docs/despliegue.md.
     region: virginia
     # Solo se construye la carpeta backend/: los commits que solo tocan la app Android no redespliegan el servicio.
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     # 1 proceso con 4 hilos: el plan gratuito tiene 512 MB de RAM. --timeout 60 cubre el arranque en frío de Neon.
-    startCommand: gunicorn wanchaq_limpio.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 60
+    # ${PORT:-10000}: Render documenta PORT como opcional con 10000 por defecto; así funciona esté o no definida
+    # (con `$PORT` a secas, si faltara, gunicorn recibiría "0.0.0.0:" y no arrancaría).
+    startCommand: gunicorn wanchaq_limpio.wsgi:application --bind 0.0.0.0:${PORT:-10000} --workers 1 --threads 4 --timeout 60
     # Render lo consulta para saber que el servicio está vivo; /health no toca la base de datos a propósito.
     healthCheckPath: /health
     autoDeployTrigger: commit

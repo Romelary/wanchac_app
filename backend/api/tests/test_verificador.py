@@ -303,3 +303,69 @@ class LocalTest(SimpleTestCase):
         _, salida, _ = self._correr(self.ENTORNO, cloudinary_ok=False, clave_api="<your_api_key>")
         self.assertNotIn("termina en", salida)
         self.assertNotIn("your_api", salida)
+
+
+class RegionTest(SimpleTestCase):
+    """Neon y Render deben estar en la misma zona: la región de Neon NO se puede cambiar después de crear el proyecto y
+    la de un servicio de Render tampoco, así que conviene avisar ANTES de desplegar."""
+
+    def _aviso(self, host_neon, region_render="virginia", con_render_yaml=True, funcion="_aviso_de_region"):
+        url = f"postgresql://alex:AbC123@{host_neon}/neondb?sslmode=require"
+        with tempfile.TemporaryDirectory() as raiz:
+            raiz = Path(raiz)
+            (raiz / "backend").mkdir()
+            (raiz / "backend" / ".env").write_text("", encoding="utf-8")
+            if con_render_yaml:
+                (raiz / "render.yaml").write_text(
+                    f"services:\n  - type: web\n    # region: comentario\n    region: {region_render}\n    plan: free\n",
+                    encoding="utf-8",
+                )
+            with mock.patch.object(v, "BACKEND", raiz / "backend"), mock.patch.dict("os.environ", {"DATABASE_URL": url}):
+                _, salida = _capturar(lambda: getattr(v, funcion)() or 0)
+        return salida
+
+    def test_misma_zona_con_otro_nombre_de_region_es_correcta(self):
+        salida = self._aviso("ep-ejemplo-a1b2c3.us-east-2.aws.neon.tech", "virginia")
+        self.assertIn("misma zona", salida)
+        self.assertNotIn("AVISO", salida)
+
+    def test_misma_region_exacta_es_correcta(self):
+        self.assertIn("misma zona", self._aviso("ep-ejemplo-a1b2c3.us-east-1.aws.neon.tech", "virginia"))
+
+    def test_zonas_distintas_avisan_y_sugieren_una_region_de_render_cercana(self):
+        salida = self._aviso("ep-ejemplo-a1b2c3.us-west-2.aws.neon.tech", "virginia")
+        self.assertIn("AVISO", salida)
+        self.assertIn("oregon", salida)
+        self.assertIn("no se puede cambiar", salida)
+
+    def test_una_zona_sin_region_en_render_lo_dice(self):
+        salida = self._aviso("ep-ejemplo-a1b2c3.sa-east-1.aws.neon.tech", "virginia")
+        self.assertIn("AVISO", salida)
+        self.assertIn("Render no tiene región en esa zona", salida)
+
+    def test_solo_se_imprime_la_region_nunca_el_servidor_ni_las_credenciales(self):
+        salida = self._aviso("ep-ejemplo-a1b2c3.us-west-2.aws.neon.tech", "virginia")
+        for privado in ("ep-ejemplo", "a1b2c3", "AbC123", "alex", "neondb", "postgresql://"):
+            self.assertNotIn(privado, salida)
+
+    def test_si_no_se_reconoce_algo_no_se_opina(self):
+        # servidor que no es de AWS/Neon, región de Render desconocida, o sin render.yaml: silencio, no falsas alarmas
+        self.assertEqual("", self._aviso("ejemplo.azure.neon.tech"))
+        self.assertEqual("", self._aviso("ep-x.us-east-1.aws.neon.tech", "marte"))
+        self.assertEqual("", self._aviso("ep-x.us-east-1.aws.neon.tech", con_render_yaml=False))
+
+    def test_la_linea_comentada_de_render_yaml_no_se_toma_por_la_region(self):
+        # El archivo de la prueba trae "# region: comentario" ANTES de la línea real
+        self.assertIn("misma zona", self._aviso("ep-x.us-east-1.aws.neon.tech", "virginia"))
+
+    def test_el_diagnostico_de_region_forma_parte_de_las_variables(self):
+        # _variables() lo invoca: si se quitara la llamada, el usuario no vería nunca el aviso
+        entorno_extra = {"CLOUDINARY_URL": "cloudinary://1:x@n", "HEALTH_TOKEN": "t"}
+        with mock.patch.dict("os.environ", entorno_extra):
+            salida = self._aviso("ep-x.us-west-2.aws.neon.tech", "virginia", funcion="_variables")
+        self.assertIn("AVISO Neon está en us-west-2", salida)
+
+    def test_el_render_yaml_real_del_proyecto_tiene_una_region_conocida(self):
+        # Si alguien cambia render.yaml a una región que la tabla no conoce, el aviso callaría sin que nadie lo note
+        with mock.patch.object(v, "BACKEND", Path(v.__file__).resolve().parent):
+            self.assertIn(v._region_de_render_yaml(), v.ZONA_DE_RENDER)

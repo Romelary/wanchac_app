@@ -41,6 +41,17 @@ from urllib.parse import urlparse
 BACKEND = Path(__file__).resolve().parent
 TIMEOUT_ARRANQUE_EN_FRIO_S = 120  # Render tarda ~1 min en despertar un servicio dormido; Neon unos segundos más.
 VARIABLES_DEL_PROYECTO = ("DEBUG", "SECRET_KEY", "DATABASE_URL", "CLOUDINARY_URL", "HEALTH_TOKEN", "ALLOWED_HOSTS")
+# Zonas geográficas para comparar la región de Neon con la de Render SIN suponer a qué región de AWS equivale cada región
+# de Render (Render no lo documenta: render.com/docs/regions). Regiones de Neon: neon.com/docs/introduction/regions.
+ZONA_DE_NEON = {
+    "us-east-1": "costa este de EE. UU.", "us-east-2": "costa este de EE. UU.", "us-west-2": "costa oeste de EE. UU.",
+    "eu-central-1": "Europa central", "eu-west-2": "Reino Unido", "ap-southeast-1": "Singapur",
+    "ap-southeast-2": "Sídney", "sa-east-1": "Sudamérica",
+}
+ZONA_DE_RENDER = {
+    "virginia": "costa este de EE. UU.", "ohio": "costa este de EE. UU.", "oregon": "costa oeste de EE. UU.",
+    "frankfurt": "Europa central", "singapore": "Singapur",
+}
 
 
 def _linea(nivel, texto):
@@ -134,6 +145,46 @@ def _avisos_de_origen():
         aviso(f"{nombre} aparece varias veces en backend/.env: se usa la ÚLTIMA (borra las viejas)")
 
 
+def _region_de_neon():
+    """Región de AWS del proyecto de Neon, leída del nombre del servidor (p. ej. 'us-east-2'); None si no se reconoce."""
+    host = urlparse(os.environ.get("DATABASE_URL", "")).hostname or ""
+    coincidencia = re.search(r"\.([a-z]{2}-[a-z]+-\d)\.aws\.neon\.tech$", host)
+    return coincidencia.group(1) if coincidencia else None
+
+
+def _region_de_render_yaml():
+    try:
+        texto = (BACKEND.parent / "render.yaml").read_text(encoding="utf-8")
+    except OSError:
+        return None
+    coincidencia = re.search(r"^\s*region:\s*([a-z]+)\s*$", texto, re.MULTILINE)
+    return coincidencia.group(1) if coincidencia else None
+
+
+def _aviso_de_region():
+    """Compara la zona de Neon con la de render.yaml: si son lejanas, cada consulta a la base paga esa distancia.
+
+    Solo se imprime la REGIÓN (p. ej. us-east-2), que no es un secreto; nunca el nombre completo del servidor.
+    """
+    neon, render = _region_de_neon(), _region_de_render_yaml()
+    zona_neon, zona_render = ZONA_DE_NEON.get(neon), ZONA_DE_RENDER.get(render)
+    if zona_neon is None or zona_render is None:
+        return  # región desconocida: no se opina
+    if zona_neon == zona_render:
+        info(f"Neon está en {neon} y render.yaml usa '{render}': misma zona ({zona_neon})")
+        return
+    opciones = [nombre for nombre, zona in ZONA_DE_RENDER.items() if zona == zona_neon]
+    sugerencia = (
+        f"cambia region: en render.yaml a una de estas: {', '.join(opciones)}"
+        if opciones
+        else "Render no tiene región en esa zona: elige la más cercana"
+    )
+    aviso(
+        f"Neon está en {neon} ({zona_neon}) pero render.yaml usa '{render}' ({zona_render}): cada consulta a la base "
+        f"cruzaría esa distancia. Antes de desplegar, {sugerencia} (una vez creado el servicio, su región no se puede cambiar)"
+    )
+
+
 def _final_de_la_clave_de_api():
     """Muestra SOLO los 4 últimos dígitos de la clave de API en uso, para reconocerla en la lista de la consola."""
     try:
@@ -160,6 +211,7 @@ def _variables():
     host = urlparse(os.environ.get("DATABASE_URL", "")).hostname or ""
     if "-pooler" in host:
         aviso("DATABASE_URL usa la cadena 'pooled' de Neon; se recomienda la DIRECTA (sin '-pooler') para migraciones")
+    _aviso_de_region()
     if settings.DEBUG:
         aviso("DEBUG=1 (correcto en tu máquina; en Render NO debe definirse)")
     return resultado
