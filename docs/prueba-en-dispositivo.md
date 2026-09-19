@@ -135,9 +135,38 @@ adb logcat -d -s ClasificadorResiduo ReporteScreen AlmacenFotos DecodificadorFot
 | F1–F4 | ☐ | |
 | `connectedDebugAndroidTest` | ☐ | pruebas ejecutadas: ___ · fallidas: ___ |
 
+## 5b. Sesión 1 — 2026-09-18, Galaxy Tab S9+ (solo lo que se verificó)
+
+Dispositivo: **Galaxy Tab S9+ Wi-Fi (SM-X810)**, Android 16 (API 36), One UI 8.0.5, pantalla de 1752×2800 px a 340 dpi (**824 × 1318 dp**; en horizontal, 1318 × 824 dp). App: compilación de depuración del commit `2d9fced`, instalada por `adb` (`Success`: el *Auto Blocker* no lo impidió). Captura: [`evidencia/2026-09-18_tab-s9plus_consentimiento_horizontal.png`](./evidencia/2026-09-18_tab-s9plus_consentimiento_horizontal.png).
+
+| # | Resultado | Observación |
+|---|---|---|
+| Instalación y arranque | **OK** | La app abre y no registra avisos ni errores en `logcat`; no hay cierre inesperado |
+| A2 (ancho de lectura) | **OK** (medido) | En horizontal, el botón "Aceptar y continuar" mide **592 dp** (= 640 − 24 − 24) y queda **centrado** (margen de 363 dp a cada lado); los párrafos no se estiran a toda la pantalla |
+| A1 (barras del sistema) | **Parcial** | El botón inferior no queda tapado por la barra de tareas de Samsung. Falta revisar la parte de arriba, sin desplazar la pantalla, y en vertical |
+| Resto de escenarios | *pendiente* | A3–A4, B1–B6, C, D, E y F |
+
+---
+
 ## 6. Dispositivos probados
 
 | Dispositivo | Android / One UI | Fecha | Resultado global | Notas |
 |---|---|---|---|---|
-| Galaxy Tab S9+ | | | *pendiente* | |
+| Galaxy Tab S9+ (SM-X810) | Android 16 / One UI 8.0.5 | 2026-09-18 | *en curso* (ver 5b) | Instalación y consentimiento en horizontal verificados; falta el resto |
 | Un teléfono (recomendado además de la tablet: las tabletas no representan a quien reporta en la calle) | | | *pendiente* | |
+
+## 7. Problemas conocidos al preparar la prueba
+
+### Android Studio muestra "Unresolved reference 'hilt' / 'dagger' / 'AndroidEntryPoint' / 'hiltViewModel' / 'R'" y no deja ejecutar
+
+**Síntoma**: en el editor, `MainActivity.kt` marca en rojo las importaciones de Hilt y todos los `R.drawable…`, y el botón Run no funciona con normalidad.
+
+**Causa (verificada el 2026-09-18 con el registro del IDE)**: el IDE **no volvió a sincronizar** con Gradle. Al abrir el proyecto registró *"Up-to-date models found in the cache. Not invoking Gradle sync"* y trabajó con un modelo de dependencias antiguo (probablemente del 17-sep, anterior a que se agregara Hilt). No es un fallo de compilación: la compilación por Gradle **sí termina** (el propio IDE generó `app-debug.apk` a las 17:04, y la compilación limpia por línea de comandos también).
+
+**Solución**:
+1. *File → Sync Project with Gradle Files* (el ícono del elefante). Espera a que termine (la primera vez tarda).
+2. Si sigue en rojo: *File → Invalidate Caches… → Invalidate and Restart*.
+3. Si el problema persiste, copia el **primer** mensaje de error de la pestaña *Sync* o *Build* (no la lista de "Unresolved reference": esos son consecuencia).
+
+**Alternativa sin el IDE** (siempre funciona): `./gradlew installDebug` con la tablet conectada, o pedirle a Claude que instale el APK por `adb`.
+
