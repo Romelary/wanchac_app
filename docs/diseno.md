@@ -165,7 +165,7 @@ Definido por el cliente (Módulos 4 y 6) antes de que exista el backend, para qu
 
 **Seguridad (limitación asumida, ADR-0002)**: al no haber login, `(idAnonimo, idLocal)` funciona como credencial de capacidad para la baja. Es aceptable porque `idAnonimo` es un UUID aleatorio que no se expone públicamente (el mapa público solo muestra `Punto_critico`), pero el backend **no debe** devolverlo en ninguna respuesta pública ni registrarlo en logs de acceso abiertos.
 
-#### Respuestas del servidor (implementado en la Fase 1, 2026-09-19)
+#### Respuestas del servidor (implementado en la Fase 1, 2026-09-18)
 
 La app trata **cualquier respuesta no exitosa como "reintentar"** (`SyncWorker`), salvo el `404` de la baja, que cuenta como cumplida (`EliminarReporteWorker`). Los códigos del servidor distinguen por eso lo transitorio de lo permanente:
 

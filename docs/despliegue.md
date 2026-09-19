@@ -2,7 +2,7 @@
 
 > Guía paso a paso para dejar funcionando la infraestructura del backend de Wanchaq Limpio: la base de datos (Neon), las fotos (Cloudinary) y el servidor (Render). Es también evidencia de tesis: registra **qué se configuró, por qué así y cómo se comprobó**. Decisiones técnicas: [ADR-0004](./adr/0004-backend-django-sin-geodjango.md). Diseño general: [`diseno.md`](./diseno.md) §4.1.
 >
-> Estado (2026-09-19): el backend está probado (**202 pruebas**, incluida la **Fase 1**: `POST /reportes` y `DELETE`); **Neon y Cloudinary están verificados con cuentas reales** (§11, evidencia en [`evidencia/`](./evidencia/2026-09-18_verificacion-neon-cloudinary.txt)). **Falta comprobar el despliegue en Render** con la Fase 1 (§7, punto 8) y el pinger (§8).
+> Estado (2026-09-18): el backend está probado (**202 pruebas**, incluida la **Fase 1**: `POST /reportes` y `DELETE`); **Neon y Cloudinary están verificados con cuentas reales** (§11, evidencia en [`evidencia/`](./evidencia/2026-09-18_verificacion-neon-cloudinary.txt)). **Falta comprobar el despliegue en Render** con la Fase 1 (§7, punto 8) y el pinger (§8).
 
 ## 0. Reglas de seguridad (léelas primero)
 
