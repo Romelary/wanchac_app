@@ -2,7 +2,7 @@
 
 > Guía paso a paso para dejar funcionando la infraestructura del backend de Wanchaq Limpio: la base de datos (Neon), las fotos (Cloudinary) y el servidor (Render). Es también evidencia de tesis: registra **qué se configuró, por qué así y cómo se comprobó**. Decisiones técnicas: [ADR-0004](./adr/0004-backend-django-sin-geodjango.md). Diseño general: [`diseno.md`](./diseno.md) §4.1.
 >
-> Estado (2026-09-18): el **esqueleto** del backend existe y está probado (88 pruebas), pero **aún no se ha desplegado**: falta que tú crees los proyectos en cada panel y pegues tus claves. La lógica de reportes (Fase 1) viene después de que esto funcione.
+> Estado (2026-09-18): el **esqueleto** del backend existe y está probado (88 pruebas); **Neon y Cloudinary están verificados con cuentas reales** (§11, evidencia en [`evidencia/`](./evidencia/2026-09-18_verificacion-neon-cloudinary.txt)). **Falta desplegarlo en Render** (§7) y el pinger (§8). La lógica de reportes (Fase 1) viene después.
 
 ## 0. Reglas de seguridad (léelas primero)
 
@@ -240,5 +240,7 @@ Cambia `CLOUDINARY_URL` por el nombre de la variable que indique el aviso. Es un
 |---|---|---|
 | El código del backend, la configuración y el script | `python manage.py test` (88 pruebas) + 73 mutaciones deliberadas | ✅ en verde (2026-09-18) |
 | La aplicación WSGI real (la que carga gunicorn) por HTTP | Script de una sola vez con `wsgiref`: `/health` 200, `/health/servicios` 401 sin token y 503 con la base inalcanzable, sin filtrar la cadena de conexión | ✅ 2026-09-18 |
-| Cuentas reales (Neon, Cloudinary, Render) | **Pendiente**: la ejecuta el usuario con `verificar_servicios.py` | ⏳ |
+| **Neon** y **Cloudinary** reales | El usuario ejecutó `verificar_servicios.py --subida` con sus credenciales: conexión con TLS, **PostGIS 3.6** operativo, credenciales aceptadas, subida **privada** (`authenticated`), URL pública **404**, URL firmada **200**, recurso borrado. Salida completa en [`evidencia/2026-09-18_verificacion-neon-cloudinary.txt`](./evidencia/2026-09-18_verificacion-neon-cloudinary.txt) | ✅ TODO OK (2026-09-18) |
+| Que se use el par de claves **nuevo** de Cloudinary | Pendiente: confirmar en *Settings → API Keys* que el par que se pegó por error en el chat está **desactivado o borrado** y volver a correr el verificador (si sigue en TODO OK, se usa el nuevo) | ⏳ |
+| **Render** (servicio desplegado) | **Pendiente**: GitHub privado + Blueprint + `verificar_servicios.py --remoto` (§7) | ⏳ |
 | Comando de arranque `gunicorn …` | Sin comprobar localmente (gunicorn no corre en Windows); se comprobará en el primer despliegue | ⏳ |

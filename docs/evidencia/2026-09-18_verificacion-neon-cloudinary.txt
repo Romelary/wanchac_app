@@ -1,0 +1,32 @@
+Evidencia de la verificación de Neon y Cloudinary — Wanchaq Limpio
+Fecha: 2026-09-18
+Ejecutó: el usuario, en su computadora, con sus propias credenciales (el asistente no las maneja).
+Comando: backend/verificar_servicios.py --subida
+Este script imprime únicamente OK/FALLO/AVISO/INFO y textos fijos: no muestra contraseñas, cadenas de conexión ni claves
+(ver docs/despliegue.md §0 y docs/pruebas.md). La salida se copia tal como la pegó el usuario.
+
+PS C:\Users\romel\wanchac_app\backend> .\.venv\Scripts\python.exe verificar_servicios.py --subida
+OK    backend/.env encontrado
+OK    DATABASE_URL definida
+OK    CLOUDINARY_URL definida
+OK    HEALTH_TOKEN definida
+AVISO DEBUG=1 (correcto en tu máquina; en Render NO debe definirse)
+OK    Neon: conectado; PostGIS 3.6 operativo
+OK    Cloudinary: credenciales aceptadas
+OK    subida aceptada y guardada como privada (type=authenticated)
+OK    la URL pública NO sirve la foto (HTTP 404)
+OK    la URL firmada SÍ sirve la foto (así la verá el servidor/administrador)
+OK    recurso de prueba borrado
+
+RESULTADO: TODO OK
+
+Qué demuestra
+- La base de datos de Neon es alcanzable con TLS y PostGIS 3.6 está habilitado y mide en metros (geography).
+- La cuenta de Cloudinary acepta las credenciales y respeta el modo privado: un recurso subido como
+  type=authenticated NO se sirve por su URL pública (404) y SÍ por una URL firmada (200).
+- El recurso de prueba (un PNG de 1x1 px) se borró: no queda basura en la cuenta.
+
+Qué NO demuestra
+- Nada sobre Render (aún no desplegado): eso lo comprueba `verificar_servicios.py --remoto`.
+- Qué par de claves de Cloudinary se está usando (pendiente confirmar que se usa el par NUEVO y que el par que se pegó
+  por error en el chat fue desactivado o borrado).
