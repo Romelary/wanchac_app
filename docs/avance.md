@@ -15,12 +15,12 @@
 | **B.** App Android | 19 | 26 | `███████░░░` 73 % |
 | **C.** Modelo de IA | 4 | 9 | `████░░░░░░` 44 % |
 | **D.** Pruebas en dispositivo y calidad | 5 | 13 | `████░░░░░░` 38 % |
-| **E.** Publicación en Play Store | 1 | 10 | `█░░░░░░░░░` 10 % |
+| **E.** Publicación en Play Store | 2 | 10 | `██░░░░░░░░` 20 % |
 | **F.** Asesor y documento de tesis | 1 | 13 | `█░░░░░░░░░` 8 % |
 | **G.** Confiabilidad de los instrumentos | 0 | 14 | `░░░░░░░░░░` 0 % |
-| **Total** | **38** | **105** | `████░░░░░░` **36 %** |
+| **Total** | **39** | **105** | `████░░░░░░` **37 %** |
 
-**Pendientes: 67**, de las cuales **19 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 42** · **Claude 24** · **Asesor 18**.
+**Pendientes: 66**, de las cuales **18 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 41** · **Claude 24** · **Asesor 18**.
 <!-- RESUMEN:FIN -->
 
 > Es un **conteo de tareas, no de esfuerzo**: una tarea como "Fase 2 (DBSCAN)" pesa mucho más que "quitar un aviso". Sirve para ver el rumbo, no para medir horas.
@@ -123,7 +123,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 ## E. Publicación en Play Store (Módulo 9, al final)
 
 - [x] **E0** `applicationId` definitivo fijado: `com.wanchaqlimpio.app` (no se puede cambiar tras publicar) — *Claude*
-- [ ] **E1** **Correo de contacto público** en `gradle.properties` (`contactEmail=`): la compilación `release` falla sin él — *Usuario* · 🔴
+- [x] **E1** **Correo de contacto público** definido en `gradle.properties` (`contactEmail=`, 2026-09-19): sale en Ajustes y ya no bloquea `assembleRelease` — *Usuario*
 - [ ] **E2** Cuenta de desarrollador de Google Play (pago único de US$25) — *Usuario* · 🟡
 - [ ] **E3** Keystore de firma y Play App Signing (la clave **nunca** a git). **Además, añadir su huella SHA-1 a la restricción de la clave de Google Maps**: sin ella el mapa funciona en depuración pero sale gris en la app publicada — *Usuario + Claude* · 🟡
 - [ ] **E4** Política de privacidad pública, derivada del texto validado del Anexo 9 — *Claude + Asesor* · 🟡
