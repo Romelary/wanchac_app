@@ -1,7 +1,7 @@
 # ADR-0009 — Los focos se detectan al pedir el mapa, con DBSCAN sencillo y sin confirmación
 
 - **Estado**: aceptada
-- **Fecha**: 2026-09-20
+- **Fecha**: 2026-09-19
 - **Contexto**: mapa público (Módulo 5), `GET /puntos-criticos`; ADR-0004 #3 (agrupamiento DBSCAN); `docs/traspaso.md`, decisión 3.
 
 ## Decisión

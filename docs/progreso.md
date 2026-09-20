@@ -327,10 +327,16 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
 - **Verificado**: servidor **219 pruebas** en verde (10 nuevas); app **290 pruebas unitarias** en verde (incluye la migración 3→4 con un reporte real), ktlint y detekt limpios. Instalado en la Galaxy Tab S9+: la base pasó a versión 4 con la columna nueva. **No verificado en la tablet**: que un reporte real guarde la precisión (la base estaba vacía tras las pruebas de UI y el GPS real rechaza fuera de Wanchaq); lo cubren las pruebas unitarias.
 - **Pendiente del usuario**: **desplegar el servidor primero** (`git push`; Render corre `migrate` en cada compilación, según `render.yaml`) y recién después repartir el APK. Avisar al asesor: es un dato más por reporte (consentimiento informado).
 
-### 2026-09-20 — Sesión 28 (cont.): focos detectados automáticamente (Paso 2)
+### 2026-09-19 — Sesión 28 (cont.): focos detectados automáticamente (Paso 2)
 - **Hecho** ([ADR-0009](./adr/0009-focos-detectados-al-pedir-con-dbscan.md)): `GET /puntos-criticos` ya no devuelve siempre vacío: calcula los focos **al pedirse** con DBSCAN (ε = 50 m, mínimo 4 reportes, Haversine) en `backend/api/focos.py`. Cada foco lleva id estable, centroide, n.º de reportes, categoría predominante y fecha del último; los reportes `es_prueba` no cuentan. La app solo cambió el texto («focos **detectados**»); el contrato es el mismo.
 - **Verificado**: servidor **239 pruebas** en verde (20 nuevas: puntos sintéticos, cadena, borde, ruido, límite de 50 m, prueba excluida, 503, sin identificadores). En la Galaxy Tab S9+ con el servidor falso en modo `focos`: la pestaña Mapa muestra «2 focos detectados» con sus 2 marcadores. **No verificado**: el endpoint contra Neon/Render (falta desplegar) ni con reportes reales.
 - **Límite**: cuenta reportes, no personas distintas (una persona con 4 reportes en el mismo sitio crea un foco).
+
+### 2026-09-19 — Sesión 28 (cont. 2): revisión del documento v5.91 (copia «(1) (1)») y factibilidad
+- El `.docx` es la misma v5.91 ya auditada (los Anexos 10 a 12 y el «59.2 a 94.0» coinciden con la [evidencia](./evidencia/2026-09-19_verificacion-tesis-v591.txt)). Recalculé a mano el tamaño del SUS (37,5 → 38), la densidad (3,92 focos/km²), la distancia al vecino más próximo (253 m) y la supervivencia de Ryu (44,7 %): coinciden. **No** coinciden los kappa de la sección de confiabilidad (con 6 focos el máximo posible es 0,54 y 0,78).
+- **Veredicto**: factible. El riesgo mayor es el volumen de reportes: unos **120 a 240 válidos** para 15 a 30 focos con las reglas del propio documento (4 mínimos × factor 2), que exige jornadas organizadas en los ~25 puntos conocidos. **Decisiones del usuario**: la sección de confiabilidad la reescribirá cuando haga las pruebas con la app casi terminada; el Cap. IV se corrige después; el cronograma y los tiempos verbales no importan (el documento final se redacta como ejecutado).
+- **Entregable**: [`correccion-cap3-v591/texto-corregido.md`](./correccion-cap3-v591/texto-corregido.md) (método, Tabla 5, plantillas de resultados y V de Aiken recalculada); no toca el `.docx`. Tablero: A21 (desplegar el servidor antes del APK) y A22 (¿focos por dispositivos distintos?) nuevas.
+- **Rectificación**: dije que `avance.md` estaba desfasado, pero su resumen ya incluía A8, A10 y E1.
 
 ## Pendientes / decisiones abiertas
 

@@ -2,25 +2,27 @@
 
 > Lista de tareas para ver de un vistazo **qué está hecho y qué falta**. Es una **vista**: el detalle, las decisiones y la evidencia de cada punto viven en [`progreso.md`](./progreso.md) (registro por sesiones y pendientes), [`plan.md`](./plan.md) (módulos), [`pruebas.md`](./pruebas.md), [`despliegue.md`](./despliegue.md) y los ADR. Se actualiza al cierre de cada sesión, junto con `progreso.md`.
 >
-> **Corte: 2026-09-19 (Sesión 25; el área G la añadió la Sesión 25-B, paralela a la 25).** Fechas según el reloj del PC (ver la tarea F11: está en UTC-8, no en hora de Perú).
+> **Corte: 2026-09-19 (Sesión 25; el área G la añadió la Sesión 25-B, paralela a la 25).** Fechas según el reloj del PC (ver la tarea F11: está en UTC-8, no en hora de Perú). **Actualizado en la Sesión 28 (2026-09-19):** el resumen lleva columnas «S28» y las tareas anotaciones «(Sesión 28)»; no se borró nada de lo anterior.
 
 **Leyenda.** Quién: *Usuario* · *Claude* · *Asesor* (decisión que hay que consultar). Prioridad: 🔴 bloquea otras tareas o la ventana de observación · 🟡 importante · ⚪ pulido u opcional. `[x]` hecho · `[ ]` pendiente. Una casilla marcada con *(dicho por el usuario)* no tiene evidencia que yo haya visto.
 
 ## Resumen
 
 <!-- RESUMEN:INICIO -->
-| Área | Hechas | Total | Avance |
-|---|---:|---:|---|
-| **A.** Infraestructura y backend | 10 | 20 | `█████░░░░░` 50 % |
-| **B.** App Android | 19 | 26 | `███████░░░` 73 % |
-| **C.** Modelo de IA | 4 | 9 | `████░░░░░░` 44 % |
-| **D.** Pruebas en dispositivo y calidad | 5 | 13 | `████░░░░░░` 38 % |
-| **E.** Publicación en Play Store | 2 | 10 | `██░░░░░░░░` 20 % |
-| **F.** Asesor y documento de tesis | 1 | 13 | `█░░░░░░░░░` 8 % |
-| **G.** Confiabilidad de los instrumentos | 0 | 14 | `░░░░░░░░░░` 0 % |
-| **Total** | **41** | **105** | `████░░░░░░` **39 %** |
+| Área | Hechas | Total | Avance | Hechas (S28) | Total (S28) | Avance (S28) |
+|---|---:|---:|---|---:|---:|---|
+| **A.** Infraestructura y backend | 10 | 20 | `█████░░░░░` 50 % | 11 | 22 | `█████░░░░░` 50 % |
+| **B.** App Android | 19 | 26 | `███████░░░` 73 % | 20 | 27 | `███████░░░` 74 % |
+| **C.** Modelo de IA | 4 | 9 | `████░░░░░░` 44 % | 4 | 9 | `████░░░░░░` 44 % |
+| **D.** Pruebas en dispositivo y calidad | 5 | 13 | `████░░░░░░` 38 % | 5 | 13 | `████░░░░░░` 38 % |
+| **E.** Publicación en Play Store | 2 | 10 | `██░░░░░░░░` 20 % | 2 | 10 | `██░░░░░░░░` 20 % |
+| **F.** Asesor y documento de tesis | 1 | 13 | `█░░░░░░░░░` 8 % | 1 | 13 | `█░░░░░░░░░` 8 % |
+| **G.** Confiabilidad de los instrumentos | 0 | 14 | `░░░░░░░░░░` 0 % | 0 | 14 | `░░░░░░░░░░` 0 % |
+| **Total** | **41** | **105** | `████░░░░░░` **39 %** | **43** | **108** | `████░░░░░░` **40 %** |
 
 **Pendientes: 64**, de las cuales **16 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 39** · **Claude 24** · **Asesor 18**.
+
+**Tras la Sesión 28: pendientes 65**, de las cuales **17 son 🔴** (se sumó A21). Por responsable: **Usuario 40** · **Claude 24** · **Asesor 19**. Cambios: A15 y B27 hechas; A21 y A22 nuevas.
 <!-- RESUMEN:FIN -->
 
 > Es un **conteo de tareas, no de esfuerzo**: una tarea como "Fase 2 (DBSCAN)" pesa mucho más que "quitar un aviso". Sirve para ver el rumbo, no para medir horas.
@@ -39,6 +41,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 8. **A14 + A15 + A18** — agrupamiento, el endpoint del mapa y cómo se *confirma* un foco (la pantalla del mapa ya existe, B14, pero se verá **vacía** sin ellos): sin esto no se pueden medir las dimensiones de la Variable 2.
 9. **E1 a E7** — correo de contacto, cuenta de Play, política de privacidad y **prueba cerrada de 14 días** (empezarla con antelación).
 10. **G1 + G2 + G9** — decidir y congelar el plan de confiabilidad, retirar de la tesis la «muestra piloto simulada» y decidir si la app guarda la precisión declarada **antes** de que existan reportes reales: sin eso la confiabilidad de los instrumentos no se puede medir ni reportar ([plan](./plan-confiabilidad-instrumentos.md)).
+11. **A21** *(Sesión 28)* — `git push` del servidor con la precisión del GPS y los focos (ADR-0008 y ADR-0009) **antes** de repartir cualquier APK; después, `verificar_servicios.py --remoto` y abrir `/puntos-criticos` en el navegador.
 
 ## A. Infraestructura y backend
 
@@ -55,13 +58,15 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **A11** Pinger en cron-job.org sobre `/health` cada 10 min (activarlo cuando la app se use de verdad) — *Usuario* · 🟡 · [despliegue.md §8](./despliegue.md)
 - [ ] **A12** Decidir la **limitación de uso** del `POST`/`DELETE` sin login (por IP, clave embebida, alertas de cuota): hoy cualquiera puede enviar basura — *Asesor* · 🟡 · [ADR-0004](./adr/0004-backend-django-sin-geodjango.md)
 - [ ] **A13** Polígono oficial del distrito de Wanchaq (catastro/INEI) y validación con `ST_Within` en el servidor — *Usuario + Claude* · 🟡 (hoy es un rectángulo, igual en app y servidor)
-- [ ] **A14** Fase 2 — agrupamiento **DBSCAN** (ε 50 m, MinSamples 4), coeficiente de silueta y proporción de ruido (RF-05/RF-06), tabla `Punto_critico` (CORR-004) — *Claude* · 🔴 para la tesis
-- [ ] **A15** Fase 3 — `GET /puntos-criticos?estado=confirmado` **con focos reales** (hoy el endpoint es provisional y devuelve siempre una colección vacía: A20) — *Claude* · 🟡
-- [x] **A20** `GET /puntos-criticos` **provisional**: siempre `200` con una colección GeoJSON vacía y sin tocar la base, para que la app muestre «Aún no hay focos confirmados» en vez de un error 404 (sin la ruta, la app **no dibujaría el mapa**); 7 pruebas y 11 mutaciones detectadas — *Claude* · **falta desplegarlo** (el `git push` de A10) · [ADR-0004 #17](./adr/0004-backend-django-sin-geodjango.md)
+- [ ] **A14** Fase 2 — agrupamiento **DBSCAN** (ε 50 m, MinSamples 4), coeficiente de silueta y proporción de ruido (RF-05/RF-06), tabla `Punto_critico` (CORR-004) — *Claude* · 🔴 para la tesis · **Sesión 28**: el DBSCAN (ε = 50 m, MinSamples = 4, Haversine) **ya corre** en el servidor **al pedir** el mapa, sin tabla `Punto_critico` ni tarea programada ([ADR-0009](./adr/0009-focos-detectados-al-pedir-con-dbscan.md)), con 20 pruebas de puntos sintéticos; **faltan** el coeficiente de silueta y la proporción de ruido (se calcularán con un script sobre datos exportados) y desplegarlo (A21)
+- [x] **A15** Fase 3 — `GET /puntos-criticos?estado=confirmado` **con focos reales** (hoy el endpoint es provisional y devuelve siempre una colección vacía: A20) — *Claude* · 🟡 · **Sesión 28**: hecho: el endpoint calcula los focos al pedirse (ver A14). Son focos **detectados**, no confirmados (A18); falta desplegarlo (A21)
+- [x] **A20** `GET /puntos-criticos` **provisional**: siempre `200` con una colección GeoJSON vacía y sin tocar la base, para que la app muestre «Aún no hay focos confirmados» en vez de un error 404 (sin la ruta, la app **no dibujaría el mapa**); 7 pruebas y 11 mutaciones detectadas — *Claude* · **falta desplegarlo** (el `git push` de A10) · [ADR-0004 #17](./adr/0004-backend-django-sin-geodjango.md) · **Sesión 28**: reemplazado por el cálculo real de A15 (la ruta ya no devuelve siempre vacío)
 - [ ] **A16** Columna `geography` + índice GiST y **prueba de integración contra PostgreSQL real** (rama de desarrollo de Neon), al llegar la primera consulta espacial — *Claude* · ⚪ (Fase 2/3)
 - [ ] **A17** Rama de desarrollo en Neon para no probar contra producción cuando haya datos reales — *Usuario* · ⚪
 - [ ] **A18** **Hueco de planificación: cómo se confirma un foco (RF-07 / Instrumento 2).** El diseño dice que el observador registra `estado_verificacion` y el mapa solo muestra los `confirmado`, pero **no hay ninguna tarea, módulo ni fase** que lo construya (¿script de importación de la ficha de campo, formulario web, panel mínimo?). Sin esto el Módulo 5 quedaría vacío — *Asesor + Claude* · 🔴 · [diseno.md](./diseno.md) (RF-07 y secuencia del observador)
 - [ ] **A19** **Clave de Google Maps y dirección del servidor**: en Google Cloud, un proyecto con **cuenta de facturación**, la API *Maps SDK for Android* y una clave **restringida** (paquete `com.wanchaqlimpio.app` + huella SHA-1 + solo esa API), con **presupuesto y alertas**; luego `MAPS_API_KEY` y `baseUrl` en `local.properties` (**nunca** al chat ni a git) — *Usuario* · 🔴 sin ella el mapa sale gris · [despliegue-mapa.md](./despliegue-mapa.md) · **Avance (2026-09-19): la clave de Google Maps ya está en `local.properties` y funciona** (el mapa se dibuja en la tablet); **falta `baseUrl`**, que necesita el despliegue en Render (A10)
+- [ ] **A21** *(Sesión 28)* **Desplegar el código nuevo del servidor** (precisión del GPS y bandera `es_prueba` de [ADR-0008](./adr/0008-precision-del-gps-y-bandera-de-prueba.md); focos de [ADR-0009](./adr/0009-focos-detectados-al-pedir-con-dbscan.md)) con `git push` **antes** de repartir cualquier APK (un servidor antiguo rechazaría con 422 los reportes del APK de prueba fuera de Wanchaq); después correr `verificar_servicios.py --remoto` y abrir `/puntos-criticos` en el navegador — *Usuario* · 🔴
+- [ ] **A22** *(Sesión 28)* Decidir si un foco debe exigir un mínimo de **dispositivos distintos**: el documento (MinSamples) habla de «varios vecinos independientes» y el servidor cuenta **reportes** ([ADR-0009](./adr/0009-focos-detectados-al-pedir-con-dbscan.md)); con `id_anonimo` es fácil contar dispositivos distintos — *Asesor + Claude* · 🟡
 
 ## B. App Android
 
@@ -78,7 +83,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [x] **B11** Tiempos de espera de OkHttp de 30/90/60/150 s (conexión/lectura/escritura/llamada) para aguantar el arranque en frío de Render (~1 min) — *Claude*
 - [x] **B12** `SyncWorker`: **rechazo definitivo** (400, 410, 413, 415, 422 y foto ausente → estado local `RECHAZADO`, no se reenvía para siempre), seguimiento **por reporte** (intentos, cuándo, motivo, código HTTP, red; migración de Room 2→3), «Enviar ahora» y «Reintentar» ([ADR-0006](./adr/0006-envio-confiable-de-reportes.md)) — *Claude* · **verificado en la tablet** con un servidor falso (no con Render)
 - [x] **B13** Reducir la foto al tomarla (lado largo 1 600 px, JPEG 85, sin metadatos): **4,0 MB → ≈ 0,2 MB medido en la tablet** ([ADR-0007](./adr/0007-gps-en-caliente-y-foto-reducida.md)) — *Claude*
-- [x] **B14** Módulo 5 — **mapa público en la app con Google Maps** ([ADR-0005](./adr/0005-mapa-publico-dentro-de-la-app-con-google-maps.md)): destino "Mapa", cliente de `GET /puntos-criticos`, estados cargando / sin focos / con focos / error, y pruebas en la JVM — *Claude* · **sin datos reales** (faltan A14, A15 y A18) **y sin ver en un dispositivo** (D11)
+- [x] **B14** Módulo 5 — **mapa público en la app con Google Maps** ([ADR-0005](./adr/0005-mapa-publico-dentro-de-la-app-con-google-maps.md)): destino "Mapa", cliente de `GET /puntos-criticos`, estados cargando / sin focos / con focos / error, y pruebas en la JVM — *Claude* · **sin datos reales** (faltan A14, A15 y A18) **y sin ver en un dispositivo** (D11) · **Sesión 28**: el texto pasó a «focos **detectados**» y, con el servidor falso en modo `focos`, se vieron 2 focos con sus marcadores en la tablet; el servidor ya calcula focos reales (A15), falta desplegarlo (A21)
 - [ ] **B15** Ícono de la app (los íconos de la navegación ya son los definitivos, de Material, verificados en la tablet el 2026-09-19) — *Claude* · ⚪
 - [ ] **B16** Revisión de **accesibilidad**: contraste, tamaños táctiles, lector de pantalla — *Claude* · 🟡
 - [ ] **B17** Estados de error y vacío en todas las pantallas — *Claude* · 🟡
@@ -91,6 +96,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [x] **B24** **Registro de envíos**: Ajustes → «Compartir registro de envíos» manda un CSV (un renglón por reporte: intentos, cuándo llegó, red, motivo del fallo) **sin coordenadas, fotos ni código anónimo** — *Claude* · *el selector de compartir no se ha probado en el dispositivo* (H11)
 - [x] **B25** **Servidor falso local** (`herramientas/servidor_falso.py`) para provocar fallos de red a voluntad, y configuración de red **solo de depuración** que permite `http://` únicamente hacia `localhost`, `127.0.0.1` y `10.0.2.2` — *Claude* · [prueba-en-dispositivo.md §2c](./prueba-en-dispositivo.md)
 - [x] **B26** **Firma de la versión de publicación** con la llave del usuario (`RELEASE_*` en `local.properties`), `versionCode`/`versionName` por propiedad y un seguro más: `assembleRelease` **falla con un mensaje claro** sin llave — *Claude* · verificado con una llave de mentira (APK firmado, no depurable); **falta probarlo con la llave real** (E9) · [distribucion-apk.md](./distribucion-apk.md)
+- [x] **B27** *(Sesión 28)* **Precisión del GPS guardada por reporte**: Room 3→4 (`MIGRACION_3_4`; los reportes viejos quedan sin dato), `precisionMetros` opcional en el `geojson` y columna `precision_gps_m` del registro CSV; servidor: `error_posicion_m` (0–5000 m) y `es_prueba` en la migración `0002` ([ADR-0008](./adr/0008-precision-del-gps-y-bandera-de-prueba.md)) — *Claude* · 290 pruebas de la app y 239 del servidor en verde; la base de la tablet pasó a la versión 4; **no se vio un reporte real guardar la precisión** (falta D5)
 
 ## C. Modelo de IA (clasificador de residuos)
 
@@ -107,8 +113,8 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 ## D. Pruebas en dispositivo y calidad
 
 - [x] **D1** Instalar en la Galaxy Tab S9+ y comprobar la adaptación de pantalla (botón de 592 dp centrado en horizontal) — *Usuario + Claude*
-- [x] **D2** Suite de la app en la JVM: **288 pruebas unitarias en verde** (174 al cerrar la Sesión 24; el resto son del envío confiable, el GPS en caliente, la foto reducida y el registro de envíos), ktlint y detekt limpios — *Claude* · [pruebas.md](./pruebas.md) · *sin prueba de mutación de los lotes de la Sesión 25 (sí del mapa: 30 mutaciones, 29 detectadas y 1 equivalente)*
-- [x] **D3** Suite del backend: 209 pruebas y 152 mutaciones deliberadas — *Claude* · [pruebas.md](./pruebas.md)
+- [x] **D2** Suite de la app en la JVM: **288 pruebas unitarias en verde** (174 al cerrar la Sesión 24; el resto son del envío confiable, el GPS en caliente, la foto reducida y el registro de envíos), ktlint y detekt limpios — *Claude* · [pruebas.md](./pruebas.md) · *sin prueba de mutación de los lotes de la Sesión 25 (sí del mapa: 30 mutaciones, 29 detectadas y 1 equivalente)* · **Sesión 28**: 290 pruebas (migración 3→4, precisión en el `geojson` y en el CSV)
+- [x] **D3** Suite del backend: 209 pruebas y 152 mutaciones deliberadas — *Claude* · [pruebas.md](./pruebas.md) · **Sesión 28**: 239 pruebas (precisión, `es_prueba` y focos), sin mutaciones nuevas
 - [ ] **D4** **Protocolo completo en la tablet (32 escenarios A–F)**: solo se verificó el consentimiento en horizontal — *Usuario* · 🟡 · [prueba-en-dispositivo.md](./prueba-en-dispositivo.md) · *avance: en la Sesión 25 se verificaron los escenarios C1 a C6, C9, C10 (contra un servidor falso), E2 y H8 y H10 en parte; ver [§5c](./prueba-en-dispositivo.md)*
 - [ ] **D5** **GPS real en exteriores dentro de Wanchaq** (escenario C8): variante normal, cielo despejado, ~30 s; si aún rechaza por precisión, hacer que la app espere una lectura ≤ 15 m — *Usuario* · 🔴 · **Avance (2026-09-19)**: el GPS real **funciona** en la tablet (lecturas de ±3 a ±25 m, «GPS listo» a los pocos segundos) y **rechaza fuera de Wanchaq**; falta un reporte **aceptado dentro del distrito** y la espera con mala señal — [§5e](./prueba-en-dispositivo.md)
 - [ ] **D6** Probar en un **teléfono real**, no solo la tablet — *Usuario* · 🟡
@@ -154,7 +160,7 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 > Plan completo, cifras y decisiones en [`plan-confiabilidad-instrumentos.md`](./plan-confiabilidad-instrumentos.md). Distinto de las pruebas de confiabilidad **del software** ([`pruebas-de-confiabilidad.md`](./pruebas-de-confiabilidad.md)): aquí se mide si los **instrumentos** (SUS, ficha de campo, ficha GPS) dan resultados repetibles.
 
 - [ ] **G1** **Decidir con el asesor** los criterios y el diseño (D1–D10 del plan §12: α ≥ 0,70, κ ≥ 0,61, doble observación de **todas** las agrupaciones, cómo se aplican «≥ 70 %» y «≥ 95 %») y **congelarlo en git**, con fecha, antes de la primera medición — *Asesor + Usuario* · 🔴 · [plan §12](./plan-confiabilidad-instrumentos.md)
-- [ ] **G2** **Sustituir** en el Cap. III la sección «Confiabilidad de los instrumentos», que reporta resultados de una «muestra piloto **simulada**» (κ aritméticamente imposibles; focos y puntos que no son los del diseño), por el texto «previsto» del plan §10-A, y quitar la columna «Qué necesitas» de la Tabla 5 — *Usuario + Asesor* · 🔴 · [CORR-011](./correcciones-documento.md)
+- [ ] **G2** **Sustituir** en el Cap. III la sección «Confiabilidad de los instrumentos», que reporta resultados de una «muestra piloto **simulada**» (κ aritméticamente imposibles; focos y puntos que no son los del diseño), por el texto «previsto» del plan §10-A, y quitar la columna «Qué necesitas» de la Tabla 5 — *Usuario + Asesor* · 🔴 · [CORR-011](./correcciones-documento.md) · **Sesión 28**: texto de reemplazo para pegar cuando haya datos reales en [`correccion-cap3-v591/texto-corregido.md`](./correccion-cap3-v591/texto-corregido.md); lo aplica el usuario al terminar las pruebas
 - [ ] **G3** Plantillas de captura (CSV o formularios con opciones cerradas) para SUS, ficha de campo, fotos, sistema-por-agrupación y GPS — *Claude* · 🟡 · [plan, Apéndice A](./plan-confiabilidad-instrumentos.md)
 - [ ] **G4** Scripts de análisis en `analisis/confiabilidad/` (α con IC de Feldt y *bootstrap*, ω, κ / κ ponderado / PABAK / AC1 con IC, ICC, DE agrupada y límite de repetibilidad, Wilson), **validados con ejemplos publicados** y con pruebas — *Claude* · 🟡 · (hoy solo existen `dimensionamiento.py` y `verificar_documento_v591.py`)
 - [ ] **G5** Manual de codificación de la Ficha de Observación de Campo (definiciones operativas, reglas de desempate, fotos de ejemplo), **sin cambiar la ficha validada** — *Usuario + Claude* · 🟡
@@ -166,4 +172,4 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [ ] **G11** **Fase 2 de la ficha de campo**: doble observación de **todas** las agrupaciones (observadores ciegos a la IA), calificación de fotos por dos evaluadores y kappa final — *Usuario* · 🔴 · necesita A14 y A18
 - [ ] **G12** Estabilidad del agrupamiento (sensibilidad de ε y MinSamples, Jaccard por remuestreo, mitades temporales) y pureza de categoría por agrupación — *Claude* · ⚪ · dentro de A14
 - [ ] **G13** Redactar los resultados reales de confiabilidad (con IC y lista GRRAS) en el Cap. III y en el de resultados — *Usuario + Claude* · 🟡
-- [ ] **G14** Revisar con el asesor la **V de Aiken** de los Anexos 10–12 (lo que muestran no es la V de Aiken) — *Asesor* · 🟡 · [CORR-012](./correcciones-documento.md)
+- [ ] **G14** Revisar con el asesor la **V de Aiken** de los Anexos 10–12 (lo que muestran no es la V de Aiken) — *Asesor* · 🟡 · [CORR-012](./correcciones-documento.md) · **Sesión 28**: V recalculada (0.89 / 0.87 / 0.89) en [`correccion-cap3-v591/texto-corregido.md`](./correccion-cap3-v591/texto-corregido.md) §5; la revisa el usuario con el asesor
