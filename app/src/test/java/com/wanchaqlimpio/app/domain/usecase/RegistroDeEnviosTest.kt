@@ -17,8 +17,9 @@ import org.junit.Test
  */
 class RegistroDeEnviosTest {
     private val encabezado =
-        "id_local,capturado_utc,categoria,categoria_ia,confianza_ia,estado,intentos,ultimo_intento_utc," +
-            "enviado_utc,segundos_hasta_envio,motivo_ultimo_fallo,codigo_http,red_al_guardar,red_ultimo_intento"
+        "id_local,capturado_utc,categoria,categoria_ia,confianza_ia,precision_gps_m,estado,intentos," +
+            "ultimo_intento_utc,enviado_utc,segundos_hasta_envio,motivo_ultimo_fallo,codigo_http," +
+            "red_al_guardar,red_ultimo_intento"
 
     /** 1_700_000_000_000 ms = 2023-11-14T22:13:20Z (una referencia fácil de comprobar a mano). */
     private val capturado = 1_700_000_000_000L
@@ -29,6 +30,7 @@ class RegistroDeEnviosTest {
         fechaHora: Long = capturado,
         categoriaIa: CategoriaResiduo? = null,
         confianzaIa: Float? = null,
+        precisionMetros: Float? = null,
         redAlGuardar: TipoDeRed? = null,
         envio: SeguimientoDeEnvio = SeguimientoDeEnvio(),
     ) = Reporte(
@@ -42,6 +44,7 @@ class RegistroDeEnviosTest {
         fechaHoraEpochMillis = fechaHora,
         categoriaIa = categoriaIa,
         confianzaIa = confianzaIa,
+        precisionMetros = precisionMetros,
         redAlGuardar = redAlGuardar,
         envio = envio,
     )
@@ -60,6 +63,7 @@ class RegistroDeEnviosTest {
                 fechaHora = capturado + 500, // los milisegundos no salen: la hora va al segundo
                 categoriaIa = CategoriaResiduo.VIDRIO,
                 confianzaIa = 0.756f,
+                precisionMetros = 8.26f,
                 redAlGuardar = TipoDeRed.DATOS_MOVILES,
                 envio =
                     SeguimientoDeEnvio(
@@ -74,8 +78,8 @@ class RegistroDeEnviosTest {
 
         assertEquals(encabezado, filas[0])
         assertEquals(
-            "7,2023-11-14T22:13:20Z,PLASTICO,VIDRIO,0.76,SINCRONIZADO,3,2023-11-14T22:14:02Z,2023-11-14T22:14:02Z," +
-                "41,,,DATOS_MOVILES,WIFI",
+            "7,2023-11-14T22:13:20Z,PLASTICO,VIDRIO,0.76,8.3,SINCRONIZADO,3,2023-11-14T22:14:02Z," +
+                "2023-11-14T22:14:02Z,41,,,DATOS_MOVILES,WIFI",
             filas[1],
         )
     }
@@ -96,7 +100,7 @@ class RegistroDeEnviosTest {
         val fila = listOf(pendiente).aCsvDeEnvios().lines()[1]
 
         assertEquals(
-            "1,2023-11-14T22:13:20Z,PLASTICO,,,PENDIENTE,2,2023-11-14T22:15:00Z,,,SERVIDOR_OCUPADO,503,,SIN_INTERNET",
+            "1,2023-11-14T22:13:20Z,PLASTICO,,,,PENDIENTE,2,2023-11-14T22:15:00Z,,,SERVIDOR_OCUPADO,503,,SIN_INTERNET",
             fila,
         )
     }
@@ -108,8 +112,8 @@ class RegistroDeEnviosTest {
 
         val columnas = listOf(sinRed).aCsvDeEnvios().lines()[1].split(",")
 
-        assertEquals("SIN_CONEXION", columnas[10])
-        assertEquals("", columnas[11])
+        assertEquals("SIN_CONEXION", columnas[11])
+        assertEquals("", columnas[12])
     }
 
     @Test
@@ -126,9 +130,9 @@ class RegistroDeEnviosTest {
 
         val columnas = listOf(rechazado).aCsvDeEnvios().lines()[1].split(",")
 
-        assertEquals("RECHAZADO", columnas[5])
-        assertEquals("RECHAZADO_POR_EL_SERVIDOR", columnas[10])
-        assertEquals("422", columnas[11])
+        assertEquals("RECHAZADO", columnas[6])
+        assertEquals("RECHAZADO_POR_EL_SERVIDOR", columnas[11])
+        assertEquals("422", columnas[12])
     }
 
     @Test
@@ -156,7 +160,7 @@ class RegistroDeEnviosTest {
 
         val columnas = listOf(anomalo).aCsvDeEnvios().lines()[1].split(",")
 
-        assertEquals("-90", columnas[9])
+        assertEquals("-90", columnas[10])
     }
 
     @Test

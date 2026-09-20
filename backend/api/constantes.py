@@ -18,3 +18,7 @@ FECHA_MINIMA = datetime(2024, 1, 1, tzinfo=timezone.utc)
 TOLERANCIA_RELOJ = timedelta(days=1)
 
 ID_LOCAL_MAXIMO = 2**63 - 1  # BigInteger de PostgreSQL; el id local de Room es un Long
+
+# Precisión declarada por el teléfono (`precisionMetros`): se admite de 0 a este máximo. El APK de prueba acepta la primera
+# lectura disponible, que puede ser una ubicación gruesa por antenas; más allá de esto el dato no es creíble (ADR-0008).
+ERROR_POSICION_MAXIMO_M = 5000

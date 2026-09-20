@@ -111,6 +111,8 @@ def reportes(request):
                         "foto_public_id": public_id,
                         "categoria_ia": datos.categoria_ia,
                         "confianza_ia": datos.confianza_ia,
+                        "error_posicion_m": datos.error_posicion_m,
+                        "es_prueba": datos.es_prueba,
                     },
                 )
     except ErrorDeBaseDeDatos as exc:

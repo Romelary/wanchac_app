@@ -317,3 +317,27 @@ class ContratoCompletoTest(_Base):
         self.assertEqual([r.status_code for r, _ in pasos], [esperado for _, esperado in pasos])
         self.assertEqual(self.subir.call_count, 1)
         self.assertEqual(self.borrar.call_count, 1)
+
+
+class PrecisionYPruebaTest(_Base):
+    def test_se_guarda_la_precision_y_la_bandera_de_prueba(self):
+        self.assertEqual(self.post(geojson(precisionMetros=12.5, esPrueba=True)).status_code, 201)
+        r = Reporte.objects.get()
+        self.assertEqual((r.error_posicion_m, r.es_prueba), (12.5, True))
+
+    def test_sin_esos_datos_quedan_nulo_y_falso(self):
+        self.post(geojson())
+        r = Reporte.objects.get()
+        self.assertEqual((r.error_posicion_m, r.es_prueba), (None, False))
+
+    def test_un_reporte_de_prueba_fuera_de_wanchaq_se_crea_y_uno_normal_no(self):
+        fuera = geojson(esPrueba=True)
+        fuera["geometry"]["coordinates"] = [-71.5, -13.0]
+        self.assertEqual(self.post(fuera).status_code, 201)
+        normal = geojson(idLocal=8)
+        normal["geometry"]["coordinates"] = [-71.5, -13.0]
+        self.assertEqual(self.post(normal).status_code, 422)
+
+    def test_una_precision_absurda_es_400_y_no_sube_la_foto(self):
+        self.assertEqual(self.post(geojson(precisionMetros=99999)).status_code, 400)
+        self.subir.assert_not_called()

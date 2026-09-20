@@ -11,6 +11,9 @@ package com.wanchaqlimpio.app.domain.model
  * de la IA (Anexo 2) sin mezclarla con las correcciones humanas; son `null` si el modelo no estuvo
  * disponible (ver [SugerenciaIa]).
  *
+ * [precisionMetros] es la precisión que declaraba el teléfono al aceptar la lectura del GPS (radio del 68 %, no el
+ * error real; `null` en los reportes anteriores a la versión 4 de la base). Sí se manda al servidor (ADR-0008).
+ *
  * [redAlGuardar] y [envio] son datos técnicos para las pruebas de confiabilidad y para explicar el estado del envío
  * (ver [SeguimientoDeEnvio]); solo viven en el teléfono, nunca se mandan al servidor.
  */
@@ -25,6 +28,7 @@ data class Reporte(
     val fechaHoraEpochMillis: Long,
     val categoriaIa: CategoriaResiduo? = null,
     val confianzaIa: Float? = null,
+    val precisionMetros: Float? = null,
     val redAlGuardar: TipoDeRed? = null,
     val envio: SeguimientoDeEnvio = SeguimientoDeEnvio(),
 ) {

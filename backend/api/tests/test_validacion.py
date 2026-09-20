@@ -216,3 +216,49 @@ class ValidacionTest(SimpleTestCase):
         with self.assertRaises(ErrorDeValidacion) as contexto:
             validar(d)
         self.assertNotIn(ID, contexto.exception.detalle)
+
+
+class PrecisionYPruebaTest(SimpleTestCase):
+    """`precisionMetros` y `esPrueba` son opcionales (ADR-0008); el APK de prueba puede estar fuera de Wanchaq."""
+
+    def con(self, **propiedades):
+        d = base()
+        d["properties"].update(propiedades)
+        return d
+
+    def assertRechaza(self, documento, codigo):
+        with self.assertRaises(ErrorDeValidacion) as contexto:
+            validar(documento)
+        self.assertEqual((contexto.exception.codigo, contexto.exception.http), (codigo, 400))
+
+    def test_sin_precision_ni_prueba_se_toman_los_valores_por_defecto(self):
+        datos = validar(base())
+        self.assertEqual((datos.error_posicion_m, datos.es_prueba), (None, False))
+
+    def test_la_precision_valida_se_guarda_como_decimal(self):
+        self.assertEqual(validar(self.con(precisionMetros=8)).error_posicion_m, 8.0)
+        self.assertEqual(validar(self.con(precisionMetros=0)).error_posicion_m, 0.0)
+        self.assertEqual(validar(self.con(precisionMetros=5000)).error_posicion_m, 5000.0)
+
+    def test_la_precision_invalida_es_400(self):
+        for valor in (-1, 5000.1, "8", True, float("nan"), [8]):
+            with self.subTest(valor=valor):
+                self.assertRechaza(json.dumps(self.con(precisionMetros=valor)), "precision_invalida")
+
+    def test_es_prueba_debe_ser_booleano(self):
+        for valor in ("true", 1, 0, []):
+            with self.subTest(valor=valor):
+                self.assertRechaza(self.con(esPrueba=valor), "es_prueba_invalido")
+
+    def test_un_reporte_de_prueba_se_acepta_fuera_de_wanchaq(self):
+        d = self.con(esPrueba=True)
+        d["geometry"]["coordinates"] = [-71.5, -13.0]
+        datos = validar(d)
+        self.assertTrue(datos.es_prueba)
+
+    def test_un_reporte_normal_sigue_rechazado_fuera_de_wanchaq(self):
+        d = self.con(esPrueba=False)
+        d["geometry"]["coordinates"] = [-71.5, -13.0]
+        with self.assertRaises(ErrorDeValidacion) as contexto:
+            validar(d)
+        self.assertEqual((contexto.exception.codigo, contexto.exception.http), ("fuera_de_wanchaq", 422))

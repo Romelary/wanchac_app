@@ -20,7 +20,8 @@ data class GeoJsonPointDto(
  *
  * [categoria] es la que el ciudadano confirmó; [categoriaIa]/[confianzaIa] son la respuesta cruda del modelo
  * de IA (omitidas si el modelo no estuvo disponible) y permiten medir su exactitud frente al observador de
- * campo sin mezclarla con las correcciones humanas (Anexo 2).
+ * campo sin mezclarla con las correcciones humanas (Anexo 2). [precisionMetros] es la precisión que declaraba el GPS
+ * (omitida en los reportes antiguos); el servidor la guarda como `error_posicion_m` (ADR-0008).
  */
 data class ReportePropertiesDto(
     val idAnonimo: String,
@@ -29,4 +30,5 @@ data class ReportePropertiesDto(
     val fechaHoraEpochMillis: Long,
     val categoriaIa: String? = null,
     val confianzaIa: Float? = null,
+    val precisionMetros: Float? = null,
 )

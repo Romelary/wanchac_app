@@ -17,5 +17,6 @@ fun Reporte.aGeoJsonFeature(): GeoJsonFeatureDto =
                 fechaHoraEpochMillis = fechaHoraEpochMillis,
                 categoriaIa = categoriaIa?.name,
                 confianzaIa = confianzaIa,
+                precisionMetros = precisionMetros,
             ),
     )

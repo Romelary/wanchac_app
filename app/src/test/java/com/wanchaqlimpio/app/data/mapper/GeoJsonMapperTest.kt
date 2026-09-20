@@ -76,6 +76,26 @@ class GeoJsonMapperTest {
     }
 
     @Test
+    fun `la precision del GPS viaja y sin ella el campo no se envia`() {
+        val base =
+            Reporte(
+                idAnonimo = "device-1",
+                categoria = CategoriaResiduo.ORGANICO,
+                estado = EstadoReporte.PENDIENTE,
+                latitud = -13.530,
+                longitud = -71.950,
+                fotoPath = "foto.jpg",
+                fechaHoraEpochMillis = 123L,
+            )
+
+        val con = base.copy(precisionMetros = 8.5f)
+
+        assertEquals(8.5f, con.aGeoJsonFeature().properties.precisionMetros)
+        assertTrue(Gson().toJson(con.aGeoJsonFeature()).contains("\"precisionMetros\":8.5"))
+        assertFalse(Gson().toJson(base.aGeoJsonFeature()).contains("precisionMetros"))
+    }
+
+    @Test
     fun `sin sugerencia de la IA esos campos no se envian`() {
         val reporte =
             Reporte(

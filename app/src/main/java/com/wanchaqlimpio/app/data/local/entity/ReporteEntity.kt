@@ -34,4 +34,6 @@ data class ReporteEntity(
     val codigoHttpUltimoFallo: Int? = null,
     val redAlGuardar: TipoDeRed? = null,
     val redAlUltimoIntento: TipoDeRed? = null,
+    // Añadida en la versión 4 de la base (ver Migraciones.kt): precisión declarada por el GPS al aceptar la lectura.
+    val precisionMetros: Float? = null,
 )

@@ -26,6 +26,10 @@ private const val COLUMNAS_V1 =
         "`latitud` REAL NOT NULL, `longitud` REAL NOT NULL, `fotoPath` TEXT NOT NULL, " +
         "`fechaHoraEpochMillis` INTEGER NOT NULL"
 private const val COLUMNAS_V2 = "$COLUMNAS_V1, `categoriaIa` TEXT, `confianzaIa` REAL"
+private const val COLUMNAS_V3 =
+    "$COLUMNAS_V2, `intentosEnvio` INTEGER NOT NULL DEFAULT 0, `ultimoIntentoEpochMillis` INTEGER, " +
+        "`enviadoEpochMillis` INTEGER, `motivoUltimoFallo` TEXT, `codigoHttpUltimoFallo` INTEGER, " +
+        "`redAlGuardar` TEXT, `redAlUltimoIntento` TEXT"
 
 /**
  * Las migraciones no deben perder ni cambiar de estado los reportes que ya estén guardados en un teléfono (en campo
@@ -85,7 +89,7 @@ class MigracionesTest {
         val db =
             Room
                 .databaseBuilder(contexto, AppDatabase::class.java, NOMBRE_BD)
-                .addMigrations(MIGRACION_1_2, MIGRACION_2_3)
+                .addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4)
                 .allowMainThreadQueries()
                 .build()
         try {
@@ -142,6 +146,32 @@ class MigracionesTest {
 
                 assertEquals(EstadoReporte.SINCRONIZADO, reporte.estado)
                 assertNull("no se registró cuándo se envió", reporte.enviadoEpochMillis)
+            }
+        }
+
+    @Test
+    fun `los reportes de la version 3 se conservan y quedan sin precision registrada`() =
+        runBlocking {
+            crearBaseAntigua(
+                version = 3,
+                columnas = COLUMNAS_V3,
+                insercion =
+                    "INSERT INTO reporte (idAnonimo, categoria, estado, latitud, longitud, fotoPath, " +
+                        "fechaHoraEpochMillis, intentosEnvio, redAlGuardar) " +
+                        "VALUES ('device-1', 'CARTON', 'PENDIENTE', -13.53, -71.95, 'v3.jpg', 555, 2, 'WIFI')",
+            )
+
+            conLaVersionActual { db ->
+                val reporte = db.reporteDao().obtenerPorDispositivo("device-1").single()
+
+                assertEquals("v3.jpg", reporte.fotoPath)
+                assertEquals(EstadoReporte.PENDIENTE, reporte.estado)
+                assertEquals(2, reporte.intentosEnvio)
+                assertEquals(TipoDeRed.WIFI, reporte.redAlGuardar)
+                assertNull("la precisión de entonces no se registró", reporte.precisionMetros)
+
+                val id = db.reporteDao().insertar(reporte.copy(id = 0, precisionMetros = 7.5f))
+                assertEquals(7.5f, db.reporteDao().obtenerPorId(id)!!.precisionMetros)
             }
         }
 

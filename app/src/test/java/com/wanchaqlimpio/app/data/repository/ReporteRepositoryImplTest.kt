@@ -184,6 +184,7 @@ class ReporteRepositoryImplTest {
             val guardados = repositorio.observarReportesDe("device-1").first()
             assertEquals(1, guardados.size)
             assertEquals(EstadoReporte.PENDIENTE, guardados.first().estado)
+            assertEquals("se guarda la precisión de la lectura aceptada", 5f, guardados.first().precisionMetros)
             assertEquals(1, programadorSincronizacion.vecesLlamado)
         }
 

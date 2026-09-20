@@ -9,7 +9,7 @@ primera consulta espacial real (Fase 2/3).
 from django.db import models
 from django.db.models import Q
 
-from api.constantes import CATEGORIAS, CATEGORIAS_IA
+from api.constantes import CATEGORIAS, CATEGORIAS_IA, ERROR_POSICION_MAXIMO_M
 
 
 class Reporte(models.Model):
@@ -27,6 +27,14 @@ class Reporte(models.Model):
         max_length=16, null=True, blank=True, help_text="Respuesta cruda del modelo de IA (CORR-010); nula si no estuvo disponible."
     )
     confianza_ia = models.FloatField(null=True, blank=True)
+    error_posicion_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Precisión que declara el teléfono (radio del 68 %); NO es el error real. Nula en reportes antiguos.",
+    )
+    es_prueba = models.BooleanField(
+        default=False, help_text="Reporte del APK de prueba: puede estar fuera de Wanchaq y se excluye de focos y estadísticas."
+    )
     recibido_en = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -44,6 +52,11 @@ class Reporte(models.Model):
             models.CheckConstraint(
                 condition=Q(confianza_ia__isnull=True) | Q(confianza_ia__gte=0, confianza_ia__lte=1),
                 name="ck_reporte_confianza_ia",
+            ),
+            models.CheckConstraint(
+                condition=Q(error_posicion_m__isnull=True)
+                | Q(error_posicion_m__gte=0, error_posicion_m__lte=ERROR_POSICION_MAXIMO_M),
+                name="ck_reporte_error_posicion",
             ),
         ]
         indexes = [models.Index(fields=["fecha_hora"], name="ix_reporte_fecha_hora")]  # ventana de observación (Fase 2)

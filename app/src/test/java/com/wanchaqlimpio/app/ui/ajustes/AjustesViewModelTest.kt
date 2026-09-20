@@ -188,7 +188,7 @@ class AjustesViewModelTest {
             val lineas = csv.lines()
             assertEquals("# Wanchaq Limpio 1.0", lineas[0])
             assertTrue(lineas[1].startsWith("id_local,"))
-            assertEquals("4,2023-11-14T22:13:20Z,VIDRIO,,,SINCRONIZADO,2,,2023-11-14T22:13:32Z,12,,,,", lineas[2])
+            assertEquals("4,2023-11-14T22:13:20Z,VIDRIO,,,,SINCRONIZADO,2,,2023-11-14T22:13:32Z,12,,,,", lineas[2])
             assertEquals("solo se pidieron los reportes de este teléfono", listOf("device-1"), reportes.consultados)
         }
 

@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.wanchaqlimpio.app.data.local.db.AppDatabase
 import com.wanchaqlimpio.app.data.local.db.MIGRACION_1_2
 import com.wanchaqlimpio.app.data.local.db.MIGRACION_2_3
+import com.wanchaqlimpio.app.data.local.db.MIGRACION_3_4
 import com.wanchaqlimpio.app.data.local.db.ReporteDao
 import dagger.Module
 import dagger.Provides
@@ -25,7 +26,7 @@ object DatabaseModule {
     ): AppDatabase =
         Room
             .databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
-            .addMigrations(MIGRACION_1_2, MIGRACION_2_3)
+            .addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4)
             .build()
 
     @Provides

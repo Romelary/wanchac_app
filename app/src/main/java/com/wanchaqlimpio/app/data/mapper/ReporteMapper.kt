@@ -17,6 +17,7 @@ fun ReporteEntity.aDominio(): Reporte =
         fechaHoraEpochMillis = fechaHoraEpochMillis,
         categoriaIa = categoriaIa,
         confianzaIa = confianzaIa,
+        precisionMetros = precisionMetros,
         redAlGuardar = redAlGuardar,
         envio =
             SeguimientoDeEnvio(
@@ -47,4 +48,5 @@ fun Reporte.aEntity(): ReporteEntity =
         codigoHttpUltimoFallo = envio.ultimoFallo?.codigoHttp,
         redAlGuardar = redAlGuardar,
         redAlUltimoIntento = envio.redAlUltimoIntento,
+        precisionMetros = precisionMetros,
     )

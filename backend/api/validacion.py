@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from api.constantes import (
     CATEGORIAS,
     CATEGORIAS_IA,
+    ERROR_POSICION_MAXIMO_M,
     FECHA_MINIMA,
     ID_LOCAL_MAXIMO,
     TOLERANCIA_RELOJ,
@@ -43,6 +44,8 @@ class DatosReporte:
     longitud: float
     categoria_ia: str | None
     confianza_ia: float | None
+    error_posicion_m: float | None = None
+    es_prueba: bool = False
 
 
 def _numero(valor):
@@ -96,6 +99,24 @@ def _ia(propiedades):
     return categoria, float(confianza)
 
 
+def _precision(propiedades):
+    """`precisionMetros` es opcional (las versiones anteriores de la app no lo envían)."""
+    valor = propiedades.get("precisionMetros")
+    if valor is None:
+        return None
+    if not _numero(valor) or not 0 <= valor <= ERROR_POSICION_MAXIMO_M:
+        raise _error("precision_invalida", f"precisionMetros debe estar entre 0 y {ERROR_POSICION_MAXIMO_M}.")
+    return float(valor)
+
+
+def _es_prueba(propiedades):
+    """`esPrueba` (APK de prueba) es opcional y, si viene, debe ser booleano."""
+    valor = propiedades.get("esPrueba", False)
+    if not isinstance(valor, bool):
+        raise _error("es_prueba_invalido", "esPrueba debe ser verdadero o falso.")
+    return valor
+
+
 def validar_geojson(texto, ahora=None):
     """Devuelve los [DatosReporte] o lanza [ErrorDeValidacion]. `ahora` se inyecta para poder probar las fechas."""
     ahora = ahora or datetime.now(timezone.utc)
@@ -128,9 +149,15 @@ def validar_geojson(texto, ahora=None):
         raise _error("categoria_invalida", "La categoría no es una de las del estudio.")
     fecha_hora = _fecha(propiedades.get("fechaHoraEpochMillis"), ahora)
     categoria_ia, confianza_ia = _ia(propiedades)
+    error_posicion_m = _precision(propiedades)
+    es_prueba = _es_prueba(propiedades)
 
     # La regla del estudio va DESPUÉS de comprobar la forma: así un 422 significa "bien formado pero fuera del distrito".
-    if not (WANCHAQ_LATITUD[0] <= latitud <= WANCHAQ_LATITUD[1] and WANCHAQ_LONGITUD[0] <= longitud <= WANCHAQ_LONGITUD[1]):
+    # Los reportes del APK de prueba (esPrueba) se aceptan en cualquier sitio: se excluyen de focos y estadísticas.
+    dentro = WANCHAQ_LATITUD[0] <= latitud <= WANCHAQ_LATITUD[1] and WANCHAQ_LONGITUD[0] <= longitud <= WANCHAQ_LONGITUD[1]
+    if not (dentro or es_prueba):
         raise _error("fuera_de_wanchaq", "La ubicación está fuera del distrito de Wanchaq.", 422)
 
-    return DatosReporte(id_anonimo, id_local, categoria, fecha_hora, latitud, longitud, categoria_ia, confianza_ia)
+    return DatosReporte(
+        id_anonimo, id_local, categoria, fecha_hora, latitud, longitud, categoria_ia, confianza_ia, error_posicion_m, es_prueba
+    )

@@ -34,3 +34,14 @@ val MIGRACION_2_3 =
             db.execSQL("ALTER TABLE reporte ADD COLUMN redAlUltimoIntento TEXT")
         }
     }
+
+/**
+ * Versión 3 → 4: guarda la precisión que declaraba el GPS al aceptar la lectura (ADR-0008). Los reportes ya guardados
+ * quedan con `NULL` ("no se registró"): la precisión de entonces no se puede reconstruir ni conviene inventarla.
+ */
+val MIGRACION_3_4 =
+    object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE reporte ADD COLUMN precisionMetros REAL")
+        }
+    }

@@ -53,6 +53,7 @@ class ReporteRepositoryImpl
                         fechaHoraEpochMillis = ahoraEpochMillis,
                         categoriaIa = sugerenciaIa?.categoria,
                         confianzaIa = sugerenciaIa?.confianza,
+                        precisionMetros = ubicacion.precisionMetros,
                         // Dato técnico para las pruebas de confiabilidad: solo se guarda en el teléfono.
                         redAlGuardar = monitorDeRed.actual(),
                     )
