@@ -9,7 +9,7 @@ La app debe funcionar **como si fuera el producto final, para pruebas**: el equi
 - **Hecho y verificado en la Galaxy Tab S9+:** captura con GPS en caliente y foto reducida, envío confiable (ADR-0006), migración de la base, mapa con la clave real de Google Maps (G1, G2, G7), registro de envíos (CSV), GPS real (rechaza «fuera del distrito»), 26 pruebas de UI. **288 pruebas unitarias** en verde, ktlint y detekt limpios.
 - **Firma del APK de publicación** lista en `app/build.gradle.kts` (llave y contraseñas en `local.properties`, que escribe el usuario); verificada solo con una llave de mentira.
 - **Correo de contacto** ya definido en `gradle.properties`. `baseUrl` ya está en `local.properties` (apunta a Render): **una compilación sin `-PbaseUrl=http://localhost:8000` manda los reportes al servidor real**.
-- **Sin `git push` todavía** (`git log origin/main..HEAD`): Render aún no tiene la Fase 1 ni `/puntos-criticos`.
+- **Render ya tiene la Fase 1 y está verificado** (2026-09-19, `verificar_servicios.py --remoto --reporte-de-prueba`: TODO OK, con POST, reenvío, baja, lápida y rechazo fuera de Wanchaq; evidencia en `docs/evidencia/2026-09-19_verificacion-render.txt`). Ese script **no prueba** `GET /puntos-criticos`: abrirlo en el navegador.
 
 ## Decisiones ya tomadas (no reabrir)
 1. **Dos APK al final.** (a) **Real**: `assembleRelease`, firmado, con la restricción de ubicación (≤ 15 m y dentro de Wanchaq). (b) **Simulada**: solo puede ser de **depuración** (`assembleDebug -PubicacionSimulada=true`); `release` la rechaza a propósito. **Propuesta a confirmar con el usuario:** darle a la simulada otro `applicationId` (`applicationIdSuffix`) y otro nombre («Wanchaq Limpio (simulada)») para que **convivan** en el mismo teléfono sin borrar datos; eso exige **una entrada más** en la clave de Maps (paquete nuevo + SHA-1 de depuración).
@@ -24,7 +24,7 @@ La app debe funcionar **como si fuera el producto final, para pruebas**: el equi
 4. Documentación **breve** (un ADR corto y unas líneas en `progreso.md` y `avance.md`).
 
 ## Lo que depende del usuario
-`git push` y verificar Render (`verificar_servicios.py --remoto URL --reporte-de-prueba`, compartir solo la salida) · crear la llave de firma y poner sus 4 líneas `RELEASE_*` en `local.properties` · añadir la SHA-1 de esa llave (y la del paquete simulado, si se acepta) a la clave de Maps · confirmar la decisión 1.
+crear la llave de firma y poner sus 4 líneas `RELEASE_*` en `local.properties` · añadir la SHA-1 de esa llave (y la del paquete simulado, si se acepta) a la clave de Maps · confirmar la decisión 1.
 
 ## Reglas de trabajo
 - **Nunca** manejar credenciales: no leer `local.properties` ni `backend/.env` (solo contar líneas si hace falta); las contraseñas las escribe el usuario; la SHA-1 solo en el chat. No imprimir líneas de `logcat` con la clave de Maps.

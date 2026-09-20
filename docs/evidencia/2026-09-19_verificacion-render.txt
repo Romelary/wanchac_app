@@ -1,0 +1,15 @@
+Salida de `verificar_servicios.py --remoto <URL de Render> --reporte-de-prueba`, pegada por el usuario el 2026-09-19.
+(La dirección del servicio no se copia aquí. El script no imprime secretos.)
+
+OK    /health responde (2 s)
+OK    base_de_datos (en Render): conectado; PostGIS 3.6 operativo
+OK    cloudinary (en Render): credenciales aceptadas
+
+OK    POST /reportes crea el reporte (201) y guarda la foto en Cloudinary
+OK    el mismo reporte reenviado no se duplica (200)
+OK    DELETE borra el reporte y su foto (204)
+OK    borrar otra vez es idempotente (404)
+OK    un POST tardío tras la baja se rechaza (410, lápida)
+OK    un reporte fuera de Wanchaq se rechaza (422)
+
+RESULTADO: TODO OK

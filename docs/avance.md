@@ -11,16 +11,16 @@
 <!-- RESUMEN:INICIO -->
 | Área | Hechas | Total | Avance |
 |---|---:|---:|---|
-| **A.** Infraestructura y backend | 8 | 20 | `████░░░░░░` 40 % |
+| **A.** Infraestructura y backend | 10 | 20 | `█████░░░░░` 50 % |
 | **B.** App Android | 19 | 26 | `███████░░░` 73 % |
 | **C.** Modelo de IA | 4 | 9 | `████░░░░░░` 44 % |
 | **D.** Pruebas en dispositivo y calidad | 5 | 13 | `████░░░░░░` 38 % |
 | **E.** Publicación en Play Store | 2 | 10 | `██░░░░░░░░` 20 % |
 | **F.** Asesor y documento de tesis | 1 | 13 | `█░░░░░░░░░` 8 % |
 | **G.** Confiabilidad de los instrumentos | 0 | 14 | `░░░░░░░░░░` 0 % |
-| **Total** | **39** | **105** | `████░░░░░░` **37 %** |
+| **Total** | **41** | **105** | `████░░░░░░` **39 %** |
 
-**Pendientes: 66**, de las cuales **18 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 41** · **Claude 24** · **Asesor 18**.
+**Pendientes: 64**, de las cuales **16 son 🔴** (bloquean otras tareas o la ventana de observación). Por responsable (una tarea compartida cuenta para cada uno): **Usuario 39** · **Claude 24** · **Asesor 18**.
 <!-- RESUMEN:FIN -->
 
 > Es un **conteo de tareas, no de esfuerzo**: una tarea como "Fase 2 (DBSCAN)" pesa mucho más que "quitar un aviso". Sirve para ver el rumbo, no para medir horas.
@@ -49,9 +49,9 @@ La ventana de observación del estudio (**21-sep → 15-nov-2026, 8 semanas**) e
 - [x] **A5** Repositorio privado en GitHub y primer `push` — *Usuario* *(dicho por el usuario)*
 - [x] **A6** Fase 1 — `POST /reportes`: 201/200 idempotente, foto privada, validación en servidor, `categoriaIa`/`confianzaIa` aceptadas — *Claude* · [diseno.md §4.2](./diseno.md)
 - [x] **A7** Fase 1 — `DELETE` con lápida, candado por clave y baja atómica — *Claude*
-- [ ] **A8** Render desplegado (Fase 0): pegar la salida de `verificar_servicios.py --remoto URL` para registrarlo como verificado — *Usuario* · 🔴 *(el usuario dijo que estaba listo; falta la evidencia)*
+- [x] **A8** Render desplegado y verificado con la cuenta real (2026-09-19): `verificar_servicios.py --remoto` TODO OK — *Usuario* · [evidencia](./evidencia/2026-09-19_verificacion-render.txt)
 - [ ] **A9** Confirmar que el par de claves de Cloudinary pegado por error en el chat está **desactivado o borrado**, y volver a correr el verificador — *Usuario* · 🔴 seguridad
-- [ ] **A10** Desplegar la Fase 1: `git push` → Render migra → `verificar_servicios.py --remoto URL --reporte-de-prueba`. Es también la **única prueba en vivo** del candado de PostgreSQL y de la migración (la suite corre sobre SQLite) — *Usuario* · 🔴 · [despliegue.md §7](./despliegue.md)
+- [x] **A10** Fase 1 desplegada en Render y verificada con `--reporte-de-prueba` (POST 201, reenvío 200, baja 204, lápida 410, fuera de Wanchaq 422; 2026-09-19) — *Usuario* · falta abrir `/puntos-criticos` en el navegador
 - [ ] **A11** Pinger en cron-job.org sobre `/health` cada 10 min (activarlo cuando la app se use de verdad) — *Usuario* · 🟡 · [despliegue.md §8](./despliegue.md)
 - [ ] **A12** Decidir la **limitación de uso** del `POST`/`DELETE` sin login (por IP, clave embebida, alertas de cuota): hoy cualquiera puede enviar basura — *Asesor* · 🟡 · [ADR-0004](./adr/0004-backend-django-sin-geodjango.md)
 - [ ] **A13** Polígono oficial del distrito de Wanchaq (catastro/INEI) y validación con `ST_Within` en el servidor — *Usuario + Claude* · 🟡 (hoy es un rectángulo, igual en app y servidor)
