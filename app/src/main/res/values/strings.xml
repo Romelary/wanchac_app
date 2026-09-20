@@ -103,13 +103,13 @@
     <string name="categoria_escombros">Escombros</string>
     <string name="categoria_mixto">Mixto</string>
 
-    <!-- Mapa público de focos confirmados (Módulo 5) -->
+    <!-- Mapa público de focos detectados (Módulo 5; el nombre del recurso conserva «confirmados» por historia) -->
     <plurals name="mapa_focos_confirmados">
-        <item quantity="one">%1$d foco confirmado</item>
-        <item quantity="other">%1$d focos confirmados</item>
+        <item quantity="one">%1$d foco detectado</item>
+        <item quantity="other">%1$d focos detectados</item>
     </plurals>
-    <string name="mapa_sin_focos_titulo">Aún no hay focos confirmados</string>
-    <string name="mapa_sin_focos_texto">Un foco aparece aquí cuando varios reportes cercanos son verificados en campo. Tus reportes ayudan a que eso ocurra.</string>
+    <string name="mapa_sin_focos_titulo">Aún no hay focos detectados</string>
+    <string name="mapa_sin_focos_texto">Un foco aparece aquí cuando se juntan varios reportes en el mismo lugar. Tus reportes ayudan a que eso ocurra.</string>
     <string name="mapa_boton_actualizar">Actualizar</string>
     <string name="mapa_boton_reintentar">Reintentar</string>
     <string name="mapa_error_sin_conexion">No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo; si el servicio estaba en reposo, puede tardar hasta un minuto en responder.</string>

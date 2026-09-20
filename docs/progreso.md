@@ -327,6 +327,11 @@ El documento de investigación (apartado 3.6.3) describe el desarrollo con Andro
 - **Verificado**: servidor **219 pruebas** en verde (10 nuevas); app **290 pruebas unitarias** en verde (incluye la migración 3→4 con un reporte real), ktlint y detekt limpios. Instalado en la Galaxy Tab S9+: la base pasó a versión 4 con la columna nueva. **No verificado en la tablet**: que un reporte real guarde la precisión (la base estaba vacía tras las pruebas de UI y el GPS real rechaza fuera de Wanchaq); lo cubren las pruebas unitarias.
 - **Pendiente del usuario**: **desplegar el servidor primero** (`git push`; Render corre `migrate` en cada compilación, según `render.yaml`) y recién después repartir el APK. Avisar al asesor: es un dato más por reporte (consentimiento informado).
 
+### 2026-09-20 — Sesión 28 (cont.): focos detectados automáticamente (Paso 2)
+- **Hecho** ([ADR-0009](./adr/0009-focos-detectados-al-pedir-con-dbscan.md)): `GET /puntos-criticos` ya no devuelve siempre vacío: calcula los focos **al pedirse** con DBSCAN (ε = 50 m, mínimo 4 reportes, Haversine) en `backend/api/focos.py`. Cada foco lleva id estable, centroide, n.º de reportes, categoría predominante y fecha del último; los reportes `es_prueba` no cuentan. La app solo cambió el texto («focos **detectados**»); el contrato es el mismo.
+- **Verificado**: servidor **239 pruebas** en verde (20 nuevas: puntos sintéticos, cadena, borde, ruido, límite de 50 m, prueba excluida, 503, sin identificadores). En la Galaxy Tab S9+ con el servidor falso en modo `focos`: la pestaña Mapa muestra «2 focos detectados» con sus 2 marcadores. **No verificado**: el endpoint contra Neon/Render (falta desplegar) ni con reportes reales.
+- **Límite**: cuenta reportes, no personas distintas (una persona con 4 reportes en el mismo sitio crea un foco).
+
 ## Pendientes / decisiones abiertas
 
 - [ ] **Decidir con el asesor el plan de confiabilidad de los instrumentos** (G1) y **sustituir** la sección del Cap. III que reporta una «muestra piloto simulada» por el texto «previsto» (G2, CORR-011): ver [`plan-confiabilidad-instrumentos.md`](./plan-confiabilidad-instrumentos.md) §10 y §12
