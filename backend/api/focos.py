@@ -92,7 +92,7 @@ def _categoria_predominante(puntos):
     return max(cuentas, key=lambda c: (cuentas[c], -CATEGORIAS.index(c)))  # ante un empate, la primera de CATEGORIAS
 
 
-def detectar_focos(puntos):
+def detectar_focos(puntos, incluir_metricas=False):
     """Los focos de una lista de [PuntoDeReporte], ordenados por id. Determinista: el mismo conjunto da los mismos focos.
 
     El id de un foco es el menor id de reporte que lo integra: se mantiene mientras ese reporte exista y el foco no
@@ -100,7 +100,9 @@ def detectar_focos(puntos):
     """
     puntos = sorted(puntos, key=lambda p: p.id)
     focos = []
-    for grupo in _grupos(puntos):
+    grupos = _grupos(puntos)
+    
+    for grupo in grupos:
         miembros = [puntos[i] for i in grupo]
         focos.append(
             Foco(
@@ -112,4 +114,32 @@ def detectar_focos(puntos):
                 ultimo_reporte=max(p.fecha_hora for p in miembros),
             )
         )
-    return sorted(focos, key=lambda f: f.id)
+    
+    focos_ordenados = sorted(focos, key=lambda f: f.id)
+    
+    if not incluir_metricas:
+        return focos_ordenados
+        
+    try:
+        import numpy as np
+        from sklearn.metrics import silhouette_score
+        
+        total_puntos = len(puntos)
+        puntos_en_grupos = sum(len(g) for g in grupos)
+        ruido = (total_puntos - puntos_en_grupos) / total_puntos if total_puntos > 0 else 0.0
+        
+        silueta = None
+        if len(grupos) >= 2:
+            X = []
+            labels = []
+            for label_id, grupo in enumerate(grupos):
+                for i in grupo:
+                    X.append([puntos[i].latitud, puntos[i].longitud])
+                    labels.append(label_id)
+            silueta = silhouette_score(np.array(X), labels)
+            
+        metricas = {"silueta": silueta, "ruido": ruido}
+        return focos_ordenados, metricas
+        
+    except ImportError:
+        return focos_ordenados, {"silueta": None, "ruido": 0.0, "error": "sklearn no instalado"}

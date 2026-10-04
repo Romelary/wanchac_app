@@ -31,4 +31,5 @@ data class ReportePropertiesDto(
     val categoriaIa: String? = null,
     val confianzaIa: Float? = null,
     val precisionMetros: Float? = null,
+    val esPrueba: Boolean? = null,
 )

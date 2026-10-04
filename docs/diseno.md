@@ -230,7 +230,7 @@ Como con `POST /reportes`, el cliente (Módulo 5, [ADR-0005](./adr/0005-mapa-pub
 | Tolerancia del cliente | Descarta un foco mal formado (sin id, sin geometría `Point`, coordenadas imposibles) **sin tumbar la lista**; una categoría desconocida deja el foco sin categoría; ignora campos que no conoce |
 | Errores | Cualquier no-2xx = "el servidor tuvo un problema" (pantalla con *Reintentar*); sin respuesta = "sin conexión"; 2xx con un cuerpo que no es JSON, vacío, cortado o de otra forma (p. ej. un `id` como texto) = "respuesta inválida" (**no** se descarta solo ese foco: un tipo equivocado es una violación del contrato, no un dato raro); 2xx sin cuerpo (204) tampoco es un mapa vacío |
 | Caché | El servidor envía `Cache-Control: public, max-age=60` (la app pide la lista cada vez que se abre la pestaña; un foco nuevo puede tardar hasta 1 min en verse) |
-| Estado del servidor | **Provisional (2026-09-19)**: responde siempre `200` con `features: []`, **sin consultar la base** (no existen la tabla `punto_critico` ni una forma de confirmar un foco, tarea A18). Sirve para que la app distinga «aún no hay focos» de «el servidor no tiene el endpoint» (un 404 se vería como error del servidor y **sin mapa**). Se sustituirá por la consulta real en la Fase 3 ([ADR-0004 #17](./adr/0004-backend-django-sin-geodjango.md)) |
+| Estado del servidor | **Operativo (Fase Actual)**: responde `200` consultando la base de datos y ejecutando dinámicamente el algoritmo **DBSCAN** en memoria (con `eps=50m` y `min_samples=4`). No usa una tabla estática `punto_critico`, sino que calcula los focos al vuelo sobre los reportes válidos y devuelve la colección. |
 
 ```json
 {"type": "FeatureCollection", "features": [
@@ -312,52 +312,39 @@ Ajustes respecto al Cap. IV: `Usuario` pierde credenciales y pasa a ser un ident
 
 ```mermaid
 erDiagram
-    USUARIO ||--o{ REPORTE : "genera"
-    CATEGORIA_RESIDUO ||--o{ REPORTE : "clasifica"
-    ESTADO_REPORTE ||--o{ REPORTE : "tiene"
-    REPORTE }o--o{ REPORTE_PUNTO : "pertenece a"
-    PUNTO_CRITICO ||--o{ REPORTE_PUNTO : "agrupa"
-
-    USUARIO {
-        uuid id_anonimo PK
-        datetime fecha_consentimiento
-    }
-    CATEGORIA_RESIDUO {
-        int id PK
-        string nombre "plastico, carton, vidrio, organico, escombros"
-    }
-    ESTADO_REPORTE {
-        int id PK
-        string nombre "pendiente, sincronizado, agrupado, verificado, descartado"
-    }
     REPORTE {
-        int id PK
-        uuid id_anonimo FK
-        int categoria_id FK "la que confirmó el ciudadano"
-        int categoria_ia_id FK "cruda del modelo; nula si no hubo modelo"
-        float confianza_ia "0 a 1; nula si no hubo modelo"
-        int estado_id FK
-        float latitud
-        float longitud
-        float error_posicion_m
-        string foto_url
-        datetime fecha_hora
-        bool es_duplicado
+        bigserial id PK
+        uuid id_anonimo
+        bigint id_local
+        string categoria "La que confirmó el ciudadano"
+        timestamp fecha_hora
+        double latitud
+        double longitud
+        double error_posicion_m
+        string categoria_ia "Sugerencia cruda del modelo IA"
+        double confianza_ia
+        string foto_public_id "ID privado Cloudinary"
+        boolean es_prueba
+        timestamp recibido_en
     }
-    PUNTO_CRITICO {
-        int id PK
-        float centroide_lat
-        float centroide_lon
+    
+    REPORTE_ELIMINADO {
+        uuid id_anonimo
+        bigint id_local
+        timestamp eliminado_en
+    }
+    
+    PUNTO_CRITICO_DBSCAN {
+        string id_foco PK
+        double latitud_centroide
+        double longitud_centroide
         int num_reportes
-        float coeficiente_silueta
-        float proporcion_ruido
-        datetime fecha_deteccion
-        string estado_verificacion "pendiente, confirmado, descartado"
+        string categoria_predominante
+        timestamp ultimo_reporte
     }
-    REPORTE_PUNTO {
-        int reporte_id FK
-        int punto_critico_id FK
-    }
+
+    REPORTE }o..o{ PUNTO_CRITICO_DBSCAN : "Agrupado dinámicamente por DBSCAN"
+    REPORTE ||--o| REPORTE_ELIMINADO : "Anulado por lápida lógica"
 ```
 
 > **Solo en el teléfono (base local, versión 3)**: además de estos campos, la tabla `reporte` de Room guarda el seguimiento del envío —`intentosEnvio`, `ultimoIntentoEpochMillis`, `enviadoEpochMillis`, `motivoUltimoFallo`, `codigoHttpUltimoFallo`— y la conexión (`redAlGuardar`, `redAlUltimoIntento`). No forman parte del contrato con el servidor ni de este modelo, y no se envían: existen para explicar el estado al ciudadano y para las pruebas de confiabilidad ([ADR-0006](./adr/0006-envio-confiable-de-reportes.md)).

@@ -3,6 +3,8 @@ package com.wanchaqlimpio.app.ui.mapa
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,13 +12,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -29,12 +41,7 @@ import com.wanchaqlimpio.app.domain.repository.MotivoFalloMapa
 import com.wanchaqlimpio.app.ui.common.ANCHO_MAXIMO_CONTENIDO
 
 /**
- * Contenido "stateless" del mapa (mismo patrón que OnboardingContent, ver pruebas.md): se prueba con Compose UI Testing
- * en la JVM sin Google Play services. El mapa de Google en sí llega por [mapa], un espacio que la pantalla real rellena
- * con [MapaGoogle] y las pruebas con un sustituto.
- *
- * @param avisarFaltaLaClave `true` solo en depuración cuando no se configuró la clave de Google Maps: sin ella el mapa
- * sale gris y, sin este aviso, parecería un fallo de la app.
+ * Contenido "stateless" del mapa.
  */
 @Composable
 fun MapaContent(
@@ -44,40 +51,74 @@ fun MapaContent(
     modifier: Modifier = Modifier,
     mapa: @Composable (List<PuntoCritico>) -> Unit,
 ) {
+    var mostrarMensaje by remember { mutableStateOf(true) }
+
     Box(modifier = modifier.fillMaxSize()) {
+        // SIEMPRE dibujar el mapa en el fondo para que el selector de capas sea visible
+        val puntosActuales = if (estado is MapaUiState.ConPuntos) estado.puntos else emptyList()
+        Box(Modifier.fillMaxSize().testTag(MapaTags.MAPA)) { mapa(puntosActuales) }
+
         when (estado) {
             MapaUiState.Cargando ->
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).testTag(MapaTags.CARGANDO))
 
-            is MapaUiState.Error ->
-                Mensaje(
-                    texto = stringResource(estado.motivo.textoRecurso()),
-                    boton = stringResource(R.string.mapa_boton_reintentar),
-                    etiquetaBoton = MapaTags.BOTON_REINTENTAR,
-                    onBoton = onActualizar,
-                    etiqueta = MapaTags.ERROR,
-                )
+            is MapaUiState.Error -> {
+                if (mostrarMensaje) {
+                    Mensaje(
+                        texto = stringResource(estado.motivo.textoRecurso()),
+                        boton = stringResource(R.string.mapa_boton_reintentar),
+                        etiquetaBoton = MapaTags.BOTON_REINTENTAR,
+                        onBoton = onActualizar,
+                        etiqueta = MapaTags.ERROR,
+                        onClose = { mostrarMensaje = false }
+                    )
+                } else {
+                    BotonMostrarMensaje(
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        onClick = { mostrarMensaje = true }
+                    )
+                }
+            }
 
             MapaUiState.SinPuntos -> {
-                Box(Modifier.fillMaxSize().testTag(MapaTags.MAPA)) { mapa(emptyList()) }
-                Mensaje(
-                    titulo = stringResource(R.string.mapa_sin_focos_titulo),
-                    texto = stringResource(R.string.mapa_sin_focos_texto),
-                    boton = stringResource(R.string.mapa_boton_actualizar),
-                    etiquetaBoton = MapaTags.BOTON_ACTUALIZAR,
-                    onBoton = onActualizar,
-                    etiqueta = MapaTags.SIN_FOCOS,
-                    alineacion = Alignment.BottomCenter,
-                )
+                if (mostrarMensaje) {
+                    Mensaje(
+                        titulo = stringResource(R.string.mapa_sin_focos_titulo),
+                        texto = stringResource(R.string.mapa_sin_focos_texto),
+                        boton = stringResource(R.string.mapa_boton_actualizar),
+                        etiquetaBoton = MapaTags.BOTON_ACTUALIZAR,
+                        onBoton = onActualizar,
+                        etiqueta = MapaTags.SIN_FOCOS,
+                        alineacion = Alignment.TopCenter,
+                        onClose = { mostrarMensaje = false }
+                    )
+                } else {
+                    BotonMostrarMensaje(
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        onClick = { mostrarMensaje = true }
+                    )
+                }
             }
 
             is MapaUiState.ConPuntos -> {
-                Box(Modifier.fillMaxSize().testTag(MapaTags.MAPA)) { mapa(estado.puntos) }
                 ContadorDeFocos(cantidad = estado.puntos.size, modifier = Modifier.align(Alignment.TopStart))
             }
         }
 
         if (avisarFaltaLaClave) AvisoFaltaLaClave(modifier = Modifier.align(Alignment.TopCenter))
+    }
+}
+
+@Composable
+private fun BotonMostrarMensaje(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = modifier
+            .windowInsetsPadding(WindowInsets.safeDrawing)
+            .padding(16.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Icon(Icons.Default.Info, contentDescription = "Mostrar estado")
     }
 }
 
@@ -133,9 +174,8 @@ private fun Mensaje(
     etiqueta: String,
     alineacion: Alignment = Alignment.Center,
     titulo: String? = null,
+    onClose: (() -> Unit)? = null,
 ) {
-    // La caja ocupa todo el espacio pero NO intercepta toques (no tiene ningún manejador): el mapa de debajo sigue
-    // respondiendo salvo justo donde está la tarjeta.
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = alineacion) {
         Card(
             modifier =
@@ -151,6 +191,16 @@ private fun Mensaje(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                if (onClose != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        IconButton(onClick = onClose) {
+                            Icon(Icons.Default.Close, contentDescription = "Cerrar")
+                        }
+                    }
+                }
                 if (titulo != null) Text(text = titulo, style = MaterialTheme.typography.titleMedium)
                 Text(text = texto, style = MaterialTheme.typography.bodyMedium)
                 Button(onClick = onBoton, modifier = Modifier.testTag(etiquetaBoton)) { Text(boton) }

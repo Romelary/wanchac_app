@@ -43,16 +43,39 @@ def puntos_criticos(request):
         return JsonResponse(
             {"error": "parametro_invalido", "detalle": "El único valor admitido de «estado» es «confirmado»."}, status=400
         )
+        
+    incluir_metricas = request.GET.get("incluir_metricas", "").lower() == "true"
+    
     try:
         filas = Reporte.objects.filter(es_prueba=False).values_list("id", "latitud", "longitud", "categoria", "fecha_hora")
-        focos = detectar_focos([PuntoDeReporte(*fila) for fila in filas])
+        
+        if incluir_metricas:
+            focos, metricas = detectar_focos([PuntoDeReporte(*fila) for fila in filas], incluir_metricas=True)
+        else:
+            focos = detectar_focos([PuntoDeReporte(*fila) for fila in filas])
+            metricas = None
+            
     except ErrorDeBaseDeDatos as exc:
         logger.warning("Base de datos no disponible para los focos (%s)", type(exc).__name__)
         return JsonResponse(
             {"error": "servicio_no_disponible", "detalle": "Fallo transitorio: reintenta más tarde."}, status=503
         )
-    respuesta = JsonResponse(
-        {"type": "FeatureCollection", "features": [_feature(f) for f in focos]}, content_type=MEDIA_GEOJSON
-    )
+        
+    json_data = {"type": "FeatureCollection", "features": [_feature(f) for f in focos]}
+    if metricas:
+        json_data["metricas"] = metricas
+        
+    respuesta = JsonResponse(json_data, content_type=MEDIA_GEOJSON)
     respuesta["Cache-Control"] = f"public, max-age={CACHE_SEGUNDOS}"
     return respuesta
+
+@require_GET
+def mapa_calor(request):
+    """Devuelve solo coordenadas de todos los reportes válidos para armar el mapa de calor."""
+    try:
+        coords = Reporte.objects.filter(es_prueba=False).values_list("latitud", "longitud")
+        data = [{"lat": lat, "lng": lon} for lat, lon in coords]
+        return JsonResponse(data, safe=False)
+    except ErrorDeBaseDeDatos as exc:
+        logger.warning("Error DB en mapa de calor (%s)", type(exc).__name__)
+        return JsonResponse({"error": "servicio_no_disponible"}, status=503)

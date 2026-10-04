@@ -37,6 +37,7 @@ val claveDeMaps: String? = propiedadLocal("MAPS_API_KEY")
 // Nunca puede llegar a una versión de publicación: release fija la bandera en false y, además, assembleRelease y
 // bundleRelease FALLAN si la propiedad está activa (ver verificarSinUbicacionSimulada, abajo).
 val ubicacionSimulada = providers.gradleProperty("ubicacionSimulada").map { it.toBoolean() }.getOrElse(false)
+val modoPrueba = providers.gradleProperty("modoPrueba").map { it.toBoolean() }.getOrElse(false)
 
 // Firma de la versión de publicación/distribución (el APK que se reparte al equipo). Los cuatro datos de la llave los
 // escribe el USUARIO en local.properties (nunca en git ni en el chat; ver docs/distribucion-apk.md). Sin ellos,
@@ -66,7 +67,11 @@ android {
 
         // Dirección del backend: `baseUrl` de local.properties, o la del emulador si no se define (ver arriba).
         buildConfigField("String", "BASE_URL", "\"${baseUrl ?: "http://10.0.2.2:8000/"}\"")
-
+        buildConfigField("boolean", "MODO_PRUEBA", "$modoPrueba")
+        
+        val appName = if (modoPrueba) "Wanchaq Limpio (prueba)" else "@string/app_name"
+        manifestPlaceholders["APP_NAME"] = appName
+        
         // La clave de Maps se inyecta en el manifiesto (meta-data com.google.android.geo.API_KEY); nunca se escribe en el
         // código. La bandera solo sirve para AVISAR en pantalla, en depuración, que falta configurarla.
         manifestPlaceholders["MAPS_API_KEY"] = claveDeMaps ?: "CLAVE_DE_MAPS_NO_CONFIGURADA"
@@ -185,6 +190,7 @@ dependencies {
 
     // Mapa público de focos confirmados (Módulo 5, ver ADR-0005)
     implementation(libs.maps.compose)
+    implementation(libs.maps.compose.utils)
 
     // Sincronización diferida (Módulo 4)
     implementation(libs.androidx.work.runtime.ktx)

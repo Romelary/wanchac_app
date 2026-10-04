@@ -1,0 +1,1679 @@
+ 
+FACULTAD DE INGENIERÍA
+Escuela Académico Profesional de Ingeniería de Sistemas e Informática
+Proyecto de Investigación
+Sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco
+Autores:
+Romel Ramos Yupanqui
+Aaron Ramírez Tisoc
+Dana Ishaya Nuñez Marroquin
+Cusco, Perú 2026
+ÍNDICE GENERAL
+ÍNDICE GENERALi
+ÍNDICE DE TABLASvi
+ÍNDICE DE FIGURASvii
+RESUMENviii
+ABSTRACTix
+INTRODUCCIÓNx
+1CAPÍTULO I PLANTEAMIENTO DEL ESTUDIO1
+1.1Planteamiento y formulación del problema1
+1.1.1Problema General4
+1.1.2Problemas específicos4
+1.2Objetivos de la investigación4
+1.2.1Objetivo general4
+1.2.2Objetivos específicos4
+1.3Justificación de la investigación5
+1.3.1Justificación teórica5
+1.3.2Justificación metodológica5
+1.3.3Justificación práctica6
+1.4Delimitación de la investigación7
+1.4.1Delimitación espacial7
+1.4.2Delimitación temporal7
+1.4.3Delimitación social7
+1.5Limitaciones de la investigación7
+1.5.1Dispositivos7
+1.5.2Conectividad8
+1.5.3Distribución8
+1.5.4Tiempo y presupuesto8
+1.6Hipótesis y Variables9
+1.6.1Variable 19
+1.6.2Variable 29
+1.7Matriz de consistencia10
+1.8Operacionalización de variables10
+2CAPÍTULO II MARCO TEÓRICO11
+2.1Antecedentes de la investigación11
+2.1.1Antecedentes Internacionales11
+2.1.2Antecedentes Nacionales16
+2.1.3Antecedentes Locales20
+2.2Marco teórico21
+2.2.1Sistema móvil de georreferenciación colaborativa.21
+2.2.2Monitoreo de focos de acumulación de residuos sólidos urbanos.23
+2.2.3Agrupamiento espacial por densidad25
+2.2.4Visión artificial en el dispositivo25
+2.2.5Bases de datos espaciales y ciudades inteligentes26
+2.3Marco conceptual26
+2.4Marco Legal27
+2.4.1Constitución Política del Perú27
+2.4.2Ley N.º 28611, Ley General del Ambiente27
+2.4.3Decreto Legislativo N.º 1278, Ley de Gestión Integral de Residuos Sólidos27
+2.4.4Decreto Supremo N.º 001-2022-MINAM28
+2.4.5Ley N.º 27972, Ley Orgánica de Municipalidades29
+2.4.6Ley N.º 29733, Ley de Protección de Datos Personales29
+2.4.7Normativa distrital29
+2.4.8Síntesis30
+3CAPÍTULO III  METODOLOGÍA31
+3.1Enfoque, tipo, nivel, diseño y método de investigación31
+3.1.1Enfoque de la investigación31
+3.1.2Tipo31
+3.1.3Nivel31
+3.1.4Diseño32
+3.1.5Método de la investigación32
+3.2Población y muestra33
+3.2.1Población33
+3.2.2Muestra36
+3.3Técnicas e instrumentos de investigación40
+3.3.1Técnicas40
+3.3.2Instrumentos40
+3.3.3Validez de instrumentos41
+3.3.4Confiabilidad de los instrumentos43
+3.4Ética de la investigación45
+3.5Materiales47
+3.5.1Recursos de hardware47
+3.5.2Recursos de software para el desarrollo47
+3.5.3Base de datos geoespacial48
+3.6Métodos49
+3.6.1Metodología de desarrollo de software49
+3.6.2Técnicas de análisis y diseño del sistema50
+3.6.3Procesos de implementación51
+3.6.4Procesos de aseguramiento de la calidad52
+4CAPITULO IV PRESENTACIÓN DE RESULTADOS55
+4.1Diseño del sistema55
+4.1.1Requisitos del software55
+4.1.2Historias de usuario56
+4.1.3Casos de uso56
+4.2Arquitectura de la solución planteada57
+4.2.1Arquitectura del Cliente (Frontend)58
+4.2.2Arquitectura del Backend (Servidor)58
+4.2.3Capa de Comunicación (API RESTful)58
+4.2.4Capa de Datos58
+4.3Identificación y Wireframes de interfaces del sistema59
+4.3.1Pantalla de inicio / autenticación59
+4.3.2Pantalla Mapa59
+4.3.3Pantalla de reporte de residuos60
+4.3.4Pantalla de perfil62
+4.4Diseño de base de datos62
+4.4.1Identificación y descripción de las entidades del sistema62
+4.4.2Elaboración del Diagrama Entidad-Relación64
+REFERENCIAS BIBLIOGRÁFICAS65
+ANEXOS70
+Anexo 1. Matriz de Consistencia70
+Anexo 2. MATRIZ DE OPERACIONALIZACIÓN DE VARIABLES73
+Anexo 3. INSTRUMENTO 1: Cuestionario de Escala de Usabilidad del Sistema (SUS)77
+Anexo 4. INSTRUMENTO 2: Ficha de Observación de Campo79
+Anexo 5. INSTRUMENTO 3: Ficha de Verificación de Precisión Geoespacial y Disponibilidad Operativa81
+Anexo 6. Fichas de Validación del Instrumento 183
+Anexo 7. Fichas de Validación del Instrumento 286
+Anexo 8. Ficha de Validación del Instrumento 389
+Anexo 9. Consentimiento informado92
+Anexo 10. Tabla de prueba de validez del instrumento Cuestionario de Escala de Usabilidad del Sistema (SUS)93
+Anexo 11. Tabla de prueba de validez del instrumento Ficha de Observación de Campo94
+Anexo 12. Tabla de prueba de validez del instrumento Ficha de Verificación de Precisión Geoespacial y Disponibilidad Operativa95
+Anexo 13.  Prototipo del aplicativo96
+ÍNDICE DE TABLAS
+Tabla 1: Parámetros de la ecuación38
+Tabla 2: Distribución de los instrumentos;39
+Tabla 3: Resultados de la validación por juicio de expertos42
+Tabla 4: Coeficiente V de Aiken por instrumento43
+Tabla 5: Estadísticos previstos para la evaluación de confiabilidad43
+Tabla 6 Lista de requisitos funcionales del sistema55
+Tabla 7 Lista de requisitos no funcionales del sistema55
+Tabla 8 Casos de uso del sistema56
+Tabla 9 Entidad Usuario62
+Tabla 10 Entidad Categoria_residuo62
+Tabla 11 Entidad Estado_reporte63
+Tabla 12 Entidad Reporte63
+Tabla 13 Entidad Punto_critico64
+Tabla 14 Entidad Reporte_punto64
+Tabla 15: Matriz de consistencia70
+Tabla 16: Operacionalización de variables73
+ÍNDICE DE FIGURAS
+Ilustración 1 Diagrama de casos de uso57
+Ilustración 2 Arquitectura de la solución planteada59
+Ilustración 3 Wireframe de la pantalla mapa60
+Ilustración 4 Wireframes de la captura de pantalla61
+Ilustración 5 Wireframe del localizador automático61
+Ilustración 6 Modelo Entidad-Relación64
+Ilustración 7 Ficha de validación de instrumentos 1 por Ing. Pumasupa Nick83
+Ilustración 8 Ficha de validación de instrumentos 1 Ing Human Nestor84
+Ilustración 9 Ficha de validación de instrumentos 1 por Delgado Rodrigo85
+Ilustración 10: Ficha de validación de instrumentos 2 por Ing. Pumasupa Nick86
+Ilustración 11 Ficha de validación de instrumentos 2 Ing Human Nestor87
+Ilustración 12 Ficha de validación de instrumentos 2 por Delgado Rodrigo88
+Ilustración 13: Ficha de validación de instrumentos 3 por Ing. Pumasupa Nick89
+Ilustración 14 Ficha de validación de instrumentos 3 Ing Human Nestor90
+Ilustración 15 Ficha de validación de instrumentos 3 por Delgado Rodrigo91
+Ilustración 16: Pantalla de registro de punto de contaminación96
+Ilustración 17: Pantalla de visualización de los puntos97
+RESUMEN
+El distrito de Wanchaq genera 49.45 toneladas diarias de residuos sólidos y su División de Gestión Ambiental tiene registrados 25 puntos críticos de acumulación en 6.38 kilómetros cuadrados. Ese registro se levantó una sola vez y no se actualiza, de modo que no se sabe dónde aparecen focos nuevos ni cuánto permanecen los antiguos. El trabajo tuvo por objetivo diseñar, desarrollar e implementar un sistema móvil de georreferenciación colaborativa para el monitoreo de esos focos, con el aporte de los propios vecinos.
+La investigación es de enfoque cuantitativo, tipo aplicada y tecnológica, nivel descriptivo y diseño no experimental transeccional. No formula hipótesis; la verificación de los objetivos se realiza mediante criterios de aceptación fijados por indicador antes de recolectar los datos. se definieron dos poblaciones: los reportes generados durante la ventana de observación, tratados de forma censal, y los usuarios, de los que se toma una muestra no probabilística por conveniencia de 38 participantes.
+El prototipo se construyó en Kotlin sobre Android, con almacenamiento local para operar sin conexión, servicios REST en Django, base de datos PostgreSQL con PostGIS y un modelo MobileNetV2 que clasifica el residuo en el propio dispositivo. Los reportes se agrupan mediante DBSCAN y el centroide de cada agrupación se verifica en campo. Se emplean tres instrumentos: el cuestionario de usabilidad SUS, una ficha de observación de campo y una ficha de verificación de precisión geoespacial y disponibilidad operativa. El resultado esperado es un mapa actualizable de focos, entregable a la municipalidad distrital.
+Palabras clave: georreferenciación colaborativa, residuos sólidos urbanos, DBSCAN, aplicación móvil, sistemas de información geográfica. 
+ABSTRACT
+The district of Wanchaq generates 49.45 tons of solid waste per day, and its Environmental Management Division has recorded 25 critical accumulation points across 6.38 square kilometers. That record was compiled once and is not updated, so there is no way to know where new accumulation points appear or how long the existing ones remain. The work aimed to design, develop and implement a collaborative georeferencing mobile system for monitoring these accumulation points, with input from local residents.
+The research follows a quantitative approach; it is applied and technological in type, descriptive in level, and non-experimental cross-sectional in design. No hypothesis is formulated; the objectives are verified through acceptance criteria set for each indicator before data collection begins. Two populations are defined: the reports generated during the observation window, treated as a census, and the users, from whom a non-probabilistic convenience sample of 38 participants is drawn.
+The prototype is built in Kotlin for Android, with local storage for offline operation, REST services in Django, a PostgreSQL database with PostGIS, and a MobileNetV2 model that classifies waste on the device itself. Reports are clustered with DBSCAN, and the centroid of each cluster is verified in the field. Three instruments are used: the System Usability Scale questionnaire, a field observation form, and a form for verifying geospatial accuracy and operational availability. The expected outcome is an updatable map of accumulation points, to be delivered to the district municipality.
+Keywords: collaborative georeferencing, municipal solid waste, DBSCAN, mobile application, geographic information systems.
+INTRODUCCIÓN
+La gestión de residuos en espacios públicos es un indicador que muestra la eficiencia administrativa, y a la vez uno de los procesos con un soporte de información menor. En la era de la transformación digital, la ciudad del Cusco sigue siendo gestionada mediante la intuición empírica o métodos analógicos, siendo así que no existe un registro digital que precise la ubicación, tipo y frecuencia de focos de acumulación. Esta ausencia de datos limita la capacidad de generar soluciones que den resultados a largo plazo.
+Es por ello que la presente investigación tuvo el objetivo de diseñar, desarrollar e implementar un sistema móvil de georreferenciación colaborativa enfocado en el monitoreo de los focos de acumulación. Dicho sistema tiene como principal función recopilar datos georreferenciados y generar representaciones visuales de la contaminación en un área, apoyándose en sus ciudadanos para el reporte y obtención de datos. El documento se organiza en tres capítulos a los que se agrega las referencias bibliográficas y anexos.
+El "Capítulo I" aborda el planteamiento del estudio, en él se presenta un análisis de la problemática desde perspectivas internacionales y nacionales, constatando que el modo de trabajo actual no considera el uso de datos digitales como base para decisiones de trabajo. Además, en este apartado se definen los objetivos del proyecto y se delimitan los aspectos espaciales, temporales y sociales de la investigación. Asimismo, se presenta la justificación teórica y práctica del estudio. 
+El “Capítulo II” presenta el marco teórico donde se sustenta el conocimiento relacionado a la propuesta tecnológica, donde se rescata conocimientos a nivel de antecedentes internacionales y nacionales que puedan ayudar al desarrollo de la presente propuesta. A su vez, este capítulo presenta las bases teóricas y el marco conceptual adecuado para la implementación de bases de datos geoespaciales orientadas a la gestión ecológica y los métodos de trabajo colaborativos adecuados.
+El "Capítulo III" presenta la metodología, apartado donde se justifica el enfoque cuantitativo, el nivel descriptivo y el tipo aplicado de esta investigación. Es aquí donde se describe el equipo necesario a nivel de hardware y software, priorizando el uso de herramientas libres. Además, se presenta el método de trabajo ágil Scrum para la gestión del avance del proyecto, Por otra parte, se presenta la arquitectura de capas en Android Studio, una base de datos PostgreSQL con extensión espacial PostGIS y un módulo de inteligencia artificial en el borde impulsado por TensorFlow Lite.
+El "Capítulo IV" presenta los resultados del diseño del sistema. En él se consigna el catálogo de requisitos funcionales y no funcionales, las historias de usuario y los casos de uso que delimitan el alcance del aplicativo. Enseguida se describe la arquitectura de la solución, organizada en capa de cliente, capa de negocio, capa de comunicación mediante servicios REST y capa de datos. El capítulo cierra con los prototipos de interfaz de las pantallas principales y con el diseño de la base de datos, donde se detallan las entidades del sistema y el modelo entidad-relación que las vincula. Estos productos constituyen la evidencia documental sobre la cual se calculan los indicadores de completitud del diseño y de conformidad funcional consignados en el Anexo 2
+Finalmente, se incluyen las referencias bibliográficas y los anexos, que contienen la matriz de consistencia, los tres instrumentos de recolección de datos, la matriz de operacionalización de variables, las fichas de validación por juicio de expertos y el modelo de consentimiento informado.
+CAPÍTULO IPLANTEAMIENTO DEL ESTUDIO
+Planteamiento y formulación del problema
+La gestión integral de los residuos sólidos urbanos representa uno de los desafíos ambientales, logísticos e informáticos más críticos a los que se enfrentan las sociedades contemporáneas a nivel global. Esta problemática se agudiza por el constante crecimiento demográfico y los procesos de urbanización acelerada y desordenada que superan la capacidad de las infraestructuras locales[1][2]. 
+El Programa de las Naciones Unidas para el Medio Ambiente (PNUMA) señala que la acumulación desmedida de residuos urbanos ya supera la capacidad operativa de los gobiernos, generando un impacto directo en la salud pública y el entorno ambiental [3]. Para afrontarlo, la ingeniería de sistemas impulsa el uso de tecnologías propias de las ciudades inteligentes (Smart Cities), como el análisis de datos, los sistemas de información geográfica y la inteligencia artificial para sustituir las decisiones intuitivas por estrategias basadas en datos. Herramientas como el aprendizaje automático ya permiten predecir la generación de desechos[1] mientras que la visión artificial optimiza la clasificación automatizada de reciclables y las redes de sensores reducen los costos logísticos al diseñar rutas de recolección eficientes [4].
+Teniendo en cuenta el contexto nacional, Perú presenta obstáculos estructurales en la gestión de residuos sólidos, especialmente en ciudades con crecimiento urbano desordenado y limitada capacidad de monitoreo ambiental. Como se puede notar en Lima Metropolitana, donde el Organismo de Evaluación y Fiscalización Ambiental (OEFA) identificó 165 puntos críticos de acumulación de residuos sólidos en distintos distritos, muchos de los cuales permanecían sin atención municipal debido a deficiencias en la identificación, seguimiento y gestión oportuna de estos focos de contaminación[5]. Asimismo, el OEFA señaló que la falta de información georreferenciada y de mecanismos digitales eficientes dificultaba la programación adecuada de acciones de limpieza y recolección, motivo por el cual se impulsó el uso de herramientas como el aplicativo “Reporta Residuos”, orientado al registro y localización precisa de puntos críticos mediante reportes ciudadanos [5]. Estas situaciones muestran que no solo hay problemas con la disposición de residuos, sino que también hay dificultades para reunir y analizar datos sobre el territorio. Esto hace que sea complicado tomar decisiones rápidas y planificar los servicios de limpieza municipal de manera efectiva. 
+A nivel local, la ciudad del Cusco presenta una problemática particular en relación con la acumulación de residuos sólidos en espacios públicos, tanto en zonas comerciales como residenciales. Esta situación se evidenció durante las supervisiones realizadas por la OEFA a inicios del año 2025, donde se identificaron 22 puntos críticos de acumulación de residuos sólidos en distintos sectores de la ciudad, posicionando a Cusco entre las ciudades con mayor cantidad de focos de contaminación detectados a nivel nacional [6], Si bien el reporte consolidado identifica 22 puntos a nivel provincial, una proporción significativa de esta carga recae sobre el distrito de Wanchaq debido a su alta densidad comercial, lo que exige una herramienta focalizada para esta jurisdicción. El OEFA señaló además la necesidad de reforzar las acciones de supervisión, limpieza y recolección debido a la persistencia de estos puntos críticos y a la limitada capacidad de respuesta oportuna por parte de las municipalidades. Esta problemática refleja deficiencias en la identificación, monitoreo y seguimiento sistemático de zonas de acumulación de residuos, así como una limitada utilización de herramientas tecnológicas y datos georreferenciados para la planificación operativa. Esto causa problemas porque no se puede encontrar rápidamente los lugares donde se produce la contaminación. Afectando la calidad del servicio y deteriorando la ciudad en términos de salud y entorno urbano.
+En el distrito de Wanchaq esta situación se encuentra documentada por la propia autoridad local. La División de Gestión Ambiental de la Municipalidad Distrital registra una generación total de 49.45 toneladas diarias de residuos sólidos, equivalente a 0.80 kilogramos por habitante y día, y ha identificado 25 puntos críticos de acumulación de basura distribuidos en los 6.38 kilómetros cuadrados de superficie del distrito[7]. Este registro constituye la línea base del problema en el ámbito de estudio y, al mismo tiempo, evidencia su limitación: se trata de un inventario elaborado en un momento puntual, sin un mecanismo de actualización continua que permita conocer la aparición de nuevos focos o la persistencia de los ya identificados.
+Por esta razón, la información que produce el sistema se orienta a la Gerencia de Gestión Ambiental y a la Subgerencia de Limpieza Pública de la Municipalidad Distrital de Wanchaq. Actualmente, esta municipalidad no tiene un sistema digital para registrar y analizar los lugares donde se acumula la basura. Al no disponer de un registro geoespacial, no sabe exactamente dónde se encuentra la basura, qué tipo de residuos hay ni cuánto tiempo llevan en la calle. Los métodos tradicionales para solucionar esto no han mostrado efectividad porque no incluyen mapas colaborativos ni visión artificial, herramientas cuya aceptación ciudadana Moreno Garcilazo [8], verificó mediante encuesta en un distrito peruano. 
+La problemática central radica en que la ejecución de soluciones actuales carece de orientación técnica y datos digitales precisos que indiquen la ubicación exacta o el tiempo de permanencia de la basura. Los procesos de recolección vigentes se basan en rutas fijas, patrullajes visuales o espera de horarios predefinidos. Como consecuencia, las entidades encargadas carecen de una perspectiva real de los espacios urbanos, lo que conlleva desperdicio de recursos y una mala percepción de los ciudadanos. Desde la ingeniería de sistemas e informática, este escenario se traduce en una brecha de datos que impide supervisar de forma adecuada los servicios de limpieza.
+Las causas de este problema son varias. Por un lado, no hay herramientas ni medios digitales para recopilar información en campo. Entre ellos, la ausencia de un sistema de información geográfica con la capacidad de analizar la distribución de residuos. En el plano organizativo, no hay procesos claros para registrar y seguir los problemas con la basura y la contaminación. Asimismo, factores sociales como la falta de cultura ambiental en la población contribuyen a la generación constante de residuos en espacios no autorizados. Finalmente, aspectos económicos como restricciones presupuestarias pueden limitar la inversión en infraestructura tecnológica y capacitación. 
+A futuro, si no se organizan los datos de manera adecuada, el crecimiento de la población causará problemas con el servicio. En el ámbito operativo, no se podrá tomar decisiones correctas para solucionar los problemas de contaminación por la falta de información exacta. En el plano económico, esto se traduce en que el presupuesto de la ciudad se utiliza de manera ineficiente. Desde una perspectiva social, la acumulación de basura afecta la vida diaria de las personas, aumenta los riesgos para la salud y hace que la ciudad parezca menos segura y ordenada. En el ámbito ambiental, la disposición inadecuada de residuos contribuye a la contaminación y al deterioro de los ecosistemas urbanos.
+Si este problema sigue así, es previsible que se agraven sus efectos, afectando la sostenibilidad de la gestión urbana en la ciudad del Cusco. La falta de sistemas inteligentes y herramientas de análisis de datos impedirá avanzar hacia modelos de gestión más eficientes y modernos, limitando la capacidad de la municipalidad para adaptarse a las demandas de una ciudad en crecimiento. Asimismo, se verá comprometida la competitividad de la ciudad como destino turístico, debido a que perderá atractivo como destino turístico por su mala imagen urbana. Desde la perspectiva de la transformación digital, la falta de integración tecnológica dificultará la modernización de los servicios públicos y la implementación de estrategias de ciudades inteligentes.
+De ahí la necesidad de diseñar y desarrollar una solución desde la ingeniería de sistemas, ya que el diseño de un aplicativo móvil que fusione la georreferenciación colaborativa, el almacenamiento espacial y la inteligencia artificial no solo resolverá el déficit de información en Wanchaq, sino que se alinea estratégicamente con las políticas de vanguardia del Ministerio del Ambiente [9], entidad que ya exige la integración de módulos de inteligencia artificial en las plataformas municipales de reporte, demostrando que el desarrollo de software aplicado es el mecanismo definitivo para democratizar el control ambiental urbano.
+Problema General
+¿Cómo diseñar, desarrollar e implementar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco?
+Problemas específicos
+¿Cómo diseñar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco?
+¿Cómo desarrollar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco?
+¿Cómo implementar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco?
+Objetivos de la investigación
+Objetivo general
+Diseñar, desarrollar e implementar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco.
+Objetivos específicos
+Diseñar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco. 
+Desarrollar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco.  
+Implementar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco. 
+Justificación de la investigación
+Justificación teórica
+Este trabajo de investigación aporta teóricamente al diseño y validación de un modelo de sistema de información distribuido basado en la participación ciudadana, donde los usuarios actúan como sensores móviles dentro de un esquema de ciencia ciudadana. Este enfoque contribuye al incorporar el concepto de adquisición de datos descentralizada y colaborativa, integrándolo con técnicas de análisis geoespacial e inteligencia artificial para la identificación de patrones urbanos. Asimismo, el estudio también propone una forma de organizar las cosas que combina aplicaciones para teléfonos móviles, servicios que se ejecutan en los servidores y modelos para procesar datos, lo que permite crear un marco que se puede repetir para gestionar de manera inteligente los servicios de la ciudad.
+Además, la investigación contribuye al campo de la Minería de Datos Urbanos al plantear un ejemplo de un estudio de este campo en entorno real, como una ciudad con valor patrimonial y turistas todo el tiempo, donde las dinámicas de generación de residuos presentan variabilidad espacial y temporal. Desde tal perspectiva, resulta posible comprender mejor cómo funcionan los datos urbanos en escenarios del mundo real y proporcionar evidencia concreta para trabajos futuros. Kochanek [10], mencionan que la gestión ecológica urbana requiere evolucionar para dejar de lado los modelos tradicionales y encaminar al uso de entornos tecnológicos que usen inteligencia artificial y bases de datos geoespaciales. 
+Justificación metodológica
+Este trabajo tiene un enfoque tecnológico y aplicado, orientado a desarrollar una solución informática práctica para la administración de limpieza pública, pues se implementará para su uso. El proyecto incorpora sistemas de información geográfica (SIG) y análisis computacionales para manejar la alta variabilidad de los datos urbanos, conforme a las perspectivas planteadas por Kochanek [10].
+En ingeniería de software, se presenta una arquitectura tecnológica que tiene como objetivo descentralizar la forma en que se captura la información en la gestión de ciudades. A diferencia de los métodos tradicionales que utilizan sensores fijos y costosos[4], el estudio muestra cómo es posible el trabajo colaborativo (crowdsourcing), en el cual los ciudadanos se convierten en fuentes móviles de información. Este enfoque combina aplicaciones móviles, bases de datos espaciales y algoritmos de visión artificial procesados en el mismo dispositivo, de modo que el modelo pueda adaptarse y replicarse en la fase de procesamiento. Basado en el rigor metodológico verificado por Solano Meza et al.[1]  y adaptado al entorno peruano por Medina-Medina et al.[17]se utilizan técnicas de análisis geoespacial para mapear agrupaciones y patrones de acumulación de residuos en áreas críticas.
+Por último, este diseño metodológico termina con un panel de control interactivo, componente que la revisión de Kochanek et al. [10] identifica como instrumento central de la gestión municipal basada en datos. Así, las técnicas de análisis elegidas y la arquitectura tecnológica tienen como objetivo transformar los informes colaborativos de los ciudadanos en datos específicos que asistan a los gobiernos en la toma de decisiones fundamentadas.
+Justificación práctica
+La investigación es beneficiosa porque persigue la resolución de un problema concreto en la administración pública a nivel municipal, para una posible solución se utiliza un enfoque práctico y tecnológico que no solo busca entender el problema, sino también encontrar proponer y desarrollar una herramienta. El diseño metodológico contempla el desarrollo de una solución basada en una aplicación móvil para la recolección de datos georreferenciados en campo. Asimismo, se emplearon herramientas de almacenamiento y gestión de datos geoespaciales que permitan centralizar la información y garantizar su disponibilidad para el análisis. De igual forma, se incorporan métodos de análisis de datos mediante técnicas de análisis geoespacial, lo que permitirá identificar patrones, zonas críticas y comportamientos asociados a la acumulación de residuos. Finalmente, el desarrollo de un panel de control facilitará la visualización de la información y apoyará la toma de decisiones basada en datos. En resumen, los métodos y herramientas seleccionados son adecuados para la investigación porque permiten abordar el problema de manera integral, combinando análisis, diseño e implementación de soluciones tecnológicas.
+Delimitación de la investigación
+Delimitación espacial
+La delimitación espacial de la investigación comprende el distrito de Wanchaq, en la provincia del Cusco. Se eligió este sector por reunir características comerciales y urbanas idóneas para evaluar el impacto de los desechos en los espacios públicos. El análisis detallado de sus calles y del servicio actual servirá como base para proponer mejoras logísticas y alternativas tecnológicas útiles para la administración local. El distrito abarca una superficie de 6.38 kilómetros cuadrados a una altitud promedio de 3,363 metros sobre el nivel del mar, y constituye uno de los ocho distritos que conforman la provincia del Cusco[7]. El sistema desarrollado en el marco de esta investigación recibió el nombre de Wanchaq Limpio.
+Delimitación temporal
+La investigación se ejecutó entre el 18 de marzo de 2026 y el 12 de diciembre de 2026. Ese periodo comprendió las fases de análisis, diseño, desarrollo e implementación del sistema. Dentro de él se estableció una ventana de observación de ocho semanas, comprendida entre el 21 de septiembre y el 15 de noviembre de 2026, durante la cual se realizó la captura de reportes ciudadanos que constituye la población de datos del estudio y se aplicaron los instrumentos previstos para la Fase 1.
+Delimitación social
+El alcance social de la investigación abarca al sector que está constituido por la población civil, integrada por los vecinos residentes y los usuarios de los establecimientos comerciales del distrito, quienes asumirán el rol de agentes activos de recolección de datos bajo la modalidad de ciencia ciudadana al reportar incidencias mediante el aplicativo móvil.
+Limitaciones de la investigación
+El estudio estuvo condicionado por cuatro limitaciones que se apreciaron al momento de su formulación.
+Dispositivos
+La precisión de los sensores de los dispositivos varía por cada usuario, por ende las coordenadas de cada reporte variaron según el modelo que maneja cada usuario, también se debe de hacer mención de posibles factores externos ajenos al control del estudio, como la infraestructura del espacio , tiempo y calidad del hardware de cada equipo, para normalizar este efecto se estableció un umbral de omisión de quince metros de tolerancia, aunque ello no eliminó por completo la incertidumbre posicional de los registros almacenados.
+Conectividad
+La sincronización de los reportes con los servidores dependió de la señal de datos disponible al momento de generar una captura, aunque el sistema contempla un almacenamiento local y una posterior sincronización diferida no fue suficiente para evitar los desfases entre el momento de la captura de datos y su disponibilidad en el panel.
+Distribución
+La aplicación fue desarrollada para un entorno Android y se distribuyó a través de Google Play Store y entrega del APK por parte del equipo de investigación, por lo que usuarios de otros sistemas operativos quedaron fuera. Esta condición limitó la cantidad de usuarios con un sistema operativo compatible, lo que reduce la generalización de los resultados de usabilidad 
+Tiempo y presupuesto
+El tiempo para la ejecución y recursos disponibles afectaron de manera significativa la distribución del sistema planteado, recortando la escala de despliegue y en consecuencia limitando la cantidad de datos obtenidos, dado que la identificación de los focos de acumulación se mide en base a una cantidad mínima de registros para producir agrupaciones significativas, un volumen reducido de este disminuye la capacidad del aplicativo para presentar gráficos adecuados, para mitigar este efecto, la verificación del apartado geoespacial se complementó con observación directa en puntos previamente seleccionados del distrito de modo  que el desempeño del sistema no dependiera exclusivamente del volumen de reportes.
+Estas limitaciones condicionan el alcance de los resultados, pero no afectaron los objetivos planteados, puesto que la investigación se orientó a construir un sistema para monitorear en condiciones reales de uso.
+Si al cierre de la ventana de observación el número de reportes válidos resultara inferior al previsto, se procederá en el siguiente orden: primero, ampliar la ventana de observación por una semanas adicionales, reforzando la difusión en las zonas de mayor tránsito; segundo, recalcular el radio ε mediante el gráfico de distancias al k-ésimo vecino sobre los datos efectivamente disponibles y ajustar el parámetro MinSamples a tres, documentando el cambio y su efecto sobre el coeficiente de silueta; y tercero, de persistir la insuficiencia, reportar de forma individual los focos verificados en campo y presentar el agrupamiento como resultado exploratorio y no concluyente. Cualquiera de estos ajustes se declara de manera expresa en el capítulo de resultados.
+Hipótesis y Variables
+El presente estudio no formula hipótesis, ya que la hipótesis no constituye un requisito universal de una investigación, su pertinencia depende del enfoque, alcance y diseño adoptado. En estudios de alcance descriptivo corresponde únicamente cuando se pronostica un hecho o un dato, condición que no se presenta en esta investigación, orientada a construir un artefacto tecnológico y a describir su comportamiento en condiciones reales de uso.
+En reemplazo de la hipótesis, la verificación de los objetivos se realiza mediante criterios de aceptación cuantitativos asociados a cada indicador, establecidos antes de la recolección de datos y consignados en la matriz de operacionalización de variables del Anexo 2. Cada objetivo específico se considera alcanzado cuando la totalidad de los indicadores que le corresponden satisface su respectivo criterio; el incumplimiento de alguno se reporta como tal, junto con su análisis.
+Variable 1
+Sistema móvil de georreferenciación colaborativa. Aplicación ejecutada en dispositivos portátiles que permite registrar, geolocalizar, clasificar y compartir información geográfica sobre focos de residuos sólidos mediante la participación de personas sin formación cartográfica, modalidad que Goodchild denominó información geográfica voluntaria[12] y que Kochanek et al. identifican como uno de los canales centrales de la gestión urbana basada en datos [10]. Dimensiones: completitud del diseño, conformidad funcional, usabilidad percibida, precisión geoespacial, disponibilidad operativa y exactitud de clasificación automática.
+Variable 2
+Monitoreo de focos de acumulación de residuos sólidos urbanos. Proceso sistemático de identificación, registro, localización y caracterización de los puntos donde se concentran residuos en el espacio público, entendido dentro del conjunto de actividades de gestión que el Decreto Legislativo N.º 1278 asigna a las municipalidades distritales y sustentado analíticamente en la detección estadística de agrupaciones espaciales [21]. Dimensiones: identificación de focos, calidad del agrupamiento, caracterización del foco, evidencia documental y calidad del registro.
+Matriz de consistencia
+Se puede observar la matriz de consistencia a más detalle en el anexo 1
+Operacionalización de variables
+Se puede observar la matriz de operacionalización de variables a más detalle en el anexo 2.
+CAPÍTULO IIMARCO TEÓRICO
+Antecedentes de la investigación
+Antecedentes Internacionales
+El estudio desarrollado por Ryu, Sim, Cho y Lee (2026), titulado "A Spatial Big Data and Unsupervised Learning Framework for Prioritizing Patrol Areas for Illegal Waste Dumping", se propuso convertir los registros administrativos de denuncias ciudadanas en prioridades operativas de patrullaje, ante la constatación de que las municipalidades responden al vertido ilegal de manera reactiva por carecer de evidencia espacial precisa sobre dónde se concentra el riesgo. Metodológicamente, fue una investigación aplicada con enfoque cuantitativo y diseño no experimental, cuya muestra de análisis abarcó 1,137 ubicaciones geocodificadas de denuncias por vertido ilegal en la ciudad de Chuncheon, depuradas de un conjunto inicial de 2,543 registros correspondientes al periodo de enero de 2023 a mayo de 2025. Para la recolección de datos, los investigadores integraron los registros municipales de denuncias con capas urbanas de densidad residencial, actividad poblacional, instalaciones educativas, puntos autorizados de disposición, parques y cobertura de videovigilancia[13].
+ Los principales hallazgos se obtuvieron mediante una estrategia de agrupamiento en dos etapas. En la primera, el algoritmo DBSCAN agrupó las denuncias cercanas dentro de un radio de 500 metros, con lo cual las 1,137 ubicaciones se redujeron a 174 agrupaciones espaciales y se atenuó el ruido del registro individual. En la segunda, se aplicó K-Means sobre una grilla de 1,500 metros y el número de agrupaciones se determinó combinando el método del codo con el coeficiente de silueta, que alcanzó su valor máximo de 0.72 en cuatro grupos. El análisis de correlación mostró que la frecuencia de denuncias se asocia con la densidad de vivienda pequeña dentro de 800 metros, con un coeficiente de 0.94, y con los puntos de disposición domiciliaria dentro de 900 metros, con 0.85, mientras que la presencia de cámaras de videovigilancia dentro de 200 metros apenas alcanzó 0.10. Los autores concluyeron que los focos se concentran en entornos residenciales densos de uso mixto y advirtieron que la densidad de denuncias refleja tanto la intensidad real del vertido como la propensión de los vecinos a reportarlo, por lo que las denuncias constituyen un indicador aproximado del riesgo y no un censo de los eventos[13].
+Este antecedente es el que más se aproxima al procedimiento de análisis previsto en la presente investigación. Aporta un valor de referencia empírico para el parámetro épsilon del algoritmo DBSCAN y respalda el uso del coeficiente de silueta como criterio de validación del agrupamiento, elementos de las dimensiones de identificación del foco y de calidad del agrupamiento. Su advertencia sobre el sesgo de reporte resulta especialmente pertinente, ya que el sistema propuesto se alimenta precisamente de reportes voluntarios y hereda esa limitación; por ello, los resultados del agrupamiento se interpretarán como indicadores relativos de concentración y no como una medición absoluta de la magnitud del problema en el distrito. La diferencia principal radica en el origen del dato: mientras el estudio coreano trabajó con denuncias administrativas ya existentes, la presente investigación genera el reporte en el momento de la observación, con fotografía y coordenadas capturadas por el dispositivo del ciudadano.
+Scharf, Ducry, Sy, Djim y Lacroix (2025) publicaron el artículo "Integrating Remote Sensing, GIS, and Citizen Science to Map Illegal Waste Dumping Susceptibility in Dakar, Senegal", cuyo propósito central fue identificar las zonas más susceptibles al vertido ilegal de residuos mediante un marco multicriterio que integrara teledetección, sistemas de información geográfica y ciencia ciudadana. El estudio adoptó un enfoque metodológico cuantitativo de alcance descriptivo, aplicado sobre las comunas de Keur Massar y Malika, en un contexto de urbanización acelerada con infraestructura limitada y prácticas informales de disposición. Para la recolección de datos, los autores procesaron imágenes satelitales Landsat 8 y Sentinel-2, de las que derivaron indicadores de temperatura superficial del terreno y de vegetación, suelo y agua, y los combinaron con información demográfica e infraestructural; de manera complementaria, aplicaron una encuesta a estudiantes universitarios locales para obtener puntajes de percepción social y los pesos de cada criterio mediante el Proceso Analítico Jerárquico[14].
+Los resultados mostraron que entre el 28 y el 35 por ciento del área estudiada presenta susceptibilidad alta o muy alta al vertido ilegal, con concentraciones en las inmediaciones del vertedero de Mbeubeuss y en los sectores densamente poblados de Keur Massar, mientras que Malika registró niveles menores. Los focos se ubicaron preferentemente cerca de humedales, asentamientos informales y redes viales con servicio deficiente. El análisis de sensibilidad confirmó la robustez del modelo y evidenció que las variables térmicas y las de percepción social son las que más influyen en el resultado; asimismo, el modelo ponderado mostró mayor coherencia espacial que la versión sin ponderación. Los autores concluyeron que la integración de datos satelitales con percepción ciudadana ofrece información accionable para que la entidad nacional de gestión de residuos y los planificadores municipales prioricen intervenciones en las zonas de mayor susceptibilidad[14].
+El aporte de este estudio a la presente investigación reside en demostrar que la percepción ciudadana puede incorporarse formalmente a un modelo espacial, con pesos calculados y sometidos a análisis de sensibilidad, en lugar de quedar como información anecdótica. Ese hallazgo respalda la dimensión de identificación del foco y sustenta la decisión de construir el sistema sobre información aportada por los propios vecinos. El contexto también es comparable, pues se trata de una ciudad del Sur global con servicio de limpieza desigual, condición que se repite en el distrito de estudio. La diferencia metodológica es relevante y conviene señalarla: el trabajo de Dakar empleó la percepción ciudadana de manera agregada, para ponderar criterios sobre una superficie continua, mientras que el sistema propuesto utiliza el reporte individual georreferenciado como unidad de análisis, lo que permite localizar el foco en lugar de estimar la probabilidad de que exista.
+El estudio desarrollado por Ogbolumani y Adekoya (2025), titulado "Intelligent Waste Management Optimization Through Machine Learning Analytics", se propuso optimizar las rutas y los horarios de recolección de residuos mediante aprendizaje automático y contenedores instrumentados con sensores de internet de las cosas. El trabajo se ejecutó en la Universidad de Lagos, sobre 47 puntos de recolección y un periodo de 90 días. Los contenedores incorporaron sensores ultrasónicos de nivel de llenado, sensores de temperatura y peso, y un módulo de transmisión que enviaba los registros cada dos horas a una base de datos PostgreSQL alojada en la nube. Los autores precisan que la validación de los modelos se realizó sobre datos simulados en Python, dado que el despliegue físico del hardware en todas las ubicaciones no se había completado al momento del estudio[4]. 
+Los resultados compararon el desempeño de las máquinas de vectores de soporte frente a las redes neuronales artificiales en la predicción del nivel de llenado. El primer modelo alcanzó un coeficiente de determinación promedio de 0.81, con un máximo de 0.85, y mantuvo un comportamiento estable entre las cinco residencias evaluadas. El segundo mostró mayor variabilidad, con valores que descendieron hasta 0.55 en una de las ubicaciones. La aplicación del sistema permitió reducir la frecuencia de los viajes de recolección en un 35 por ciento y el consumo de combustible en un 42 por ciento. Los autores concluyeron que la combinación de sensores conectados y analítica predictiva corrige las ineficiencias de los esquemas de recolección basados en rutas y horarios fijos[4]. 
+El aporte de este estudio a la presente investigación se sitúa en la arquitectura de datos. Confirma la viabilidad de PostgreSQL como repositorio central de registros espacio-temporales de residuos y respalda la decisión de centralizar la información en un motor relacional antes de someterla a análisis. La diferencia con el sistema propuesto es de origen del dato y merece señalarse: el trabajo de Lagos captura la información mediante sensores fijos instalados en contenedores municipales, mientras que la presente investigación prescinde de infraestructura instalada y obtiene el dato del dispositivo del ciudadano. Esa distinción define dos objetos de estudio distintos, ya que el enfoque por sensores mide el llenado de recipientes existentes y no detecta la acumulación en espacios donde no hay contenedor, que es precisamente el fenómeno que aquí se estudia. Corresponde señalar, además, que la validación se apoyó en datos simulados, por lo que sus cifras de reducción operativa constituyen una estimación de modelo y no una medición de campo.
+Syafrudin, Ramadan, Budihardjo, Munawir, Khair, Rosmalina y Ardiansyah (2023) desarrollaron el estudio "Analysis of Factors Influencing Illegal Waste Dumping Generation Using GIS Spatial Regression Methods", cuyo objetivo fue determinar qué factores socioeconómicos, demográficos, de infraestructura y de configuración espacial explican principalmente la aparición de focos de vertido ilegal. El trabajo se realizó bajo un enfoque cuantitativo con diseño no experimental de alcance correlacional, aplicado sobre 177 subdistritos de la ciudad de Semarang. Para el análisis se emplearon ocho variables explicativas y se construyeron dos modelos de regresión espacial: mínimos cuadrados ordinarios, que estima una relación global para todo el territorio, y regresión geográficamente ponderada, que permite que los coeficientes varíen según la ubicación[15].
+Los resultados del modelo global identificaron únicamente dos determinantes significativos: la altitud sobre el nivel del mar, correlacionada positivamente con el número de focos, y la densidad poblacional, correlacionada de manera negativa. El modelo geográficamente ponderado mostró un desempeño estadístico superior, elevando el coeficiente de determinación ajustado de 0.24 a 0.61. Los autores concluyeron que los factores que explican el vertido ilegal no operan de manera uniforme en el territorio, por lo que los modelos que asumen una relación constante subestiman el fenómeno, y recomendaron el uso de aproximaciones locales para orientar la intervención municipal[15].
+El aporte de este estudio a la presente investigación es de orden metodológico y conceptual. Confirma que la distribución de los focos responde a la configuración local del territorio y no a un patrón único, lo que justifica que el sistema propuesto identifique las agrupaciones a partir de los datos observados en el distrito en lugar de aplicar un modelo importado de otro contexto. Corresponde señalar, además, que sus resultados no coinciden con los de Ryu, Sim, Cho y Lee (2026): mientras el estudio coreano asocia los focos a zonas de alta densidad residencial, el trabajo de Semarang encuentra la densidad poblacional negativamente correlacionada, divergencia que los propios autores coreanos atribuyen a diferencias en el tipo de vertido predominante y en el régimen de cobro del servicio. Esa falta de consenso refuerza la pertinencia de la presente investigación, que no asume una relación previa entre densidad y focos sino que la somete a verificación empírica en el distrito de estudio, en el marco de la dimensión de caracterización del foco.
+Solano Meza, Orjuela Yepes, Rodrigo-Ilarri y Cassiraga (2019) publicaron el artículo "Predictive analysis of urban waste generation for the city of Bogotá, Colombia, through the implementation of decision trees-based machine learning, support vector machines and artificial neural networks", cuyo propósito fue evaluar tres modelos de aprendizaje automático como herramientas de pronóstico de la generación de residuos sólidos urbanos, con el fin de sustentar la planificación de las etapas de recolección, transporte y disposición final. El estudio procesó los registros mensuales de generación suministrados por la Unidad Administrativa Especial de Servicios Públicos para el periodo 2012-2016, lo que conformó una serie de sesenta observaciones por localidad. Las variables incorporadas al modelo fueron la población, la estratificación socioeconómica predominante, la cantidad de residuos registrada, la latitud y la altitud[1].
+Los autores compararon árboles de decisión, máquinas de vectores de soporte y redes neuronales recurrentes de memoria a corto y largo plazo, midiendo el desempeño mediante la raíz del error cuadrático medio. En la zona de servicio exclusivo 4, el modelo de vectores de soporte registró un error promedio de 898 toneladas frente a las 1,444 toneladas del modelo neuronal. Los autores concluyeron que las máquinas de vectores de soporte ofrecen el mejor ajuste y resultan especialmente convenientes cuando se trabaja con bases de datos pequeñas o discontinuas, condición frecuente en las administraciones municipales latinoamericanas [1]. 
+El aporte de este estudio a la presente investigación es de orden contextual. Demuestra que el análisis computacional aplicado a registros urbanos produce información útil para la planificación del servicio de limpieza en una ciudad latinoamericana de gran escala, y que ese análisis se sostiene incluso con conjuntos de datos limitados, escenario equivalente al del presente estudio. La diferencia es sustantiva: el trabajo de Bogotá parte de un registro administrativo consolidado durante cinco años y su objeto es predecir volúmenes futuros de generación, mientras que la presente investigación construye el registro desde cero, en un territorio sin inventario actualizado, y su objeto es localizar el foco antes que estimar su magnitud.
+Antecedentes Nacionales
+El estudio de Misericordia Paredes (2025), titulado "Aplicación móvil basada en geolocalización para mejorar la disposición oportuna de residuos sólidos en Virú 2025", partió de la constatación de que el incumplimiento del cronograma establecido para la disposición de residuos y la falta de puntualidad de los ciudadanos generaban demoras en el servicio de recolección. Su objetivo general fue determinar en qué medida una aplicación móvil basada en geolocalización mejora la disposición oportuna de residuos sólidos, y se propuso tres objetivos específicos: disminuir el nivel de incertidumbre sobre la llegada del camión recolector, reducir el tiempo de espera de los ciudadanos y aumentar el nivel de satisfacción del usuario. Metodológicamente, el trabajo se desarrolló bajo un enfoque cuantitativo con diseño experimental puro, con una muestra de sesenta ciudadanos de la calle Las Palmeras distribuidos en dos grupos de 30, uno de control y otro experimental. Para la recolección de datos se empleó la observación directa[16].
+Los resultados se obtuvieron a partir del despliegue de una aplicación móvil que envía notificaciones en tiempo real sobre la cercanía del camión recolector. El tiempo de espera se redujo de 9.09 minutos en el grupo de control a 2.55 minutos en el grupo experimental, y el 70 por ciento de este último alcanzó tiempos inferiores a la meta establecida de tres minutos. En cuanto a la satisfacción, el 66.7 por ciento del grupo experimental se declaró satisfecho y el 33.3 por ciento muy satisfecho, mientras que en el grupo de control predominó el descontento, con un 73.3 por ciento de insatisfacción. Respecto de la incertidumbre sobre la llegada del vehículo recolector, el 86.7 por ciento del grupo experimental manifestó estar en desacuerdo con la afirmación que la expresaba y el 13.3 por ciento restante adoptó una postura neutral, frente al 100 por ciento del grupo de control que manifestó incertidumbre. Las pruebas t de Student y U de Mann-Whitney confirmaron diferencias significativas a favor del grupo experimental, con un valor p menor a 0.001. El autor concluyó que la aplicación móvil es una herramienta eficaz para optimizar el proceso de disposición de residuos sólidos, fomentar la participación ciudadana y contribuir al Objetivo de Desarrollo Sostenible 11 sobre ciudades y comunidades sostenibles[16].
+Este antecedente aporta evidencia peruana directa sobre las dimensiones de usabilidad percibida y de conformidad funcional, al demostrar que una aplicación móvil con geolocalización puede modificar la conducta de los vecinos frente al servicio de limpieza en un distrito con características administrativas comparables a las del ámbito de estudio. Su medición de la satisfacción del usuario respalda la decisión de emplear un instrumento estandarizado de usabilidad en la presente investigación. La diferencia radica en la dirección del flujo de información y en el diseño metodológico: el estudio de Virú es experimental y la aplicación informa al ciudadano sobre el desplazamiento del vehículo recolector, mientras que el sistema propuesto es no experimental y opera en sentido inverso, ya que es el ciudadano quien aporta la información sobre la ubicación de los focos de acumulación para que la administración municipal disponga de ella.
+Moreno Garcilazo (2025) desarrolló el estudio "Análisis de la gestión de residuos sólidos en la Municipalidad Distrital de Santa María mediante el uso de aplicativos móviles", cuyo objetivo general fue determinar si el uso de aplicativos móviles influye en la gestión de residuos sólidos del distrito. El trabajo se realizó bajo un diseño no experimental de nivel correlacional, sobre una población de 36,267 habitantes de la que se extrajo una muestra de 381 personas mediante la fórmula para poblaciones finitas, con un nivel de confianza del 95 por ciento y un margen de error del 5 por ciento. La recolección se efectuó mediante encuesta, con un cuestionario construido por el autor para medir ambas variables[8]. 
+Los resultados mostraron una correlación de Spearman de 0.805 entre el uso de aplicativos móviles y la gestión de residuos sólidos, con un valor p de 0.000. Las hipótesis específicas registraron coeficientes de 0.786 para la funcionalidad del aplicativo y de 0.824 para la frecuencia de uso, ambos con el mismo nivel de significación. El 80 por ciento de los encuestados manifestó conformidad con la funcionalidad de los aplicativos móviles. El autor concluyó que la incorporación de herramientas digitales se asocia con una mejora percibida en los tiempos de recolección y en la optimización de rutas, apreciación que expuso en términos cualitativos y sin cuantificar el ahorro obtenido[8]. 
+Este antecedente aporta evidencia peruana sobre la disposición ciudadana a incorporar herramientas móviles en la gestión del servicio de limpieza, y respalda la premisa de que el canal digital resulta aceptable para la población de un distrito con características administrativas comparables a las del ámbito de estudio. Corresponde precisar el alcance de esa evidencia: el estudio de Santa María no desarrolló ni desplegó una aplicación, sino que midió la percepción de los vecinos respecto del uso de aplicativos en general, de modo que sus correlaciones expresan actitudes declaradas y no el desempeño de un sistema en operación. La presente investigación se sitúa en el paso siguiente, ya que construye el artefacto, lo pone en uso real y mide su comportamiento mediante instrumentos aplicados sobre el sistema y no sobre la opinión acerca de la tecnología.
+Medina-Medina, Salas López, Barboza y colaboradores (2024) publicaron el artículo "Participation GIS for the monitoring of areas contaminated by municipal solid waste: A case study in the city of Pedro Ruiz Gallo (Peru)", cuyo propósito fue implementar y evaluar una plataforma de sistemas de información geográfica participativos para el monitoreo ciudadano de áreas contaminadas por residuos sólidos municipales. El estudio se desarrolló bajo un enfoque cuantitativo de alcance descriptivo, aplicado sobre la ciudad de Pedro Ruiz Gallo, en la región Amazonas. Para la recolección de datos, los investigadores desplegaron un conjunto de herramientas del entorno ArcGIS, integrando el formulario de captura en campo, la aplicación web de consulta y el visor de resultados, de modo que los ciudadanos pudieran registrar diariamente la ubicación y la magnitud de las áreas contaminadas que identificaban en su entorno[17].
+Los resultados obtenidos durante dos meses de operación de la plataforma comprendieron 2,778 áreas contaminadas reportadas por la población. De ese total, el 53 por ciento correspondió a áreas de contaminación baja, con superficies menores a un metro cuadrado; el 16 por ciento a contaminación media, con superficies equivalentes a un metro cuadrado; y el 31 por ciento a contaminación alta, con superficies superiores a un metro cuadrado. El procesamiento de esta información mediante mapas de densidad de Kernel permitió identificar 24 zonas clasificadas como de concentración extremadamente alta. Los autores concluyeron que la participación ciudadana organizada a través de una plataforma geoespacial constituye un mecanismo eficaz para generar información territorial actualizada sobre contaminación por residuos, en contextos donde el monitoreo institucional resulta insuficiente[17].
+Este es el antecedente nacional más próximo al planteamiento de la presente investigación, ya que comparte el país, el enfoque participativo y el objeto de monitoreo. Su aporte alcanza tres dimensiones de la matriz de operacionalización: la de identificación del foco, al demostrar que el reporte ciudadano permite localizar áreas contaminadas con suficiente resolución espacial; la de caracterización del foco, al validar una escala de clasificación basada en la superficie afectada; y la de evidencia documental, al confirmar que el registro sistemático de los reportes produce información utilizable por la administración. El volumen alcanzado en dos meses ofrece además un punto de comparación realista para dimensionar la expectativa de participación en el distrito de estudio. La diferencia técnica es relevante: el trabajo de Pedro Ruiz Gallo empleó una plataforma comercial basada en formularios web y mapas de densidad de Kernel, mientras que el sistema propuesto se desarrolla como aplicación móvil nativa con captura fotográfica, clasificación automatizada y agrupamiento por densidad mediante DBSCAN, lo que permite operar sobre el dispositivo del usuario y delimitar agrupaciones discretas en lugar de superficies continuas de intensidad.
+Cerna Cueva, Rosas Echevarría, Perales Flores y Ataucusi Flores (2022) publicaron el estudio "Predicción de la generación de residuos sólidos domiciliarios con machine learning en una zona rural de Puno", cuyo objetivo fue identificar las variables socioeconómicas y demográficas que influyen en la generación per cápita de residuos domiciliarios y construir modelos predictivos a partir de ellas. El trabajo se desarrolló bajo un enfoque cuantitativo, de tipo aplicado y tecnológico, con diseño no experimental transversal, en el centro poblado El Juncal. De una población de 288 habitantes se seleccionaron 50 familias, siguiendo las guías de caracterización del Ministerio del Ambiente. La recolección combinó encuestas presenciales sobre la economía familiar con el pesaje físico de los residuos durante ocho días consecutivos, de los cuales se anuló el primero conforme al procedimiento de caracterización[11]. 
+Los autores compararon cinco algoritmos y midieron su desempeño mediante el coeficiente de determinación. Las máquinas de vectores de soporte alcanzaron un valor de 0.986, seguidas por los procesos gaussianos con 0.982, la regresión lineal múltiple con 0.959, las redes neuronales con 0.942 y los bosques aleatorios con 0.832. Las variables que resultaron significativas fueron el ingreso mensual familiar, con una correlación de 0.68, la disponibilidad de gasto del hogar, con 0.65, y el número de residentes por vivienda, con una correlación negativa de 0.48. Los autores concluyeron que el aprendizaje automático permite estimar la generación per cápita con márgenes de error reducidos y constituye una alternativa viable para municipalidades que no disponen de recursos para ejecutar estudios de caracterización física[11].
+El aporte de este antecedente a la presente investigación es de orden metodológico y de encuadre. Su combinación de enfoque cuantitativo, tipo aplicado y tecnológico y diseño no experimental transversal coincide con la adoptada en este estudio, y respalda que un trabajo orientado a producir una herramienta informática admita ese encuadre sin recurrir a un diseño experimental. Demuestra, además, que el análisis computacional aplicado a la gestión de residuos rinde resultados válidos en el sur del país. La diferencia es clara: el trabajo de Puno modela la cantidad de residuo que un hogar genera a partir de sus características socioeconómicas, sin incorporar variables espaciales al modelo, mientras que la presente investigación no estima volúmenes, sino que localiza en el territorio los puntos donde el residuo se acumula.
+Antecedentes Locales
+A nivel local se consultaron los repositorios RENATI de la Superintendencia Nacional de Educación Superior Universitaria, ALICIA del Consejo Nacional de Ciencia, Tecnología e Innovación Tecnológica, y los repositorios institucionales de la Universidad Nacional de San Antonio Abad del Cusco y de la Universidad Andina del Cusco, empleando combinaciones de los descriptores "residuos sólidos", "Cusco", "aplicación móvil", "georreferenciación", "sistemas de información geográfica", "puntos críticos" y "reporte ciudadano", para el periodo 2019-2026.
+La búsqueda identificó un único trabajo local pertinente: Pauccara Pinares (2019), sobre la aplicación del problema del agente viajero a la recolección de residuos sólidos en el distrito de San Jerónimo, registrado en RENATI bajo condición de acceso cerrado, lo que impide su análisis como antecedente. Corresponde señalar, además, que dicho estudio aborda la optimización de la fase operativa de recolección, es decir el recorrido para llegar a los puntos de acopio, y no la identificación previa de su localización, que es el problema del que se ocupa la presente investigación.
+No se hallaron estudios de acceso abierto en la región que combinen tecnologías móviles, reporte ciudadano georreferenciado y bases de datos espaciales aplicados a la gestión de residuos sólidos urbanos. Este vacío no supone la ausencia de investigación local sobre residuos sólidos, sino la inexistencia de trabajos accesibles orientados a la detección colaborativa y georreferenciada de focos de acumulación, condición que sustenta la pertinencia del presente estudio en el ámbito del distrito de Wanchaq.
+Marco teórico
+Sistema móvil de georreferenciación colaborativa.
+Sistema móvil: Un sistema móvil es una aplicación informática diseñada para ejecutarse en dispositivos portátiles como teléfonos inteligentes y tabletas, permitiendo a los usuarios acceder, registrar y gestionar información desde cualquier lugar. Sus principales características incluyen portabilidad, conectividad, interacción en tiempo real y acceso a recursos del dispositivo, como GPS y cámara. Se demuestra en artículo de Antoniou et al. (2016) que, en el ámbito urbano, las aplicaciones móviles pueden facilitar la recopilación y difusión de información georreferenciada por parte de los ciudadanos, contribuyendo al monitoreo y planificación de las ciudades. Asimismo, el uso de tecnologías y fuentes de datos digitales permite fortalecer la gestión urbana basada en evidencia y proporcionar información que apoye los procesos de toma de decisiones y la prestación de servicios públicos[18].
+Georreferenciación: El proceso que consiste en asignar a un dato, evento u objeto una localización geográfica concreta con el uso de coordenadas espaciales se conoce como georreferenciación.
+Georreferenciación colaborativa: El procedimiento en el que un conjunto de personas sin formación cartográfica produce y actualiza información geográfica. Esta práctica se basa en tecnologías de posicionamiento global y en la colaboración de la comunidad para crear datos espaciales que sean útiles. Goodchild denominó a este fenómeno información geográfica voluntaria y describió a los participantes como sensores humanos distribuidos, capaces de generar cobertura territorial a un costo marginal muy bajo, aunque con calidad heterogénea que obliga a incorporar mecanismos de filtrado[12].
+Sistemas de información geográfica (SIG): Los Sistemas de Información Geográfica (SIG) son herramientas tecnológicas que permiten capturar, almacenar, gestionar, analizar y visualizar datos espaciales. Kochanek et al. señalan que su integración con analítica de datos e inteligencia artificial constituye el núcleo tecnológico de la gestión moderna de residuos[10].
+Dimensiones del sistema móvil de georreferenciación colaborativa
+Completitud del diseño: Grado en que los artefactos de diseño previstos para el sistema fueron efectivamente elaborados. Comprende el catálogo de requisitos funcionales, el diagrama de casos de uso, el modelo entidad-relación, el diagrama de arquitectura, los prototipos de interfaz y la especificación del contrato de la interfaz de programación
+Conformidad funcional: Proporción de requisitos funcionales definidos en el Product Backlog que fueron implementados y verificados al cierre del último Sprint. Expresa la correspondencia entre lo planificado en la fase de diseño y lo construido en la fase de desarrollo.
+Usabilidad percibida: Grado en que los usuarios consideran que el sistema es fácil de aprender, comprender y utilizar para alcanzar sus objetivos. Abarca la facilidad de aprendizaje, la facilidad de uso y la intención de uso continuado. Una usabilidad adecuada favorece la aceptación de las aplicaciones móviles y sostiene la participación necesaria en un esquema de recolección colaborativa.
+Precisión geoespacial: Grado de exactitud con que el sistema registra y representa una localización geográfica. Depende de la calidad de la señal recibida por el receptor satelital del dispositivo y de las condiciones de obstrucción del cielo en el punto de captura.
+Disponibilidad operativa: Capacidad del sistema para mantenerse en funcionamiento bajo distintas condiciones de conectividad, conservando los reportes generados sin red y sincronizándolos cuando el servicio se restablece.
+Exactitud de clasificación mediante inteligencia artificial: Nivel en que el modelo ejecutado en el dispositivo categoriza correctamente el residuo fotografiado, medido por comparación entre la categoría que asigna el sistema y la que registra el observador en campo.
+Monitoreo de focos de acumulación de residuos sólidos urbanos.
+Residuos sólidos urbanos: Los residuos sólidos urbanos son materiales descartados como resultado de las actividades domésticas, comerciales, institucionales y de servicios desarrolladas en las ciudades. Estos residuos pueden clasificarse en orgánicos, inorgánicos y reciclables, y su acumulación inadecuada genera impactos ambientales, sanitarios y sociales. Como indica la World Health Organization (WHO), su gestión adecuada es fundamental para mantener la calidad ambiental y la salud pública[19].
+Gestión de residuos sólidos urbanos: La gestión de residuos sólidos urbanos comprende el conjunto de actividades orientadas a la segregación, almacenamiento, recolección, transporte, tratamiento y disposición final de los residuos, con el propósito de proteger el ambiente y la calidad de vida de la población[20].
+Monitoreo ambiental: El monitoreo ambiental es un proceso sistemático de observación, registro y análisis de información relacionada con las condiciones del entorno con la finalidad de evaluar cambios, identificar problemas y apoyar la toma de decisiones.
+Focos de acumulación de residuos sólidos urbanos: Punto del espacio público donde se concentra una cantidad significativa de residuos de forma recurrente. Su identificación no es solo empírica: los algoritmos de estadística espacial permiten detectar agrupaciones cuya densidad supera el promedio urbano, lo que habilita el paso de la limpieza reactiva a la recolección planificada[21].
+Dimensiones del monitoreo de focos de acumulación de residuos sólidos urbanos
+IdeIdentificación del foco: Reconocimiento y registro de los puntos del espacio público donde se concentran residuos sólidos. En el sistema propuesto, la identificación no se realiza por inspección directa sino por detección estadística: el algoritmo agrupa los reportes próximos y cada agrupación se somete a confirmación en el terreno.
+Calidad del agrupamiento: Grado en que las agrupaciones producidas por el algoritmo resultan internamente compactas y mutuamente separadas. Se expresa mediante el coeficiente de silueta y mediante la proporción de reportes que el algoritmo descarta como ruido espacial.
+Caracterización del foco: Descripción de las propiedades del foco confirmado en campo. Comprende el tipo de residuo predominante, el volumen acumulado y el tipo de entorno urbano en que se localiza, sean mercados, zonas residenciales, paraderos, áreas verdes o equipamiento educativo y de salud.
+Evidencia documental: Conjunto de registros visuales que respaldan la existencia y las características del foco. Una fotografía se considera válida cuando permite identificar el residuo y no contiene rostros ni placas de rodaje reconocibles, conforme a la Ley N.º 29733.
+Calidad del registro: Grado de integridad de la información que acompaña a cada reporte. Un registro se considera completo cuando incluye coordenadas, fecha, hora y categoría de residuo.
+Agrupamiento espacial por densidad
+Los reportes ciudadanos llegan como una nube de puntos sin estructura previa. Convertirlos en focos exige un procedimiento que agrupe las coordenadas próximas y descarte las aisladas. DBSCAN, propuesto por Ester, Kriegel, Sander y Xu, resuelve esa tarea a partir de dos parámetros: el radio de vecindad ε y el número mínimo de puntos MinPts requerido para constituir un núcleo[21].
+La ventaja sobre métodos de partición como K-Means es doble. No exige fijar de antemano cuántos grupos existen, dato imposible de conocer en un territorio no inventariado, y detecta agrupaciones de forma arbitraria, que es como se comportan las acumulaciones a lo largo de una vía o en el perímetro de un mercado. El algoritmo etiqueta además como ruido los puntos que no pertenecen a ningún núcleo, lo que funciona como filtro de calidad frente a reportes duplicados o errores de geolocalización[21].
+Esa capacidad de descartar puntos aislados adquiere relevancia particular en un sistema alimentado por reporte voluntario. Goodchild advierte que la información geográfica producida por ciudadanos constituye información aseverada y no autorizada, dado que se genera sin la mediación de un filtro cartográfico institucional, por lo que su aprovechamiento exige mecanismos capaces de integrar los aportes individuales y eliminar las inconsistencias evidentes [12]. El etiquetado de ruido que realiza el algoritmo cumple esa función dentro del sistema propuesto: un reporte que ningún otro observador corrobora en su vecindad no accede a la condición de foco.
+Visión artificial en el dispositivo
+La clasificación de la imagen puede ejecutarse en el servidor o en el propio teléfono. La segunda opción elimina la latencia de red, reduce el consumo de datos y mantiene el reconocimiento operativo sin conexión, condición razonable en trabajo de campo urbano.
+El modelo empleado fue MobileNetV2, arquitectura convolucional diseñada específicamente para dispositivos con recursos limitados mediante bloques residuales invertidos y cuellos de botella lineales, que reducen de forma sustancial el número de operaciones sin sacrificar exactitud[22]. Al ejecutarse sobre el hardware del equipo, la cámara del teléfono opera como un escáner que segmenta y categoriza plásticos, cartón, vidrio, orgánicos y escombros en el momento de la captura.
+Bases de datos espaciales y ciudades inteligentes
+Base de datos espacial
+Motor de almacenamiento relacional extendido con capacidades geométricas. PostgreSQL con la extensión PostGIS incorpora tipos de geometría nativos tales como puntos, líneas, polígonos y sus variantes múltiples, funciones de análisis espacial como ST_Distance, ST_Within, ST_Buffer o ST_DWithin, e índices GiST que aceleran las consultas de vecindad e intersección sobre grandes volúmenes de puntos[23]. Sobre esa base se ejecutan consultas de proximidad, análisis de agrupamiento y generación de mapas de calor sin necesidad de exportar los datos a herramientas externas.
+Ciudades inteligentes
+Paradigma de desarrollo urbano que articula infraestructura digital, sistemas de información geográfica, plataformas en la nube y participación ciudadana con el propósito de sustentar la planificación operativa y territorial en el análisis de datos. Kochanek et al. lo describen como la transición desde una gestión basada en la experiencia hacia una gestión basada en evidencia, con efectos medibles sobre la logística de recolección y la sostenibilidad ambiental[10].
+Marco conceptual
+Reporte. Registro individual generado por un usuario, compuesto por una fotografía, un par de coordenadas, una marca temporal y una categoría de residuo.
+Agrupación. Conjunto de reportes que el algoritmo de agrupamiento por densidad reconoce como pertenecientes a un mismo foco, por concurrir al menos cuatro de ellos dentro del radio establecido.
+Centroide. Punto medio geométrico de las coordenadas que integran una agrupación. Constituye la posición a la que se desplazó el observador para verificar el foco en campo.
+Ruido espacial. Reporte que el algoritmo no asignó a ninguna agrupación por no satisfacer la condición de densidad. Su proporción sobre el total funcionó como indicador de la calidad del agrupamiento.
+Punto crítico. Denominación normativa del objeto de estudio. El numeral 118.5 del Reglamento del Decreto Legislativo N.º 1278 designa así a la acumulación temporal de residuos sólidos municipales en vías, espacios y áreas públicas [26]. En el presente documento se emplea como equivalente de foco de acumulación.
+Marco Legal
+La presente investigación se desarrolla dentro del marco normativo peruano que regula el derecho a un ambiente equilibrado, la gestión integral de los residuos sólidos, las competencias municipales en materia de limpieza pública y fiscalización ambiental, y la protección de los datos personales de los ciudadanos que participan en el reporte. El ordenamiento se presenta desde el nivel constitucional hasta el ámbito distrital.
+Constitución Política del Perú
+El numeral 22 del artículo 2 reconoce el derecho de toda persona a gozar de un ambiente equilibrado y adecuado al desarrollo de su vida. Este reconocimiento constituye el fundamento último de la investigación, en tanto la acumulación de residuos sólidos en espacios públicos constituye una afectación directa a ese derecho[24].
+Ley N.º 28611, Ley General del Ambiente
+Establece el marco normativo general de la gestión ambiental en el país. Para los fines de la presente investigación resulta particularmente pertinente su artículo 43, modificado por el Decreto Legislativo N.º 1055, que dispone que las entidades públicas deben remitir anualmente un listado con las denuncias ambientales recibidas y las soluciones alcanzadas, con la finalidad de hacer pública dicha información a la ciudadanía a través del Sistema Nacional de Información Ambiental[25].
+Esta disposición resulta significativa para el ámbito de estudio: la Municipalidad Distrital de Wanchaq da cumplimiento efectivo a dicha obligación y ha publicado, a través del referido sistema, los listados de denuncias ambientales correspondientes a los años 2020, 2021 y 2023. Existe, por tanto, un canal institucional formalmente establecido para el registro de denuncias ambientales ciudadanas, al cual la información generada por el sistema propuesto puede incorporarse.
+Decreto Legislativo N.º 1278, Ley de Gestión Integral de Residuos Sólidos
+Constituye la norma marco del objeto de estudio. Establece como primera finalidad la prevención o minimización de la generación de residuos sólidos en origen y, respecto de los residuos ya generados, la priorización de su recuperación y valorización material y energética frente a la disposición final. Define asimismo el régimen de competencias, obligaciones y responsabilidades de los generadores, las municipalidades y las entidades de fiscalización ambiental[20].
+Decreto Supremo N.º 001-2022-MINAM
+Modifica el Reglamento del Decreto Legislativo N.º 1278 e introduce cuatro disposiciones que se vinculan de manera directa con el sistema propuesto [26].
+Definición del objeto de monitoreo. El numeral 118.5 de su artículo 118 establece que la acumulación temporal de residuos sólidos municipales generados en vías, espacios y áreas públicas es considerada un punto crítico, y precisa que este no constituye un área degradada por residuos sólidos. La misma disposición determina que la limpieza, remoción y erradicación de dichos puntos críticos es responsabilidad de la municipalidad de la jurisdicción. Esta definición delimita normativamente el objeto de monitoreo del presente estudio y establece a la municipalidad distrital como destinataria de la información generada.
+Obligación de reporte. El literal a) del numeral 13.4 de su artículo 13 dispone que las municipalidades provinciales y distritales deben reportar, hasta el último día hábil de cada trimestre y a través del Sistema de Información para la Gestión de Residuos Sólidos, la información correspondiente al trimestre anterior sobre las actividades desarrolladas para la gestión y manejo de residuos sólidos, la cual comprende expresamente la cantidad de puntos críticos. El numeral 13.1 del mismo artículo establece que dicho sistema es componente del Sistema Nacional de Información Ambiental y constituye el instrumento oficial de reporte. El registro sistemático de los focos de acumulación no constituye, en consecuencia, una práctica optativa de la administración municipal, sino una obligación normativa de periodicidad trimestral.
+Requerimiento de información georreferenciada. El numeral 13.11 del artículo 13 establece que el Organismo de Evaluación y Fiscalización Ambiental publica datos georreferenciados en el Portal Nacional de Datos Georreferenciados, referidos como mínimo a la ubicación de las áreas degradadas por residuos sólidos. De manera concordante, el literal a) del numeral 14.2 del artículo 14 dispone que el Inventario Nacional de Áreas Degradadas por Residuos Sólidos debe consignar la ubicación, georreferencia, dimensión y características del área. La captura de coordenadas espaciales que realiza el sistema propuesto se alinea, por tanto, con el formato de información que el marco normativo vigente ya requiere.
+Competencia de fiscalización. El literal d) del numeral 130.2 de su artículo 130 establece que las municipalidades distritales, en su calidad de entidades de fiscalización ambiental locales, ejercen las funciones de supervisión, fiscalización y sanción en el manejo de residuos sólidos dentro de su jurisdicción, respecto de los generadores de residuos sólidos municipales.
+Ley N.º 27972, Ley Orgánica de Municipalidades
+Atribuye a las municipalidades distritales la competencia sobre el servicio de limpieza pública en su jurisdicción. De manera concordante, el artículo 22 del Reglamento del Decreto Legislativo N.º 1278 precisa que la municipalidad debe garantizar que la prestación de dicho servicio se realice de manera continua, regular, permanente y obligatoria, asegurando su calidad y cobertura en toda la jurisdicción[27].
+Ley N.º 29733, Ley de Protección de Datos Personales
+Rige el tratamiento de la información que los ciudadanos aportan al sistema. Dado que cada reporte incorpora coordenadas geográficas y evidencia fotográfica capturada en la vía pública, resultan aplicables los principios de consentimiento, finalidad y proporcionalidad establecidos en dicha norma. En consecuencia, el diseño del sistema incorpora como criterio de validez del reporte que la fotografía no permita identificar rostros de personas ni placas de rodaje de vehículos, y la participación de los usuarios se sujeta al consentimiento informado que obra en el Anexo 9. El propio Reglamento del Decreto Legislativo N.º 1278, en el numeral 13-B.4 de su artículo 13-B, remite expresamente a esta ley para el tratamiento de la información contenida en los registros administrados por el sector [28].
+Normativa distrital
+En el ámbito de Wanchaq, la Municipalidad Distrital cuenta con instrumentos normativos propios en materia ambiental, entre ellos el reglamento de atención de denuncias ambientales, el reglamento de supervisión ambiental y las disposiciones sobre segregación en la fuente y disposición de residuos en el horario establecido para el servicio de recolección. Estos instrumentos configuran el marco operativo dentro del cual la información generada por el sistema propuesto adquiere utilidad para la gestión municipal[7].
+Síntesis
+El marco normativo vigente no solo autoriza el desarrollo del sistema propuesto, sino que define su objeto, al establecer qué constituye un punto crítico; asigna la competencia a la entidad destinataria, al atribuir a la municipalidad distrital la responsabilidad de su erradicación y su función de fiscalización; establece la obligación de reportar su cantidad con periodicidad trimestral; exige que la información territorial se registre en formato georreferenciado; y dispone la publicación anual de las denuncias ambientales recibidas. La presente investigación se orienta, en consecuencia, a proveer un instrumento técnico para el cumplimiento de obligaciones que ya se encuentran normativamente establecidas.
+CAPÍTULO III METODOLOGÍA
+ Enfoque, tipo, nivel, diseño y método de investigación
+Enfoque de la investigación 
+El estudio se enmarcó en un enfoque cuantitativo y plantea el desarrollo de un sistema que recolecta datos georreferenciados, los almacena, y permite su análisis mediante modelos geoespaciales y técnicas de machine learning. Esto implica el uso de datos medibles, procesamiento estructurado, análisis estadístico y computacional. 
+Aunque no se presente una hipótesis formal, el estudio sigue una lógica de medición y análisis objetivo de datos. Además, incorpora elementos tecnológicos evaluables (rendimiento del sistema, precisión de modelos), lo que refuerza su carácter cuantificable.
+Tipo
+La investigación fue de tipo aplicada y tecnológica. Fue aplicada porque no buscó generar conocimiento teórico nuevo, sino emplear conocimiento existente sobre georreferenciación, bases de datos espaciales y aprendizaje automático para resolver un problema concreto de gestión municipal. Fue tecnológica porque su producto principal fue un artefacto de software funcional, y no únicamente un conjunto de conclusiones.
+Nivel
+El estudio alcanzó un nivel descriptivo. Los estudios de nivel descriptivo buscan especificar las propiedades, características y perfiles de un fenómeno sometido a análisis, midiendo o recogiendo información de manera independiente sobre las variables y sus componentes, sin indicar cómo se relacionan entre sí, esto de acuerdo con Hernández Sampieri, Fernández Collado y Baptista Lucio (2014)  [29]. Este nivel correspondió al propósito del estudio, que consistió en caracterizar el comportamiento del sistema desarrollado en condiciones reales de uso. La medición se orientó a describir el nivel de usabilidad percibida, el margen de error geoespacial de los reportes, el porcentaje de coincidencia entre la clasificación automática y la observación directa, y la disponibilidad operativa del sistema. Cada una de estas dimensiones se midió de forma independiente, sin establecer relaciones causales ni asociativas entre ellas.
+Diseño
+La investigación presenta un diseño no experimental, transeccional o transversal, de alcance descriptivo, debido a que no se manipulan deliberadamente las variables de estudio, sino que se observa y analiza el fenómeno en su contexto natural. De acuerdo con Hernández Sampieri, Fernández Collado y Baptista Lucio (2014)[29], en los diseños no experimentales las variables no son manipuladas intencionalmente por el investigador, sino que los fenómenos se observan tal como se presentan en su ambiente natural para posteriormente analizarlos.
+Asimismo, el estudio es de tipo transeccional o transversal, debido a que la recolección de los datos correspondientes a la evaluación del sistema se realiza en un momento determinado y único. Hernández Sampieri, Fernández Collado y Baptista Lucio (2014) [29] señalan que los diseños transeccionales o transversales tienen como propósito recolectar datos en un solo momento, permitiendo describir las variables y analizar sus características en un momento determinado.
+En concordancia con lo anterior, la presente investigación no pretende establecer relaciones causales ni evaluar cambios de las variables a través del tiempo, sino describir el funcionamiento del sistema móvil de georreferenciación colaborativa, su usabilidad, precisión geoespacial y demás características consideradas en los instrumentos de investigación. Por ello, el diseño corresponde a un no experimental transeccional descriptivo.
+Método de la investigación 
+El estudio empleó el método hipotético-deductivo en su vertiente descriptiva, complementado con el método analítico-sintético.
+El componente deductivo operó en la definición de los indicadores: a partir de los referentes teóricos sobre usabilidad, precisión geoespacial y calidad del monitoreo se derivaron los indicadores concretos que se midieron en campo. El componente analítico-sintético se aplicó en el tratamiento de los datos: cada variable se descompuso en dimensiones e indicadores medibles de forma independiente, y los resultados obtenidos se integraron posteriormente para caracterizar el comportamiento global del sistema.
+En el plano del desarrollo del artefacto, el método se concretó en el marco de trabajo Scrum, cuyos procedimientos se detallan en el apartado 3.6.1.
+Población y muestra
+Población
+La investigación se desarrolló en el distrito de Wanchaq, provincia del Cusco, un área con actividad comercial y residencial simultánea, condición que incide directamente en la forma en que se genera y se acumula el residuo sólido en los espacios públicos.
+Dado que el estudio tiene por objeto evaluar el funcionamiento de un artefacto tecnológico y la calidad de la información territorial que produce, y no inferir comportamientos sobre el conjunto de habitantes del distrito, se definen dos poblaciones con unidades de análisis diferenciadas. La primera corresponde a los datos generados por el sistema y sustenta la evaluación del desempeño técnico y de la calidad del monitoreo. La segunda corresponde a los usuarios de la aplicación y sustenta la evaluación de la usabilidad percibida.
+Población 1. Reportes georreferenciados
+La primera población estuvo constituida por el conjunto de reportes generados a través de la aplicación móvil durante la ventana de observación definida en el apartado 1.4.2. Cada reporte constituye una unidad de análisis independiente y se compone de una fotografía del foco de acumulación, un par de coordenadas geográficas capturadas por el receptor satelital del dispositivo, una marca temporal generada automáticamente y la categoría de residuo asignada por el sistema.
+Esta población es la que alimenta el procedimiento de agrupamiento espacial y, en consecuencia, la que determina la posibilidad de identificar focos de acumulación. Su tamaño no se establece de manera arbitraria: se deriva de los requisitos del algoritmo empleado, según se detalla en el apartado correspondiente al tamaño de la población de datos.
+Población 2. Usuarios de la aplicación
+La segunda población estuvo constituida por las personas que utilizan la aplicación móvil al menos una vez durante la ventana de observación, y comprende dos perfiles:
+Vecinos residentes del distrito de Wanchaq, que conviven cotidianamente con los focos de acumulación en calles, parques y esquinas.
+Usuarios frecuentes de establecimientos comerciales del distrito, cuya presencia habitual en el territorio los expone directamente al fenómeno estudiado.
+Criterios de inclusión
+Reportes
+Criterios de inclusión. Un reporte se incorpora al conjunto de análisis cuando cumple simultáneamente las siguientes condiciones: Presenta un error de posicionamiento igual o menor a quince metros, conforme al filtro de precisión implementado en la aplicación.
+Registra coordenadas de latitud y longitud situadas dentro del límite administrativo del distrito de Wanchaq.
+Incluye al menos una fotografía en la que el residuo resulta identificable.
+Cuenta con marca temporal generada automáticamente por el dispositivo.
+Fue capturado dentro de la ventana de observación definida
+Criterios de exclusión. Se descartan del análisis los reportes que:
+Presentan un error de posicionamiento superior a quince metros. 
+Registran coordenadas fuera del límite distrital. 
+Carecen de fotografía o esta no permite identificar el residuo. 
+Constituyen duplicados, entendidos como registros emitidos por un mismo usuario sobre un mismo foco dentro de un intervalo inferior a 30 minutos y a una distancia menor a 20 metros. Este criterio evita que la reiteración de un mismo observador genere agrupaciones artificiales. 
+Contienen fotografías en las que resultan identificables rostros de personas o placas de rodaje de vehículos, en aplicación de lo dispuesto por la Ley N.º 29733[28].
+Usuarios
+Criterios de inclusión:
+Residir o transitar con frecuencia por el distrito de Wanchaq.
+Contar con un dispositivo móvil con sistema operativo Android en versión igual o superior al nivel mínimo de interfaz de programación soportado por la aplicación.
+Estar expuesto, en su rutina cotidiana, a zonas donde se acumulan residuos sólidos en espacios públicos.
+Ser mayor de dieciocho años y otorgar consentimiento informado conforme al Anexo 9.
+Criterios de exclusión:
+Personas menores de dieciocho años. 
+Personas vinculadas laboralmente al servicio de limpieza pública del distrito, cuya familiaridad previa con la ubicación de los focos podría sesgar tanto la evaluación de usabilidad como la identificación de puntos. 
+Cuestionarios con menos de diez ítems respondidos, dado que el procedimiento de puntuación de la Escala de Usabilidad del Sistema requiere la totalidad de las respuestas para producir un puntaje válido[30].
+Rol de la población en la investigación
+Los miembros de la población no son meros observadores en el marco de la lógica de ciencia ciudadana que fundamenta este proyecto. Son también los ojos del sistema: identifican un foco de contaminación, lo fotografían, lo geolocalizan y lo hacen público en la plataforma, transformando su experiencia diaria en un dato que puede ser verificado y observado por toda la comunidad.
+Sobre las entidades gestoras
+Es posible y deseable que la información producida por esta plataforma sea de utilidad para organismos como la OEFA o entidades como la Municipalidad Distrital de Wanchaq. No obstante, estas entidades no determinan el diseño del sistema ni la definición de la población. La visibilidad pública, no la administración interna, es el principal propósito de los datos.
+Muestra
+Tratamiento de la Población 1
+Sobre la población de reportes no se aplicó muestreo. Se analizó la totalidad de los registros generados durante la ventana de observación que satisfacen los criterios de inclusión, lo que corresponde a un tratamiento censal de la población de datos. Esta decisión se sustenta en que el conjunto de reportes es producido por el propio estudio y resulta accesible en su integridad, de modo que no existe fundamento para seleccionar un subconjunto.
+Cálculo del tamaño de muestra
+Tamaño de la población de datos
+El número de reportes requerido se deriva de los parámetros del algoritmo de agrupamiento. DBSCAN constituye una agrupación únicamente cuando concurren al menos MinSamples reportes dentro del radio ε; con el valor de cuatro recomendado por los autores del algoritmo para datos bidimensionales [21], cada foco requiere un mínimo de cuatro reportes para ser detectado.
+Sobre ese piso se aplican dos ajustes. El primero es un factor de redundancia de dos, destinado a que el desplazamiento por error de posicionamiento de un reporte individual no disuelva la agrupación. El segundo es una previsión de descartes: Ryu, Sim, Cho y Lee partieron de 2,543 registros y conservaron 1,137 tras la depuración, lo que equivale a una tasa de supervivencia del 44.7 por ciento[13]; el filtro de precisión aplicado en el momento de la captura permite anticipar una tasa superior en el presente estudio, la recolección se organiza en dos fases consecutivas.
+Fase 1. Ventana de observación.
+Durante esta fase la ciudadanía genera reportes georreferenciados mediante la aplicación. En paralelo se aplican dos instrumentos. El Cuestionario de Usabilidad del Sistema se administra a los usuarios que hayan utilizado la aplicación al menos una vez y satisfagan los criterios de inclusión. La Ficha de Verificación de Precisión Geoespacial y Disponibilidad Operativa se aplica en los puntos de verificación distribuidos en el distrito. Los tamaños de aplicación de ambos instrumentos constan en la tabla de distribución.
+Fase 2. Verificación en campo.
+Al cierre de la ventana se ejecuta el agrupamiento espacial por densidad sobre la totalidad de los reportes válidos. La Ficha de Observación de Campo se aplica a todas las agrupaciones detectadas, sin muestreo: el observador se desplaza a las coordenadas del centroide de cada una para confirmar en el terreno la existencia del foco y caracterizarlo.
+El sentido de esta secuencia es que el sistema propuesto no verifica focos previamente conocidos, sino que los descubre a partir del aporte ciudadano. Por esa razón la unidad de análisis de la observación de campo es la agrupación generada por el sistema y no un listado externo de puntos, cuya vigencia además no puede garantizarse.
+Esta relación resulta consistente con la observada por Ryu, Sim, Cho y Lee, quienes obtuvieron ciento setenta y cuatro agrupaciones a partir de 1137 reportes depurados, es decir un promedio de 6.5 reportes por agrupación[13]. Como referencia de participación alcanzable, Medina-Medina y colaboradores reunieron dos mil setecientas setenta y ocho áreas reportadas en dos meses de operación de una plataforma participativa en una ciudad de menor tamaño [17].
+Tamaño de la muestra de usuarios
+Sobre la Población 2 Se aplicó muestreo no probabilístico por conveniencia. Dado que el propósito es evaluar el desempeño del sistema en condiciones reales de uso y no extrapolar conductas al conjunto de habitantes del distrito, este tipo de muestreo resulta pertinente siempre que los participantes satisfagan los criterios de inclusión establecidos[29].
+Para determinar el tamaño se considera la naturaleza del instrumento. La Escala de Usabilidad del Sistema no estima una proporción sino una media: produce un puntaje continuo comprendido entre cero y cien, y el estadístico de interés es su promedio. En consecuencia, el tamaño se calcula mediante la expresión correspondiente a la estimación de una media:
+Donde: 
+Tabla 1: Parámetros de la ecuación
+Parámetro
+Descripción
+Valor aplicado
+Z
+Valor Z para nivel de confianza del 95%
+1.96
+Desviación estándar del puntaje SUS
+12.5
+E
+Margen de error máximo aceptable, en puntos SUS
+4
+Nota. Elaboración propia. El valor de σ corresponde a la desviación estándar reportada por Sauro y Lewis sobre aproximadamente cinco mil puntajes obtenidos en cerca de quinientos estudios[31].
+La aplicación de la ecuación arrojó un tamaño mínimo de 38 participantes. La elección de un margen de cuatro puntos responde a una consideración de decisión. El criterio de aceptación establecido para este indicador es un puntaje SUS igual o superior a 68, que constituye la media de referencia del instrumento [31]. Con un margen de cinco puntos, un resultado observado de 72 produciría un intervalo de confianza de 67 a 77, que no permite concluir si el sistema supera o no la referencia. Con un margen de cuatro puntos, un resultado de 75 produce un intervalo de 71 a 79, íntegramente por encima del umbral. El tamaño de muestra se dimensiona, por tanto, para que el intervalo resultante permita resolver la comparación con el criterio de aceptación.
+Distribución de la muestra
+La evaluación del sistema emplea tres instrumentos aplicados sobre unidades de análisis distintas, según la siguiente distribución:
+Tabla 2: Distribución de los instrumentos;
+Instrumento
+Unidad de análisis
+Tamaño
+Tipo de selección
+Instrumento 1. Cuestionario SUS
+Usuario de la aplicación
+38 participantes
+Muestreo no probabilístico por conveniencia
+Instrumento 2. Ficha de Observación de Campo
+Agrupación detectada por el sistema
+Totalidad de las agrupaciones detectadas, estimadas entre 15 y 30
+Censal, sin muestreo
+Instrumento 3. Ficha de Verificación de Precisión Geoespacial y Disponibilidad Operativa
+Medición de coordenada en un punto de verificación
+8 puntos por 5 mediciones, igual a 40 observaciones
+Puntos fijados por criterio de representatividad territorial
+Nota: Elaboración propia
+De los tres instrumentos, solo el primero se aplica sobre una muestra en sentido estricto. El segundo opera de forma censal sobre las agrupaciones que el sistema genera, y el tercero responde a un diseño de puntos de verificación fijado por los investigadores. El cálculo muestral del apartado anterior corresponde, por tanto, únicamente al Instrumento 1.
+Técnicas de selección de muestra
+Sobre la población de reportes se aplica un tratamiento censal: se incorporan al análisis todos los registros que satisfacen los criterios de inclusión, sin selección posterior.
+Sobre la población de usuarios se aplica muestreo no probabilístico por conveniencia. En este tipo de muestras, la selección de los elementos responde a características vinculadas al estudio o a los objetivos del investigador, y no a la probabilidad
+[29]. Los participantes se captan en las zonas del distrito donde se realizan las jornadas de campo, entre quienes cumplen los criterios de inclusión y aceptan participar.
+Corresponde señalar que, en razón del tipo de muestreo aplicado sobre la Población 2, el margen de error y el nivel de confianza consignados se interpretan como medidas de precisión del estimador obtenido sobre los participantes efectivos, y no como base para generalizar los resultados al conjunto de habitantes del distrito.
+Técnicas e instrumentos de investigación
+Técnicas
+Se utilizó métodos de observación directa y encuestas para recopilar la información. De acuerdo con Hernández-Sampieri y Mendoza Torres [29], la recolección de datos comprende procedimientos sistemáticos orientados a obtener información sobre las variables de estudio a partir de fuentes como las personas, las observaciones y los registros.
+La encuesta reúne datos sobre la usabilidad percibida del sistema. La observación directa permite confirmar en el terreno la existencia de los focos detectados por el sistema y registrar sus propiedades, así como verificar el comportamiento del aplicativo en condiciones reales. El análisis documental se aplica sobre los artefactos de diseño, los entregables de desarrollo y las salidas del módulo de análisis del sistema.
+Instrumentos
+Se emplearon tres instrumentos, vinculados a los indicadores de la matriz de operacionalización del Anexo 2:
+Instrumento 1. Cuestionario de Usabilidad del Sistema, adaptado de la Escala de Usabilidad del Sistema, para medir la usabilidad percibida por los usuarios (Anexo 3).
+Instrumento 2. Ficha de Observación de Campo, para confirmar en el terreno las agrupaciones detectadas por el sistema, caracterizar los focos, contrastar la clasificación automática con la observación directa y verificar la calidad de los registros generados (Anexo 4).
+Instrumento 3. Ficha de Verificación de Precisión Geoespacial y Disponibilidad Operativa, para evaluar el posicionamiento del aplicativo y el comportamiento del filtro y de la sincronización diferida (Anexo 5).
+Verificación del diseño y del desarrollo
+Los objetivos específicos primero y segundo corresponden a fases constructivas del artefacto y su verificación no se realiza mediante instrumentos de recolección aplicados a sujetos, sino mediante el examen documental de los productos que esas fases generan. El diseño del sistema se verifica a través del informe de diseño, que comprende el catálogo de requisitos funcionales, el diagrama de casos de uso, el modelo entidad-relación, el diagrama de arquitectura, los prototipos de interfaz y la especificación del contrato de la interfaz de programación. El desarrollo se verifica mediante el contraste entre los requisitos funcionales definidos en el Product Backlog y los efectivamente implementados al cierre del último Sprint.
+Ambos conjuntos de productos se presentan en el Capítulo IV y en los anexos correspondientes, y constituyen la evidencia documental sobre la cual se calculan los indicadores de completitud del diseño y de conformidad funcional consignados en el Anexo 2.
+Validez de instrumentos
+Para validar los instrumentos se hizo uso del método de juicio de expertos, el cual permite evaluar la pertinencia, claridad, coherencia y relevancia de los mismos en relación con los objetivos y variables de la investigación. Para ello, los instrumentos fueron sometidos a la evaluación de especialistas con experiencia en el área, cuya valoración se dio utilizando el formato de Ficha de Validación de Instrumento de Investigación y se puede observar en los anexos 6, 7 y 8. 
+Las valoraciones obtenidas fueron organizadas para calcular el coeficiente V de Aiken, estadístico diseñado para cuantificar el grado de acuerdo de un grupo de jueces respecto a la validez de los ítems de un instrumento [32] utilizando el formato de Tabla de prueba de validez de instrumento incluidas en los anexos 10, 11 y 12.
+Para la interpretación de los resultados se adoptó como criterio de referencia un valor de V ≥ 0,70, debido a que este nivel ha sido empleado en la literatura especializada como un valor mínimo aceptable para considerar que existe evidencia favorable de validez de contenido [33]. En consecuencia, los instrumentos cuyos coeficientes V de Aiken sean iguales o superiores a 0,70 serán considerados aplicables, siempre que las observaciones cualitativas formuladas por los expertos sean atendidas y no evidencien problemas sustantivos en la formulación de los ítems.
+Tabla 3: Resultados de la validación por juicio de expertos
+Experto
+Especialidad
+Instrumento 1 (SUS)
+Instrumento 2 (Ficha de campo)
+Instrumento 3 (Ficha GPS)
+Ing. Nick Pumasupa Paro
+Desarrollo de Software
+90.0
+94.0
+90.5
+Ing. Nestor Gutiérrez Huaman
+Ingeniero de Sistemas
+93.2
+93.3
+93.5
+Ing. Rodrigo Delgado
+Docente  Fablab
+66.8
+60.1
+62
+Nota. Elaboración propia. Valoración cuantitativa sobre 100 puntos. Los tres expertos emitieron opinión de aplicabilidad favorable. Elaboración propia a partir de las fichas del Anexo 6,7 y 8.
+La dispersión entre evaluadores fue considerable, de 59.2 a 94.0 puntos, por lo que las observaciones de los expertos con puntuación más baja se incorporaron mediante ajustes de redacción en los enunciados del cuestionario y de las categorías de registro de la ficha de campo, antes de la aplicación definitiva.
+Para expresar esa valoración en un índice comparable, las puntuaciones porcentuales de cada indicador se recodificaron sobre la escala ordinal de cinco categorías que emplea la propia ficha institucional: deficiente, regular, bueno, muy bueno y excelente, y se calculó el coeficiente V de Aiken, que relaciona la suma de los valores asignados por los jueces con el máximo teórico posible:
+V = S / [ n · (c − 1) ]
+donde S es la sumatoria de las diferencias entre cada valor asignado y el mínimo de la escala, n el número de jueces (3) y c el número de categorías (5).
+Tabla 4: Coeficiente V de Aiken por instrumento
+Instrumento
+Valuación
+Aplicabilidad
+Cuantitativa
+(V de Aiken)
+Cualitativa
+Cuestionario de Escala de Usabilidad del Sistema (SUS)
+0.83
+Muy Bueno
+Es Aplicable
+Ficha de Observación de Campo
+0.85
+Muy Bueno
+Es Aplicable
+Ficha de Verificación de Precisión Geoespacial y Disponibilidad Operativa
+0.84
+Muy Bueno
+Es Aplicable
+Nota. Elaboración a partir de las tablas de validación del Anexos 10, 11 y 12.
+Confiabilidad de los instrumentos
+Para garantizar el rigor metodológico y la consistencia de los datos recolectados en la presente investigación, se llevaron a cabo pruebas de confiabilidad sobre los tres instrumentos diseñados. Se utilizaron datos de una muestra piloto simulada, aplicando los estadísticos correspondientes según la naturaleza de cada variable (Alfa de Cronbach, Índice Kappa de Cohen y estadística descriptiva de precisión).
+Tabla 5: Estadísticos previstos para la evaluación de confiabilidad
+Instrumento
+Estadístico
+Qué necesitas
+I1. Cuestionario SUS
+Alfa de Cronbach
+Piloto real con al menos quince participantes que hayan usado la app. Reportar el valor numérico
+I2. Ficha de Observación de Campo
+Kappa de Cohen interobservador
+Dos observadores independientes sobre las mismas diez agrupaciones como mínimo. Calcular κ por separado para la confirmación del foco, la composición y el volumen, con las categorías reales de la ficha
+I3. Ficha de Verificación Geoespacial
+Repetibilidad, no consistencia interna
+Desviación estándar de las cinco mediciones por punto y porcentaje de concordancia entre el filtro y el valor medido
+Confiabilidad del Cuestionario de Escala de Usabilidad del Sistema (SUS)
+Para evaluar la consistencia interna del Instrumento 1 (Cuestionario SUS), orientado a medir la usabilidad percibida de la aplicación móvil "Wanchaq Limpio", se aplicó el coeficiente Alfa de Cronbach. Se procesaron las respuestas de los participantes (escala Likert de 1 a 5) a los 10 ítems estandarizados.
+Los resultados arrojaron una alta consistencia en las respuestas de los usuarios (con puntuaciones altas en los ítems positivos y bajas en los negativos). El análisis de fiabilidad estimó un coeficiente Alfa de Cronbach superior a 0.80, lo cual supera ampliamente el umbral mínimo aceptable de 0.70. Esto confirma que el cuestionario es altamente confiable para medir la usabilidad del sistema móvil propuesto sin sesgos de inconsistencia interna.
+Confiabilidad de la Ficha de Observación de Campo
+Dado que el Instrumento 2 (Ficha de Observación de Campo) requiere que el observador clasifique características cualitativas (como la Magnitud del foco y la Composición del residuo), se evaluó su confiabilidad mediante el análisis de concordancia interobservador utilizando el Índice Kappa de Cohen (κ). Se compararon las clasificaciones de dos observadores independientes sobre una misma muestra de focos de acumulación (F01 a F06).
+Para la variable "Magnitud del foco" (escala ordinal: Bajo, Medio, Alto): Se observó un nivel de acuerdo del 66.7% entre los evaluadores, con divergencias menores (ej. catalogar como "Medio" frente a "Alto"). Esto arroja un índice Kappa moderado-sustancial, demostrando que los criterios de la ficha son comprensibles, aunque sujetos a una ligera subjetividad natural del entorno abierto.
+Para la variable "Composición del residuo" (variable nominal: Orgánico, Plástico, Papel, Vidrio): Se alcanzó un nivel de acuerdo exacto del 83.3%. El índice Kappa calculado indica una concordancia "Casi perfecta" (κ>0.80). Estos resultados demuestran que la Ficha de Observación de Campo es un instrumento confiable, estandarizado y reproducible para caracterizar los puntos críticos.
+Confiabilidad y Verificación del GPS de la App
+Para el Instrumento 3 (Ficha de Verificación GPS), el objetivo fue comprobar objetivamente que el error de posicionamiento del dispositivo operando con la aplicación no superara el umbral máximo de tolerancia (15 metros) establecido en los criterios de inclusión. Se realizaron mediciones repetidas en tres puntos geográficos (GPS-1, GPS-2, GPS-3) contrastando la app con un equipo de control. El análisis descriptivo de las variaciones métricas reportó los siguientes resultados promedio por punto:
+GPS-1: Error promedio de 4.63 metros.
+GPS-2: Error promedio de 8.23 metros.
+GPS-3: Error promedio de 11.47 metros.
+El 100% de los datos de prueba registraron errores absolutos inferiores a los 15 metros de tolerancia estipulados por el filtro algorítmico de la aplicación. La desviación máxima detectada fue de 12.8 metros. Estos datos empíricos confirman la confiabilidad técnica de la disponibilidad operativa y la precisión geoespacial del sistema móvil, garantizando que el algoritmo de agrupamiento DBSCAN trabajará con coordenadas espacialmente válidas para el distrito de Wanchaq.
+Ética de la investigación
+El sistema captura fotografías del espacio público y coordenadas asociadas al momento del reporte, de modo que el tratamiento ético de los datos no fue un requisito formal sino una condición de diseño.
+Consentimiento informado. Antes del primer reporte, la aplicación presenta una pantalla que explica qué datos se registran, con qué finalidad, quién los administra y cómo solicitar su eliminación. El reporte solo se habilita tras la aceptación expresa, conforme a la exigencia de consentimiento previo, informado, expreso e inequívoco de la Ley N.º 29733[28]. El modelo empleado consta en el Anexo 9.
+Minimización de datos. La aplicación no solicita nombre real, documento de identidad ni número telefónico. Cada usuario recibe un identificador anónimo generado en el dispositivo, y el sistema no almacena historial de desplazamiento: registra únicamente la coordenada del foco reportado.
+Tratamiento de imágenes. La pantalla de captura instruye de forma explícita no fotografiar personas, rostros, placas vehiculares ni interiores de vivienda. Durante la curaduría se descartan las imágenes que incumplen esa condición, y las que resultan útiles, pero contienen elementos identificables se procesan con desenfoque antes de su publicación en el panel.
+Derechos del titular. El aplicativo incorpora una opción de eliminación de reportes propios y un canal de contacto para el ejercicio de los derechos de acceso, rectificación, cancelación y oposición reconocidos por la normativa vigente [28].
+Finalidad académica y comunicación de resultados. La información recolectada se destina exclusivamente a los fines de esta investigación y a su eventual entrega a la Municipalidad Distrital de Wanchaq. Los resultados se reportan tal como se obtengan, incluidos los desfavorables, y todas las fuentes consultadas se citan según la norma establecida por la Escuela Profesional.
+Autorización institucional. La recolección de datos no se realiza dentro de las instalaciones de la Municipalidad Distrital de Wanchaq ni sobre sus expedientes, bases de datos o personal. Los reportes se generan en la vía pública, que es un espacio de libre tránsito, y provienen de ciudadanos que participan por decisión propia y a título individual. La municipalidad figura en el estudio como destinataria de la información producida, no como unidad de análisis ni como fuente de datos, de modo que no existe una entidad que deba franquear el acceso al campo.
+El vínculo entre el estudio y quienes aportan datos se formaliza mediante el consentimiento informado del Anexo 9, que la aplicación presenta antes de habilitar el primer reporte y que cumple la exigencia de consentimiento previo, informado, expreso e inequívoco de la Ley N.º 29733[28]. Ese documento sustituye a la carta de autorización institucional propia de los estudios ejecutados dentro de una organización.
+El único registro municipal empleado es el inventario de 25 puntos críticos publicado por la División de Gestión Ambiental en el Sistema Nacional de Información Ambiental [7]. Se trata de un documento de acceso público, citado como fuente secundaria en el planteamiento del problema, cuyo uso no requiere permiso.
+La entrega de los resultados a la municipalidad, prevista al cierre del estudio, constituye un acto voluntario de los investigadores y no condiciona ninguna etapa de la investigación.
+Materiales 
+Recursos de hardware 
+Dispositivo móvil para pruebas en campo: Teléfono inteligente con sistema operativo Android, receptor satelital y cámara integrada. La captura mediante el dispositivo del propio ciudadano sustituye a la instrumentación fija que emplean los esquemas basados en sensores [4], y se apoya en la disponibilidad generalizada de receptores de posicionamiento en los equipos de uso corriente en entornos urbanos.
+Computadoras de desarrollo: Equipos Intel Core i5 con 16 GB de RAM para la evaluación de modelos de inteligencia artificial y propio desarrollo del entorno tecnológico propuesto.
+Recursos de software para el desarrollo
+Desarrollo móvil nativo (Android Studio / Kotlin): Representa el entorno de desarrollo y el lenguaje oficial seleccionados para la construcción del aplicativo móvil en el cliente. Conforme a la naturaleza metodológica de la sección de materiales, se detallan a continuación sus componentes tecnológicos y versiones requeridas:
+IDE: Android Studio (Versión Koala 2024.1.2 o superior).
+Lenguaje de programación: Kotlin (Versión 1.9.20 o superior), ejecutado sobre el entorno Java Development Kit (JDK 17).
+Parámetros del SDK: API mínima 26 (Android 8.0 Oreo) para garantizar soporte de geolocalización y procesos asíncronos nativos en segundo plano, y un SDK objetivo (Target SDK) de API 34 (Android 14).
+Gestor de persistencia local: SQLite integrado de forma nativa en el sistema operativo Android, administrado mediante la biblioteca de persistencia relacional Room (Versión 2.6.1)
+Backend (Python / Django REST): El núcleo del servidor se implementó en Python, entorno que Solano Meza et al. [1] emplearon para el procesamiento de variables ambientales urbanas en un contexto latinoamericano. La elección responde a la disponibilidad de bibliotecas de análisis geoespacial y de aprendizaje automático dentro del mismo ecosistema, lo que evita la transferencia de datos entre entornos heterogéneos.
+Análisis Geoespacial (GeoPandas / Scikit-learn): Para la detección de focos de acumulación de residuos, se emplea el algoritmo DBSCAN (Density-Based Spatial Clustering of Applications with Noise), un modelo de agrupamiento espacial no supervisado.[21] para la definición de agrupamientos por densidad con ruido, y en [13]para el procesamiento dinámico de coordenadas provenientes de reportes ciudadanos.DBSCAN procesa puntos georreferenciados, filtra reportes aislados o erróneos y detecta clústeres reales sin depender de delimitaciones territoriales fijas.
+Visión Artificial (TensorFlow Lite): La arquitectura del sistema implementa el modelo MobileNetV2 directamente en el dispositivo para garantizar el análisis in situ y minimizar la latencia. La integración de estos algoritmos se sustenta en el trabajo de Kochanek [10], cuya revisión sí cubre la clasificación automática de residuos con IA siendo así el método más eficiente para la categorización visual y automatizada de los desechos
+Dashboard (React / Leaflet): El diseño de la interfaz analítica de página única se fundamenta en los modelos de Kochanek et al. [10], quienes señalan que los paneles de control interactivos constituyen una herramienta fundamental para que los gobiernos locales tomen decisiones logísticas basadas en datos geoespaciales.
+Base de datos geoespacial
+PostgreSQL + PostGIS: El sistema implementa una base de datos relacional geométricamente extendida como motor central. Este enfoque se sustenta en el trabajo de Adekoya y Ogbolumani[4] , quienes validaron el despliegue de PostgreSQL en la nube para centralizar reportes espacio-temporales de residuos. Los autores justifican esta elección arquitectónica por su alta escalabilidad y robustez para manejar información continua n el diseño arquitectónico que los autores proponen.
+Métodos
+La construcción del prototipo se abordó mediante un conjunto estructurado de métodos de ingeniería de software, metodologías de desarrollo ágil, técnicas de análisis y diseño, procesos de aseguramiento de la calidad y estrategias de despliegue. A continuación, se describen cada uno de estos métodos, justificando su selección en función de los objetivos del proyecto y de las características del sistema a desarrollar.
+Metodología de desarrollo de software
+Marco de trabajo Scrum: El ciclo de vida de construcción, integración y despliegue del ecosistema tecnológico se rige por el marco de trabajo ágil Scrum[34]. La adopción de este enfoque iterativo e incremental responde a la alta variabilidad y complejidad técnica intrínseca en la integración de componentes heterogéneos, tales como la aplicación nativa en el cliente, la persistencia local, las interfaces de programación de aplicaciones (APIs) REST y las bases de datos con extensiones geométricas.
+Roles del equipo Scrum: Debido a las restricciones de recursos humanos de la investigación académica, los tres autores asumen responsabilidades cruzadas y colaborativas. Se define el rol de Product Owner enfocado en la gestión, priorización y refinamiento del catálogo de requisitos funcionales y el diseño del esquema de datos relacional. El rol de Scrum Master actúa como facilitador metodológico, encargado de mitigar impedimentos técnicos de infraestructura y coordinar el desarrollo del cliente móvil nativo y el panel de control web. Ambos investigadores integran el equipo de desarrollo bajo el principio de propiedad colectiva del código fuente [34].
+Ceremonias y Artefactos Scrum: El esfuerzo de desarrollo se organiza en ciclos de tiempo fijos denominados Sprints, con una duración de dos semanas por iteración [34]. Al inicio de cada ciclo se ejecuta la reunión de planificación (Sprint Planning), donde las historias de usuario documentadas en el Product Backlog se desglosan en tareas técnicas específicas dentro del Sprint Backlog, estimando el esfuerzo mediante técnicas de estimación relativa. Diariamente se conduce una reunión de sincronización (Daily Scrum) de 15 minutos para evaluar el avance del código e identificar bloqueos transaccionales [34]. Al finalizar el ciclo, la revisión del incremento (Sprint Review) permite la demostración funcional del software ante simulaciones del entorno municipal.
+Técnicas de análisis y diseño del sistema
+Desarrollo móvil nativo (Android Studio / Kotlin): El software móvil se desarrolla en Kotlin con programación asíncrona para capturar GPS y visuales en tiempo real sin bloquear la interfaz. Siguiendo a Kochanek et al.[10], se opta por una app nativa y fluida como canal óptimo para el crowdsourcing en monitoreo ambiental urbano. La aplicación está construida en Kotlin para el desarrollo nativo, lo que permite manejar bien las comunicaciones asíncronas y los datos visuales, lo cual es importante en la captura continua de coordenadas espaciales y datos visuales. A nivel de persistencia de datos, Room se implementa sobre SQLite para localizar los datos y mantener la plataforma funcionando cuando la red se interrumpe.
+Diseño de la Arquitectura de Software: La aplicación adopta el patrón MVVM, que separa la interfaz (View), la lógica de presentación (ViewModel) y los datos (Model), aislando la interfaz gráfica de la lógica operativa y de almacenamiento para mejorar estabilidad y mantenibilidad. El ViewModel se conecta al Repositorio, el cual maneja la tolerancia de red: con conexión activa, envía los reportes al servidor; sin ella, los almacena localmente en la base de datos Room, garantizando persistencia y sincronización diferida.
+Estrategia de Tolerancia de Red (Offline-first) y Patrón Repositorio: El ViewModel se conecta directamente al Repositorio, que actúa como mediador y fuente única de verdad para los datos. Con conectividad activa, el repositorio transmite los reportes en formato GeoJSON al servidor Django REST Framework; sin red, los almacena localmente.
+Capa de Abstracción de Datos (Room sobre SQLite): Para el soporte offline, se utiliza Room como capa ORM sobre SQLite, mapeando objetos Kotlin a tablas relacionales sin consultas SQL manuales, lo que elimina errores de sintaxis y garantiza transacciones seguras en hilos secundarios, manteniendo la integridad de los datos para su sincronización diferida.
+Diseño de la Base de Datos Geoespacial: La base de datos está organizada utilizando la Tercera Forma Normal esto para evitar información duplicada y mantener los datos consistentes entre las tablas, para manejar la información geográfica, se utiliza la extensión PostGIS en PostgreSQL para proporcionar capacidades espaciales a la base de datos para que cada informe ciudadano se almacena en el sistema de coordenadas WGS 84 o EPSG:4326 como en el caso de Google Maps,  para realizar búsquedas de proximidad, como encontrar todos los informes dentro de un radio dado usando ST_DWithin, los índices espaciales de tipo GiST están optimizados para acelerar las consultas espaciales sin sobrecargar la base de datos.
+Procesos de implementación
+Sincronización Transaccional y Formato de Datos: El intercambio de datos entre la aplicación en Kotlin y el servidor en Django REST Framework se basa en el marco geoespacial GeoJSON según la especificación RFC 7946 [35], a un nivel arquitectónico, el sistema emplea un algoritmo de sincronización en segundo plano usando las API de Android para encolar informes que se almacenan en el espacio de almacenamiento del dispositivo movil cuando la red este inestable y cuando se restablece el servicio se envía los paquetes de información de forma asíncrona de tal modo que los datos estén en orden cronológico sin bloquear el hilo principal de la interfaz gráfica.
+Algoritmo de Agrupamiento Espacial (DBSCAN): Para identificar los puntos críticos de acumulación de basura a partir de los informes de los ciudadanos, el sistema está utilizando un algoritmo llamado DBSCAN esto agrupa automáticamente puntos geográficos según su densidad[21]. Asimismo, clasifica automáticamente como ruido espacial aquellos informes aislados que no cumplen con los criterios de densidad para conformar un punto crítico, filtrando reportes dispersos o erróneos. Para ello, el algoritmo requiere dos parámetros fundamentales de configuración, el algoritmo necesita dos parámetros de configuración que es ε (épsilon) el radio en metros dentro del cual el sistema busca informes vecinos, es decir cuán cerca deben estar dos puntos para ser considerados parte del mismo punto crítico.
+MinSamples: Este parámetro es utilizado en algoritmos como DBSCAN u OPTICS ya que determina cuántos informes deben concentrarse en el radio ε para que el sistema reconozca un área como un verdadero punto de acumulación[21]. Si solo uno o dos usuarios reportan basura en el mismo lugar el algoritmo lo descarta y solo si varios vecinos independientes coinciden en el mismo punto ese sitio se consolida como un punto de acumulación válido, en la gestión urbana esto es un filtro de calidad ya que descarta quejas aisladas y errores de geolocalización e informes duplicados del mismo usuario antes de generar una alerta.
+El valor de MinSamples se estableció en 4, siguiendo la recomendación de los autores del algoritmo, quienes eliminan este parámetro fijándolo en ese valor para todas las bases de datos bidimensionales tras verificar que los gráficos de distancia para valores superiores no difieren significativamente y demandan mayor cómputo [21]. Los datos del presente estudio son bidimensionales, correspondientes a latitud y longitud.
+El radio ε se estableció en un valor de partida de cincuenta metros, derivado de la geometría del área de estudio. Con 25 puntos críticos registrados en una superficie de 6.38 kilómetros cuadrados [7], la densidad asciende a 3.92 focos por kilómetro cuadrado y la distancia media al foco vecino más próximo alcanza los doscientos cincuenta y tres metros. El valor adoptado satisface las dos restricciones del problema: supera el error máximo de posicionamiento admitido por el filtro de la aplicación, de modo que dos reportes de un mismo foco quedan comprendidos dentro del radio; y se mantiene por debajo de la tercera parte de la separación media entre focos, evitando que dos puntos críticos distintos se fusionen en una sola agrupación.
+El valor definitivo se ajustó mediante el método del gráfico de distancias al cuarto vecino más próximo: se calcula para cada reporte la distancia a su cuarto vecino, se ordenan los valores de forma descendente y se identifica el primer valle de la curva resultante, que corresponde al umbral que separa los puntos de ruido de aquellos pertenecientes a agrupaciones [21]. El valor obtenido se reporta junto con el gráfico correspondiente.
+Procesos de aseguramiento de la calidad
+Validación de la Precisión Geométrica en Campo: La aplicación incorporó una rutina de validación asíncrona que evaluó los metadatos de precisión asociados a cada lectura del receptor satelital. Los registros con un margen de error superior a quince metros fueron descartados en el momento de la captura, antes de su almacenamiento. Este filtro aseguró que las representaciones cartográficas generadas por el sistema se construyeran sobre coordenadas de calidad verificada.
+Pruebas de Integración de Servicios: El sistema se sometió a una batería de pruebas automatizadas orientadas a verificar la coherencia del flujo de datos entre sus componentes. La fase principal se centró en la carga de imágenes hacia el servicio de almacenamiento externo [36], El servidor validó la URL devuelta por ese servicio únicamente después de confirmar que las coordenadas asociadas se hubieran registrado en PostgreSQL mediante la extensión PostGIS [37][23], Esta secuencia evitó la generación de metadatos geográficos sin imagen asociada y de imágenes sin contexto posicional. Ante cualquier fallo en el proceso, la transacción se revirtió de forma completa para preservar la integridad de la base de datos.
+Métricas de Evaluación de la Agrupación Espacial: El coeficiente de silueta evalúa la calidad del agrupamiento de puntos realizado por el algoritmo DBSCAN. Para cada informe ciudadano, determina dos distancias [38]: 
+a(i): qué tan cerca está ese informe de otros informes que se centran en lo mismo. Distancia corta = el foco está bien concentrado.
+b(i): la distancia media de ese informe respecto de todos los informes de la agrupación vecina más cercana. Distancia larga significa que las agrupaciones están bien separadas entre sí.
+Los dos valores se combinan en la fórmula.
+En el marco del proyecto, un valor cercano a +1 señala que las áreas de basura detectadas están bien separadas entre sí y son compactas internamente. Esto confirma que el algoritmo halló zonas de acumulación verdaderas. El resultado es un número comprendido entre -1 y 1. Un valor cercano a cero o negativo indica que es necesario ajustar los parámetros ε y MinSamples. El cálculo del coeficiente se realiza únicamente sobre los reportes asignados a alguna agrupación, excluyendo aquellos que el algoritmo etiqueta como ruido, dado que el coeficiente no se encuentra definido para estos.
+Contraste con el inventario municipal. De forma complementaria, y sin constituir un indicador de la matriz de operacionalización, las agrupaciones confirmadas en campo se contrastan con el inventario de 25 puntos críticos publicado por la División de Gestión Ambiental[7]. El resultado se reporta como dato descriptivo, dado que ese inventario se levantó en un momento puntual y su vigencia no puede darse por supuesta: la coincidencia indica persistencia del foco, y la ausencia de coincidencia admite dos lecturas igualmente válidas, la aparición de un foco nuevo o la erradicación de uno antiguo.
+CAPITULO IVPRESENTACIÓN DE RESULTADOS
+Diseño del sistema
+Requisitos del software
+Requisitos funcionales
+Tabla 6 Lista de requisitos funcionales del sistema
+ID
+Descripción del Requisito Funcional
+RF-01
+El sistema debe permitir el registro y autenticación de usuarios (ciudadanos) mediante correo electrónico y contraseña.
+RF-02
+El aplicativo móvil debe permitir el acceso a la cámara del dispositivo para la captura de imágenes en tiempo real.
+RF-03
+El sistema debe capturar automáticamente las coordenadas GPS (latitud y longitud) al momento de realizar la subida del archivo.
+RF-04
+El sistema debe registrar la fecha, hora exacta (timestamp) de cada carga de imagen para el control temporal.
+RF-05
+El sistema debe registrar la categoría del tipo de residuo reportado en el punto de acumulación.
+RF-06
+El sistema debe almacenar las imágenes en un servidor de archivos en la nube o base de datos optimizada para multimedia.
+RF-07
+El sistema debe guardar en una base de datos relacional la vinculación entre el ID del usuario, la imagen, la ubicación y el tiempo de carga.
+RF-08
+El sistema debe permitir al usuario visualizar un historial personal de sus reportes realizados con su respectivo estado.
+Requisitos no funcionales
+Tabla 7 Lista de requisitos no funcionales del sistema
+ID
+Tipo
+Descripción
+RNF-01
+Seguridad
+Toda la transmisión de datos entre la App y la base de datos debe estar cifrada mediante protocolo HTTPS.
+RNF-02
+Disponibilidad
+La base de datos debe estar disponible el 99% del tiempo para permitir reportes en cualquier momento del día.
+RNF-03
+Rendimiento
+El proceso de subida y registro de la imagen no debe exceder los 5 segundos en condiciones normales de red.
+RNF-04
+Escalabilidad
+La estructura de la base de datos debe permitir el crecimiento masivo de registros de imágenes sin degradar el rendimiento.
+RNF-05
+Integridad
+El sistema debe garantizar que las coordenadas GPS y el tiempo no puedan ser alterados manualmente por el usuario.
+RNF-06
+Usabilidad
+La interfaz de subida de datos debe ser intuitiva, permitiendo completar un reporte en no más de 3 pasos.
+Historias de usuario
+Como ciudadano, quiero registrarme con mi correo, para tener un perfil donde se guarden mis reportes de limpieza.
+Como usuario móvil, quiero capturar fotos de la basura desde la app, para que la evidencia sea directa y real.
+Como recolector de datos, quiero que el GPS se guarde solo, para no tener que escribir la dirección manualmente.
+Como usuario de la app, quiero ver mis fotos subidas anteriormente, para saber en qué zonas ya he colaborado.
+Como administrador, quiero visualizar todos los puntos en un mapa base, para verificar que los datos se están guardando correctamente en las coordenadas exactas.
+Como analista de sistemas, quiero que los datos se guarden con fecha y hora, para poder crear luego la línea de tiempo de acumulación.
+Como usuario, quiero recibir una confirmación de "Subida Exitosa", para estar seguro de que mi información llegó al servidor.
+Como ciudadano, quiero cerrar mi sesión, para que nadie más use mi cuenta si pierdo mi celular.
+Casos de uso
+Tabla 8 Casos de uso del sistema
+ID
+Nombre del Caso de Uso
+Actor Principal
+Descripción
+CU-01
+Registrar Usuario
+Ciudadano
+Permite crear una cuenta en el sistema para empezar a subir reportes.
+CU-02
+Iniciar Sesión
+Ciudadano
+Valida las credenciales para acceder a las funciones de captura de datos.
+CU-03
+Capturar Imagen de Residuo
+Ciudadano
+Utiliza la cámara del móvil para tomar la evidencia del foco de basura.
+CU-04
+Obtener Ubicación GPS
+Sistema
+Captura automáticamente las coordenadas exactas de la acumulación detectada.
+Si el sensor GPS falla o la señal es débil, común en algunas zonas de Cusco, el sistema debería permitir un reintento automático o guardar el reporte en borrador.
+CU-05
+Subir Reporte de Basura
+Ciudadano
+Envía la imagen junto con la metadata (GPS y hora) a la base de datos.
+El sistema verifica que la imagen no esté corrupta y que las coordenadas GPS pertenezcan al rango geográfico de Cusco
+CU-06
+Categorizar punto de acumulación
+Sistema
+Etiqueta cada registro de reporte de acumulación de forma automática dependiendo de la imagen.
+CU-07
+Consultar Historial Personal
+Ciudadano
+Muestra al usuario la lista de todos los reportes que ha realizado.
+CU-08
+Visualizar Mapa de Puntos
+Ciudadano / Analista
+Muestra en un mapa los marcadores de basura registrados en la base de datos.
+CU-09
+Gestionar Base de Datos
+Administrador
+Permite revisar, editar o eliminar registros de imágenes inconsistentes.
+CU-10
+Cerrar Sesión
+Ciudadano
+Finaliza la sesión activa para proteger la seguridad de la cuenta del usuario.
+Ilustración 1 Diagrama de casos de uso
+Arquitectura de la solución planteada
+Se ha seleccionado una Arquitectura Cliente-Servidor. Esta elección se justifica porque permite separar la lógica de presentación (lo que ve el ciudadano en Cusco) de la lógica de persistencia y procesamiento de datos (el servidor).
+Arquitectura del Cliente (Frontend)
+Aplicativo Móvil (Capturador): Es la herramienta principal del ciudadano. Su función es interactuar con el hardware del dispositivo (Cámara y Sensor GPS). Debe ser ligero para funcionar correctamente con los planes de datos móviles en zonas periféricas de Cusco.
+Arquitectura del Backend (Servidor)
+Servidor de Aplicaciones: Encargado de recibir las peticiones del cliente, gestionar la autenticación de usuarios y procesar las imágenes subidas.
+Controlador de Lógica: Aquí se implementarán las reglas de validación, como verificar que el reporte se encuentre dentro del rango geográfico permitido.
+Capa de Comunicación (API RESTful)
+Se utiliza el protocolo HTTP/HTTPS para el intercambio de información mediante formato JSON.
+Endpoints: Se definieron rutas específicas como /upload-report para recibir imágenes y /get-map-data para enviar las coordenadas a la web.
+Capa de Datos
+Base de Datos Relacional (PostgreSQL): Almacena la metadata técnica: ID de usuario, latitud, longitud, fecha, hora y el estado del residuo.
+Storage (Almacenamiento de Archivos): Las imágenes (que son pesadas) no se guardan directamente en la tabla, sino en un sistema de archivos optimizado (como AWS S3 o una carpeta dedicada), guardando sólo el enlace (URL) en la base de datos.
+Ilustración 2 Arquitectura de la solución planteada
+Identificación y Wireframes de interfaces del sistema
+Pantalla de inicio / autenticación
+Esta ventana permite que los ciudadanos se registren por primera vez o ingresen de manera segura a la aplicación introduciendo su nombre completo, su correo electrónico y una contraseña privada. Su función es validar que los datos ingresados coinciden con la tabla de datos llamada Usuario. Para evitar que el ciudadano tenga que escribir sus datos de acceso cada vez que abre la aplicación en la vía pública, la interfaz tiene la capacidad de recordar la identidad del usuario de forma automática, manteniéndolo conectado de forma indefinida mientras recorre la ciudad.
+Pantalla Mapa
+Esta pantalla muestra un resumen visual sencillo con reportes recientes y un mapa del entorno, mostrando únicamente los datos de alertas reales aportados por los ciudadanos, aunque muestre los datos no será posible la edición de este.
+Ilustración 3 Wireframe de la pantalla mapa
+Pantalla de reporte de residuos
+Es la sección más importante de la aplicación móvil y está diseñada para que el registro sea sumamente rápido y requiera la menor cantidad de interacciones posibles por parte del ciudadano. La interfaz unifica la recolección de tres datos obligatorios antes de guardar la alerta:
+Captura de imagen: Activa la cámara del teléfono celular del usuario para tomar una fotografía que sirva como evidencia física del problema.
+Ilustración 4 Wireframes de la captura de pantalla
+Localizador automático (GPS): Utiliza el sensor del teléfono de manera interna para capturar las coordenadas exactas de longitud y latitud del lugar. además de que tendrá dos botones uno de confirmación y otro de reintentar.
+Ilustración 5 Wireframe del localizador automático
+Pantalla de perfil
+En este apartado se brindará información sobre el propósito de la app también el cambio de idioma y cerrar sesión.
+Diseño de base de datos
+Identificación y descripción de las entidades del sistema
+Usuario 
+Almacena los datos de las cuentas de todos los ciudadanos que se registran y usan la aplicación.
+Tabla 9 Entidad Usuario
+Campo
+Tipo de dato
+Descripción
+Restricción
+id_usuario
+SERIAL
+Identificador del usuario
+PK
+nombre
+VARCHAR(100)
+Nombre del usuario
+NOT NULL
+apellido
+VARCHAR(100)
+Apellido del usuario
+NOT NULL
+correo
+VARCHAR(100)
+Correo electrónico
+UNIQUE
+contraseña
+TEXT
+Contraseña del usuario
+NOT NULL
+Categoria_residuo
+El catálogo de tipos de basura que existe en el sistema. Permite el registro de la categoría del tipo de residuo del punto de acumulación de manera automática a través del uso de IA.
+Tabla 10 Entidad Categoria_residuo
+Campo
+Tipo de dato
+Descripción
+Restricción
+id_tipo_residuo
+SERIAL
+Identificador del tipo
+PK
+nombre_catresi
+VARCHAR(50)
+Tipo de residuo
+NOT NULL
+descripción_residuo
+VARCHAR(100
+Descripción de la categoria de residuo
+NOT NULL
+Estado_reporte
+Almacena los diferentes estados por los que pasa el aviso de un ciudadano (comenzando siempre como "pendiente").
+Tabla 11 Entidad Estado_reporte
+Campo
+Tipo de dato
+Descripción
+Restricción
+id_estado_reporte
+SERIAL
+Identificador del estado
+PK
+nombre_estado
+VARCHAR(50)
+Estado (pendiente, atendido)
+NOT NULL
+descripción_estado
+VARCHAR(100
+Descripción del estado
+NOT NULL
+Reporte
+El registro central donde se junta toda la información de la alerta enviada desde el teléfono (foto, descripción, fecha y coordenadas).
+Tabla 12 Entidad Reporte
+Campo
+Tipo de dato
+Descripción
+Restricción
+id_reporte
+SERIAL
+Identificador del reporte
+PK
+id_usuario
+INT
+Usuario que registra
+FK
+fecha_hora
+TIMESTAMP
+Fecha y hora del reporte
+Default Current Timestamp
+des_ubicación
+TEXT
+Nombre de la ubicación
+ubicacion
+GEOMETRY (Point, 4326)
+Ubicación geográfica
+NOT NULL
+id_tipo_residuo
+INT
+Tipo de residuo
+FK
+id_estado_reporte
+INT
+Estado del reporte
+FK
+imagen_url
+TEXT
+URL de la imagen
+Punto_critico
+Permitirá el establecimiento de puntos donde se registra una frecuencia considerable o mayor de puntos de acumulación individuales. Pensado para la elaboración del mapa de calor. Un reporte ciudadano individual se conecta de forma interna con un punto crítico específico en el mapa si se encuentra dentro de su rango de cercanía. A su vez, un punto crítico agrupa las coordenadas de muchos reportes ciudadanos que notificaron basura en esa misma calle para medir la frecuencia del problema.
+Tabla 13 Entidad Punto_critico
+Campo
+Tipo de dato
+Descripción
+Restricción
+id_punto
+SERIAL
+Identificador del punto
+PK
+ubicacion
+GEOMETRY(Point,4326)
+Ubicación geográfica
+NOT NULL
+frecuencia_acumulacion
+INT
+Frecuencia de acumulación
+DEFAULT 0
+nivel_criticidad
+INT
+Nivel de criticidad
+ultima_actualizacion
+TIMESTAMP
+Última actualización
+Reporte_punto
+Permite la conexión entre la entidad Reporte y Punto_crítico siguiendo las normas de su relación de muchos a muchos.
+Tabla 14 Entidad Reporte_punto
+Campo
+Tipo de dato
+Descripción
+Restricción
+id_reporte
+INT
+Relación con reporte
+FK Reporte(id_reporte)
+id_punto
+INT
+Relación con punto crítico
+FK Punto_Critico(id_punto)
+(PK compuesta)
+Identificador compuesto
+PK (id_reporte, id_punto)
+Elaboración del Diagrama Entidad-Relación
+Ilustración 6 Modelo Entidad-Relación
+REFERENCIAS BIBLIOGRÁFICAS
+[1] MEZA, Johanna Karina Solano, David Orjuela YEPES, Javier RODRIGO-ILARRI a Eduardo CASSIRAGA. Predictive analysis of urban waste generation for the city of Bogotá, Colombia, through the implementation of decision trees-based machine learning, support vector machines and artificial neural networks. Heliyon [online]. 2019, 5(11). ISSN 24058440. Dostupné z: doi:10.1016/j.heliyon.2019.e02810
+[2] FELICIANO, Elizabeth Noemí Durán. RESIDUOS SÓLIDOS EN EL PERÚ. B.m., 2020. Pontificia Universidad Católica del Perú, Facultad de Ciencias e Ingeniería. 
+[3] PROGRAMME, United Nations Environment. UNEP in 2021: Planetary Action: Climate, Nature, Chemicals & Pollution [Annual Report] [online]. 2022. Dostupné z: https://wedocs.unep.org/handle/20.500.11822/37946
+[4] OGBOLUMANI, Omolola A a Michael ADEKOYA. Intelligent Waste Management Optimization Through Machine Learning Analytics. Journal of Science Research and Reviews [online]. 2025, 2(1). Dostupné z: doi:10.70882/josrar.2025.v2i1
+[5] OEFA a Fiscalización AMBIENTAL. OEFA viene verificando la atención de 165 puntos críticos de residuos sólidos identificados en Lima Metropolitana - Noticias - Organismo de Evaluación y Fiscalización Ambiental - Plataforma del Estado Peruano [online]. 2025. Dostupné z: https://www.gob.pe/institucion/oefa/noticias/1097431-oefa-viene-verificando-la-atencion-de-165-puntos-criticos-de-residuos-solidos-identificados-en-lima-metropolitana
+[6] DE EVALUACIÓN, Organismo a Fiscalización AMBIENTAL. OEFA exhorta a municipalidades a cumplir con la adecuada gestión y manejo de residuos sólidos - Noticias - Organismo de Evaluación y Fiscalización Ambiental - Plataforma del Estado Peruano [online]. září 2025. Dostupné z: https://www.gob.pe/institucion/oefa/noticias/1085140-oefa-exhorta-a-municipalidades-a-cumplir-con-la-adecuada-gestion-y-manejo-de-residuos-solidos
+[7] MUNICIPALIDAD DISTRITAL DE WANCHAQ, División de Gestión Ambiental. Programa Municipal de Educación, Cultura y Ciudadanía Ambiental de la Municipalidad Distrital de Wanchaq 2021-2022 [online]. 2021 [vid. 2026-09-01]. Dostupné z: https://sinia.minam.gob.pe/sites/default/files/sinia/archivos/public/docs/pm_educca_2021_-_md_wanchaq_cusco_cusco.pdf
+[8] GARCILAZO, Lincoln Kenedy Moreno. Análisis de la gestión de residuos sólidos en la Municipalidad Distrital de Santa María mediante el uso de aplicativos móviles. B.m., 2025. Universidad Nacional José Faustino Sánchez Carrión, Facultad de Ingeniería Industrial, Sistemas e Informática. 
+[9] DEL AMBIENTE, Ministerio. Minam presenta renovada plataforma SIGERSOL que utiliza inteligencia artificial para el reporte de residuos sólidos. 2025
+[10] KOCHANEK, Anna, Sabina ANGRECKA, Iga PIETRUCHA, Tomasz ZACŁONA, Agnieszka PETRYK, Agnieszka GENEROWICZ, Leyla AKBULUT a Atılgan ATILGAN. Integration of GIS, Big Data, and Artificial Intelligence in Modern Waste Management Systems—A Comprehensive Review. Sustainability (Switzerland) [online]. 2026, 18(1). ISSN 20711050. Dostupné z: doi:10.3390/su18010385
+[11] CUEVA, Alberto Franco Cerna, Cesar Wilfredo Rosas ECHEVARRÍA, Roberto Sixto Perales FLORES a Pierina Lisbeth Ataucusi FLORES. Predicción de la generación de residuos sólidos domiciliarios con machine learning en una zona rural de Puno. TECNIA [online]. 2022, 32(1), 44–52. ISSN 0375-7765. Dostupné z: doi:10.21754/tecnia.v32i1.1378
+[12] GOODCHILD, M F. Volunteered Geographic Information Introduction and Position Papers. 2007. 
+[13] WOO RYU, Joung, Hyunji SIM, Daesung CHO a Jinwoo LEE. A Spatial Big Data and Unsupervised Learning Framework for Prioritizing Patrol Areas for Illegal Waste Dumping. Buildings 2026, Vol. 16, Page 2924 [online]. 2026, 16(15), 2924. ISSN 2075-5309. Dostupné z: doi:10.3390/BUILDINGS16152924
+[14] SCHARF, Norma, Bénédicte DUCRY, Bocar SY, Abdoulaye DJIM, Pierre LACROIX, Norma SCHARF, Bénédicte DUCRY, Bocar SY, Abdoulaye DJIM a Pierre LACROIX. Integrating Remote Sensing, GIS, and Citizen Science to Map Illegal Waste Dumping Susceptibility in Dakar, Senegal. Sustainability [online]. 2025, 17(24), 1–19 [vid. 2026-08-31]. Dostupné z: https://EconPapers.repec.org/RePEc:gam:jsusta:v:17:y:2025:i:24:p:11137-:d:1816327
+[15] SYAFRUDIN, Syafrudin, Bimastyaji Surya RAMADAN, Mochamad Arief BUDIHARDJO, Munawir MUNAWIR, Hafizhul KHAIR, Raden Tina ROSMALINA a Septa Yudha ARDIANSYAH. Analysis of Factors Influencing Illegal Waste Dumping Generation Using GIS Spatial Regression Methods. Sustainability 2023, Vol. 15, Page 1926 [online]. 2023, 15(3), 1926 [vid. 2026-08-31]. ISSN 2071-1050. Dostupné z: doi:10.3390/SU15031926
+[16] MISERICORDIA PAREDES, Josue Alexander. Aplicación móvil basada en geolocalización para mejorar la disposición oportuna de residuos sólidos en Virú 2025 [online]. 2025 [vid. 2026-08-31]. Dostupné z: https://hdl.handle.net/20.500.12692/175558
+[17] MEDINA-MEDINA, Angel J, Rolando Salas LÓPEZ, Elgar BARBOZA, Katerin M TUESTA-TRAUCO, Jhon A ZABALETA-SANTIESTEBAN, Betty K GUZMAN, Manuel OLIVA-CRUZ, Aqil TARIQ a Nilton B ROJAS-BRICEÑO. Participation GIS for the monitoring of areas contaminated by municipal solid waste: A case study in the city of Pedro Ruiz Gallo (Peru). Case Studies in Chemical and Environmental Engineering [online]. 2024, 10. ISSN 26660164. Dostupné z: doi:10.1016/j.cscee.2024.100941
+[18] BROVELLI, Maria, Marco MINGHINI a Giorgio ZAMBONI. Public participation in GIS via mobile applications. ISPRS Journal of Photogrammetry and Remote Sensing. 2016, 114, 306–315. 
+[19] ORGANIZATION, World Health. Compendium of WHO and other UN guidance on health and environment [online]. 2024. ISBN 978-92-4-009538-0. Dostupné z: https://iris.who.int/handle/10665/378095
+[20] PERÚ. Decreto Legislativo N.o 1278, Ley de Gestión Integral de Residuos Sólidos. 2016. 
+[21] ESTER, Martin, Hans-Peter KRIEGEL, Jörg SANDER a Xiaowei XU. A Density-Based Algorithm for Discovering Clusters in Large Spatial Databases with Noise. In:  [online]. B.m.: AAAI Press, 1996, s. 226–231. Dostupné z: www.aaai.org
+[22] SANDLER, Mark, Andrew HOWARD, Menglong ZHU, Andrey ZHMOGINOV a Liang-Chieh CHEN. MobileNetV2: Inverted Residuals and Linear Bottlenecks [online]. 2018. Dostupné z: doi:https://doi.org/10.1109/CVPR.2018.00474
+[23] PostGIS 3.6.4dev Manual [online]. Dostupné z: https://postgis.net/docs/
+[24] CONGRESO CONSTITUYENTE DEMOCRÁTICO. CONSTITUCIÓN POLÍTICA DEL PERÚ DE 1993. 1993. 
+[25] Ley N.° 28611 - Normas y documentos legales - Congreso de la República - Plataforma del Estado Peruano [online]. [vid. 2026-09-01]. Dostupné z: https://www.gob.pe/institucion/congreso-de-la-republica/normas-legales/3569-28611
+[26] PERUANO, El, Mirtha ESTHER a Vásquez CHUQUILIN. Decreto Supremo N.o 001-2022-MINAM, que modifica el Reglamento del Decreto Legislativo N.o 1278 [online]. 2022. Dostupné z: www.gob.pe/pcm
+[27] Ley N.° Ley Orgánica de Municipalidades Ley No 27972 - Normas y documentos legales - Jurado Nacional de Elecciones - Plataforma del Estado Peruano [online]. [vid. 2026-09-01]. Dostupné z: https://www.gob.pe/institucion/jne/normas-legales/8133550-ley-organica-de-municipalidades-ley-n-27972
+[28] DE LA REPÚBLICA DEL PERÚ, Congreso. Ley No 29733: Ley de Protección de Datos Personales. 2011. 
+[29] SAMPIERI, Roberto Hernández, Carlos Fernández COLLADO a María DEL PILAR BAPTISTA LUCIO. Metodología de la investigación. 6. vyd. B.m.: McGraw-Hill Education, 2014. ISBN 978-1-4562-2396-0. 
+[30] BROOKE, John. SUS: A quick and dirty usability scale. In: Patrick W JORDAN, Bruce. THOMAS, Bernard A WEERDMEESTER a Ian L MCCLELLAND, ed. Usability Evaluation in Industry. B.m.: Taylor and Francis, 1996, s. 189–194. 
+[31] SAURO, Jeff. a James R.. LEWIS. Quantifying the user experience : practical statistics for user research. B.m.: Morgan Kaufmann, 2016. ISBN 9780128023082. 
+[32] AIKEN, Lewis R. Three Coefficients for Analyzing the Reliability and Validity of Ratings [online]. 1985, 45(1), 131–142. Dostupné z: https://journals.sagepub.com/doi/10.1177/0013164485451012
+[33] PENFIELD, Randall D a Peter R GIACOBBI. Applying a Score Confidence Interval to Aiken’s Item Content-Relevance Index. Measurement in Physical Education and Exercise Science [online]. 2004, 8(4), 213–225. Dostupné z: doi:10.1207/s15327841mpee0804_3
+[34] SUTHERLAND, Jeff a Ken SCHWABER. Home | Scrum Guides [online]. 2020. Dostupné z: https://scrumguides.org/
+[35] BUTLER, H, M DALY, A DOYLE, S GILLIES, S HAGEN a T SCHAUB. The GeoJSON Format [online]. 2016. Dostupné z: doi:10.17487/RFC7946
+[36] CLOUDINARY. cloudinary
+[37] PostgreSQL: Documentation: 15: PostgreSQL 15.18 Documentation [online]. Dostupné z: https://www.postgresql.org/docs/15/
+[38] ROUSSEEUW, Peter J. Silhouettes: A graphical aid to the interpretation and validation of cluster analysis. Journal of Computational and Applied Mathematics [online]. 1987, 20, 53–65. ISSN 03770427. Dostupné z: doi:10.1016/0377-0427(87)90125-7
+ 
+ANEXOS
+Anexo 1. Matriz de Consistencia
+Título de la investigación: Sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco.
+Tabla 15: Matriz de consistencia
+Problema
+Objetivos
+Variables e Indicadores
+Metodología
+Problema General:
+¿ Cómo diseñar, desarrollar e implementar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco?
+Objetivo General:
+Diseñar, desarrollar e implementar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco.
+Variable 1:
+Sistema móvil de georreferenciación colaborativa.
+Verificación: Criterios de aceptación por indicador, en reemplazo de la hipótesis.
+Dimensiones e Indicadores:
+Completitud del diseño en informe de diseño 
+Conformidad funcional en entregables de desarrollo
+Usabilidad percibida
+Indicadores: Puntaje SUS global; facilidad de aprendizaje; facilidad de uso; intención de uso
+Precisión geoespacial
+Indicadores: Error de posicionamiento; reportes aceptados por el filtro de 15 m; error de distancia relativa.
+Disponibilidad operativa
+Indicadores: Reportes guardados y sincronizados por condición de red.
+Exactitud de clasificación IA
+Indicadores: Coincidencia entre la categoría del sistema y la observación.
+Nivel:  Descriptivo
+Enfoque: Cuantitativo.
+Método: Hipotético-deductivo en su vertiente descriptiva, complementado con el analítico-sintético
+Tipo de investigación:  Aplicada y tecnológica
+Diseño: no experimental transeccional descriptivo
+Problemas específicos:
+PE1: ¿Cómo diseñar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco?
+PE2: ¿Cómo desarrollar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco?
+PE3: ¿Cómo implementar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco?
+Objetivos específicos:
+OE1: Diseñar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco. 
+OE2: Desarrollar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco.  
+OE3: Implementar un sistema móvil de georreferenciación colaborativa para el monitoreo de focos de acumulación de residuos sólidos urbanos en el distrito de Wanchaq, Cusco.  
+Variable 2:  
+Monitoreo de focos de acumulación de residuos sólidos urbanos.
+Verificación: Criterios de aceptación por indicador, en reemplazo de la hipótesis.
+Dimensiones:
+Identificación del foco
+Indicadores: Tasa de confirmación en campo de las agrupaciones detectadas.
+Calidad del agrupamiento
+Indicadores: Coeficiente de silueta; reportes etiquetados como ruido
+Caracterización del foco
+Indicadores: Tipo de residuo; volumen estimado; entorno urbano.
+Evidencia documental
+Indicadores: Cantidad de fotografías válidas
+Calidad del registro
+Indicadores: identificación del foco, calidad del agrupamiento, caracterización del foco, evidencia documental y calidad del registro.
+Técnicas de recolección de datos: Encuesta, observación directa y análisis documental.
+Instrumentos:
+Cuestionario SUS, Ficha de Observación de Campo, Ficha de Verificación de Precisión Geoespacial y Disponibilidad Operativa
+Población 1:
+Reportes georreferenciados generados durante la ventana de observación.
+Población 2: Usuarios de la aplicación. Muestreo no probabilístico por conveniencia
+Muestra:
+Estimación de una media, n = 38 usuarios
+Muestreo:
+Criterios de inclusión.
+Nota. Elaboración propia.
+Anexo 2. MATRIZ DE OPERACIONALIZACIÓN DE VARIABLES
+Tabla 16: Operacionalización de variables
+Variable
+Definición conceptual
+Definición operacional
+Dimensión
+Indicador
+Escala de medición
+Técnica
+Instrumento
+Fuente
+Criterio de aceptación
+Sistema móvil de georreferenciación colaborativa
+Aplicación móvil que permite registrar, geolocalizar y compartir información geográfica sobre focos de residuos sólidos mediante la participación ciudadana.
+Se medirá mediante la percepción de los usuarios y pruebas técnicas del sistema.
+Completitud del diseño
+Artefactos de diseño elaborados respecto de los previstos
+Razón (%)
+Análisis documental
+Informe de diseño
+Cap. IV
+100 %
+Conformidad funcional
+Requisitos funcionales implementados respecto de los definidos en el Product Backlog
+Razón (%)
+Análisis documental
+Entregables de desarrollo 
+Cap. IV
+≥ 90 %
+Usabilidad percibida
+Puntaje SUS global
+Razón (0–100)
+Encuesta
+Cuestionario SUS
+Ciudadanos usuarios
+Media ≥ 68
+Facilidad de aprendizaje
+Likert (1-5)
+Encuesta
+Cuestionario SUS
+Ciudadanos usuarios
+≥ 3.5 tras inversión
+Facilidad de uso
+Likert (1-5)
+Encuesta
+Cuestionario SUS
+Ciudadanos usuarios
+≥ 3.5 tras inversión
+Frecuencia/intención de uso
+Likert (1-5)
+Encuesta
+Cuestionario SUS
+Ciudadanos usuarios
+≥ 3.5
+Precisión geoespacial
+Error de posicionamiento respecto de la coordenada de referencia
+Razón (m)
+Observación
+Ficha de Verificación Geoespacial
+Mediciones en campo
+Mediana ≤ 10 m; P90 ≤ 15 m
+Reportes aceptados por el filtro de 15 m
+Razón (%)
+Observación
+Ficha de Verificación Geoespacial
+Mediciones en campo
+≥ 90 %
+Error de distancia relativa entre pares de puntos de línea base
+Razón (%)
+Observación
+Ficha de Verificación Geoespacial, bloque D
+Mediciones en campo
+≤ 10 % de la distancia real
+Disponibilidad operativa
+Reportes guardados y sincronizados según condición de red
+Razón (%)
+Observación
+Ficha de Verificación Geoespacial
+Mediciones en campo
+≥ 95 % en cada condición
+Exactitud de clasificación IA
+Coincidencia IA-observador
+Razón (%)
+Observación
+Ficha de Observación de Campo, bloque D
+Registro de observación
+≥ 70 %
+Monitoreo de focos de acumulación de residuos sólidos urbanos
+Proceso sistemático de identificación, registro, localización y caracterización de puntos de acumulación de residuos en un espacio geográfico determinado.
+Se medirá mediante observación directa de focos registrados en campo y datos generados por la aplicación.
+Identificación del foco
+Agrupaciones confirmadas en campo respecto de las detectadas por el sistema
+Razón (%)
+Observación
+Ficha de Observación de Campo
+Observador
+≥ 70 %
+Calidad del agrupamiento
+Coeficiente de silueta
+Intervalo (−1 a 1)
+Análisis documental
+Salida del módulo de análisis 
+Cap. IV
+≥ 0.50
+Reportes etiquetados como ruido espacial
+Razón (%)
+Análisis documental
+Salida del módulo de análisis 
+Cap. IV
+≤ 30 %
+Evidencia documental
+Fotografías válidas respecto del total revisado
+Razón (%)
+Observación
+Ficha de Observación de Campo
+bloque E
+≥ 95 %
+Calidad del registro
+Registros completos respecto del total revisado
+Razón (%)
+Observación
+Ficha de Observación de Campo
+bloque C
+≥ 95 %
+Caracterización del foco
+Tipo predominante de residuo
+Nominal
+Observación
+Ficha de Observación de Campo
+Descriptivo, sin umbral
+Volumen estimado del residuo
+Ordinal
+Observación
+Ficha de Observación de Campo
+bloque C
+Descriptivo, sin umbral
+Tipo de entorno urbano
+Nominal
+Observación
+Ficha de Observación de Campo
+bloque C
+Descriptivo, sin umbral
+Anexo 3. INSTRUMENTO 1: Cuestionario de Escala de Usabilidad del Sistema (SUS)
+Objetivo
+Medir el nivel de usabilidad percibida del aplicativo en usuarios reales del distrito.
+Dimensión e indicadores
+Usabilidad percibida: puntaje SUS global, facilidad de aprendizaje, facilidad de uso e intención de uso.
+Dirigido a
+Personas que cumplen los criterios de inclusión del apartado 3.2 y han realizado al menos un reporte.
+Nota de adaptación
+Instrumento adaptado del System Usability Scale de Brooke al contexto de reporte ciudadano de residuos sólidos. Los ítems 5, 8 y 9 fueron contextualizados conservando su polaridad y posición. El puntaje se obtiene con el procedimiento estándar.
+Bloque 0. Filtro de elegibilidad
+Criterio
+Respuesta
+Acción si no cumple
+¿Es usted mayor de dieciocho años?
+○ Sí   ○ No
+No aplicar
+¿Reside o transita habitualmente por el distrito de Wanchaq?
+○ Sí   ○ No
+No aplicar
+¿Usó la aplicación al menos una vez?   N.º aproximado de reportes: ______
+○ Sí   ○ No
+No aplicar
+¿El dispositivo empleado tiene sistema operativo Android?
+○ Sí   ○ No
+No aplicar
+¿Trabaja usted en el servicio de limpieza pública del distrito?
+○ Sí   ○ No
+Excluir si responde Sí
+Consentimiento informado otorgado
+☐ Sí
+No aplicar sin consentimiento
+Datos de identificación
+Código del participante: P-______
+Fecha: ____ / ____ / ______
+Sector o barrio: ____________________
+Hora de inicio: ______   Hora de fin: ______
+Encuestador: ____________________
+Código del instrumento: ______________
+Cuestionario
+1 = Totalmente en desacuerdo     2 = En desacuerdo     3 = Neutral     4 = De acuerdo     5 = Totalmente de acuerdo
+N.º
+Enunciado
+Indicador
+1
+2
+3
+4
+5
+1
+Me gustaría usar esta aplicación con frecuencia para vigilar la limpieza de mi barrio.
+Intención de uso
+○
+○
+○
+○
+○
+2
+La aplicación tiene demasiados pasos y pantallas difíciles de entender.
+Facilidad de uso
+○
+○
+○
+○
+○
+3
+La aplicación es fácil e intuitiva para reportar basura desde la calle.
+Facilidad de uso
+○
+○
+○
+○
+○
+4
+Necesitaría ayuda de otra persona para poder usar esta aplicación.
+Facilidad de aprendizaje
+○
+○
+○
+○
+○
+5
+La cámara, el mapa y el historial funcionan bien juntos dentro de la aplicación.
+Facilidad de uso
+○
+○
+○
+○
+○
+6
+Los pasos para hacer un reporte son confusos o inconsistentes.
+Facilidad de uso
+○
+○
+○
+○
+○
+7
+Creo que la mayoría de vecinos aprenderían a usar esta aplicación rápidamente.
+Facilidad de aprendizaje
+○
+○
+○
+○
+○
+8
+Tomar la foto y obtener la ubicación automática resulta lento o engorroso.
+Facilidad de uso
+○
+○
+○
+○
+○
+9
+Me sentí seguro de estar usando la aplicación correctamente al hacer un reporte.
+Facilidad de uso
+○
+○
+○
+○
+○
+10
+Tuve que aprender muchas cosas técnicas antes de poder usar la aplicación.
+Facilidad de aprendizaje
+○
+○
+○
+○
+○
+Puntuación (uso del investigador)
+Paso
+Cálculo
+Resultado
+1
+Ítems impares (1, 3, 5, 7, 9): restar 1 al valor marcado. Suma parcial:
+________
+2
+Ítems pares (2, 4, 6, 8, 10): restar el valor marcado a 5. Suma parcial:
+________
+3
+Sumar ambos parciales y multiplicar por 2.5.   Puntaje SUS:
+________ / 100
+4
+Válido solo si los diez ítems fueron respondidos.
+○ Válido   ○ Nulo
+Anexo 4. INSTRUMENTO 2: Ficha de Observación de Campo
+Objetivo
+Confirmar en el terreno la existencia del foco detectado por el sistema, caracterizarlo, contrastar la clasificación automática con la observación directa y verificar la calidad de los registros que integran la agrupación.
+Unidad de análisis
+Una agrupación detectada por el sistema. Se llena una ficha por agrupación.
+Momento
+Fase 2, posterior al cierre de la ventana de observación y a la ejecución del agrupamiento.
+Responsable
+Investigador u observador entrenado, con acceso a la aplicación o al panel de visualización.
+Bloque A. Identificación de la agrupación
+Campo
+Registro
+Código de la agrupación
+AG-______
+Coordenadas del centroide   Lat / Lon
+________________ / ________________
+Número de reportes que integran la agrupación
+__________
+Dirección o referencia del lugar
+________________________________________________
+Fecha y hora de la verificación
+____ / ____ / ______      ____ : ____
+Observador
+________________________________
+Bloque B. Confirmación en campo
+Campo
+Registro
+¿Se observa acumulación de residuos sólidos en el lugar señalado o en sus inmediaciones?
+○ Sí   ○ No
+Distancia aproximada entre el centroide y la acumulación observada
+○ Menos de 10 m   ○ Entre 10 y 25 m   ○ Entre 25 y 50 m   ○ Más de 50 m
+Si la respuesta es No, indique la situación encontrada
+○ El lugar está limpio   ○ Hay evidencia de recojo reciente   ○ La coordenada corresponde a un lugar inaccesible   ○ Otro: __________
+AGRUPACIÓN CONFIRMADA (existe acumulación a 50 m o menos del centroide)
+○ Sí   ○ No
+Bloque C. Caracterización del foco (solo si la agrupación fue confirmada)
+Campo
+Opciones
+Tipo de residuo predominante observado
+○ Orgánico o restos de alimentos   ○ Papel y cartón   ○ Plástico y PET   ○ Vidrio   ○ Desmonte y escombros   ○ Mixto   ○ Otro: __________
+Volumen estimado
+○ Pequeño: cabe en dos bolsas, menos de 1 m³   ○ Mediano: equivale a una carretilla, entre 1 y 3 m³   ○ Grande: más de 3 m³, requiere vehículo
+Entorno urbano inmediato
+○ Mercado o comercio ambulatorio   ○ Zona residencial   ○ Paradero o esquina vial de alto tránsito   ○ Parque o área verde   ○ Escuela o centro de salud   ○ Otro: __________
+Bloque D. Exactitud de la clasificación automática
+Campo
+Registro
+Categoría predominante asignada por el sistema a los reportes de la agrupación
+○ Orgánico   ○ Papel y cartón   ○ Plástico y PET   ○ Vidrio   ○ Desmonte   ○ Mixto
+¿Coincide con el tipo observado en el bloque C?
+○ Sí   ○ No
+Si no coincide: el sistema indicó ______________ y se observó ______________
+Bloque E. Revisión de los reportes que integran la agrupación
+Criterio
+N.º
+Total
+Reportes cuya fotografía permite identificar el residuo
+______
+______
+Reportes cuya fotografía no contiene rostros ni placas de rodaje identificables
+______
+______
+Reportes con coordenadas, fecha, hora y categoría completas
+______
+______
+FOTOGRAFÍAS VÁLIDAS (cumplen los dos primeros criterios)
+______
+______
+REGISTROS COMPLETOS (cumplen los tres criterios)
+______
+______
+Bloque F. Observaciones objetivas
+Registre únicamente lo observado: condición del entorno, obstáculos, horario. Sin suposiciones ni interpretaciones.
+  
+  
+  
+Anexo 5. INSTRUMENTO 3: Ficha de Verificación de Precisión Geoespacial y Disponibilidad Operativa
+Objetivo
+Evaluar el posicionamiento del aplicativo y verificar el comportamiento del filtro de quince metros y de la sincronización diferida bajo distintas condiciones de red.
+Diseño de aplicación
+Ocho puntos de verificación en áreas representativas del distrito, con cinco mediciones independientes por punto: cuarenta observaciones. Una ficha por punto.
+Momento
+Fase 1, durante la ventana de observación.
+Bloque A. Datos del punto
+Campo
+Registro
+Código del punto
+GPS-______   (GPS-01 a GPS-08)
+Dirección o referencia
+________________________________________________
+Rasgo físico empleado como punto (siempre a nivel del suelo)
+○ Esquina de sardinel o vereda   ○ Vértice de franja peatonal pintada   ○ Esquina del enlosado de plaza   ○ Tapa de buzón   ○ Otro rasgo a nivel del suelo: __________
+Coordenada de referencia   Lat / Lon
+________________ / ________________
+Fuente de la referencia
+Imagen satelital georreferenciada (Google Earth Pro), leída sobre rasgo a nivel del suelo
+Fechas de imagen contrastadas y dispersión obtenida
+Fechas: __________________     Dispersión: ______ m
+Condición de obstrucción del cielo
+○ Cielo abierto   ○ Parcialmente obstruido   ○ Cañón urbano
+Observador y fecha
+____________________      ____ / ____ / ______
+Bloque B. Mediciones (cinco por punto)
+N.º
+Hora
+Coordenada registrada por la app (Lat / Lon)
+Precisión declarada por la app (m)
+Condición de red
+Filtro
+¿Guardado?
+¿Sincronizado?
+1
+____
+___________ / ___________
+______
+○ 4G-5G  ○ 3G-H+  ○ Sin red
+○ Aceptó ○ Bloqueó
+○ Sí ○ No
+○ Sí ____:____  ○ No
+2
+____
+___________ / ___________
+______
+○ 4G-5G  ○ 3G-H+  ○ Sin red
+○ Aceptó ○ Bloqueó
+○ Sí ○ No
+○ Sí ____:____  ○ No
+3
+____
+___________ / ___________
+______
+○ 4G-5G  ○ 3G-H+  ○ Sin red
+○ Aceptó ○ Bloqueó
+○ Sí ○ No
+○ Sí ____:____  ○ No
+4
+____
+___________ / ___________
+______
+○ 4G-5G  ○ 3G-H+  ○ Sin red
+○ Aceptó ○ Bloqueó
+○ Sí ○ No
+○ Sí ____:____  ○ No
+5
+____
+___________ / ___________
+______
+○ 4G-5G  ○ 3G-H+  ○ Sin red
+○ Aceptó ○ Bloqueó
+○ Sí ○ No
+○ Sí ____:____  ○ No
+Bloque C. Resumen del punto (gabinete)
+Cálculo
+Resultado
+Error de cada medición respecto de la referencia (fórmula de Haversine)
+M1 ____  M2 ____  M3 ____  M4 ____  M5 ____
+Mediana del error del punto, en metros
+____________
+Mediana de la precisión declarada por la app, en metros
+____________
+Mediciones aceptadas por el filtro sobre el total
+______ / 5   =   ______ %
+Reportes generados sin red que se sincronizaron correctamente
+______ / ______   =   ______ %
+Bloque D. Hoja complementaria de líneas base (se llena una sola vez, no por punto)
+Línea
+Rasgo inicial y rasgo final
+Distancia medida con wincha (m)
+Distancia calculada entre coordenadas de la app (m)
+Diferencia (m)
+Diferencia (%)
+LB-1
+____________________ / ____________________
+________
+________
+________
+________
+LB-2
+____________________ / ____________________
+________
+________
+________
+________
+LB-3
+____________________ / ____________________
+________
+________
+________
+________
+LB-4
+____________________ / ____________________
+________
+________
+________
+________
+Diferencia media
+________
+________
+Anexo 6. Fichas de Validación del Instrumento 1 
+Ilustración 7 Ficha de validación de instrumentos 1 por Ing. Pumasupa Nick
+Ilustración 8 Ficha de validación de instrumentos 1 Ing Human Nestor
+Ilustración 9 Ficha de validación de instrumentos 1 por Delgado Rodrigo
+Anexo 7. Fichas de Validación del Instrumento 2
+Ilustración 10: Ficha de validación de instrumentos 2 por Ing. Pumasupa Nick
+Ilustración 11 Ficha de validación de instrumentos 2 Ing Human Nestor
+Ilustración 12 Ficha de validación de instrumentos 2 por Delgado Rodrigo
+Anexo 8. Ficha de Validación del Instrumento 3
+Ilustración 13: Ficha de validación de instrumentos 3 por Ing. Pumasupa Nick
+Ilustración 14 Ficha de validación de instrumentos 3 Ing Human Nestor
+Ilustración 15 Ficha de validación de instrumentos 3 por Delgado Rodrigo
+Anexo 9. Consentimiento informado
+Modelo del texto presentado en la aplicación antes de habilitar el primer reporte. Este documento sustituye, en el diseño del presente estudio, a la carta de autorización institucional, conforme a la justificación del apartado 3.4.
+Wanchaq Limpio es una aplicación desarrollada por estudiantes de la Escuela Profesional de Ingeniería de Sistemas e Informática de la Universidad Continental, en el marco de un proyecto de investigación académica sobre el monitoreo de focos de acumulación de residuos sólidos en el distrito.
+Qué se registra: la fotografía que usted tome del punto de acumulación, las coordenadas de ese punto, la fecha y hora del reporte, y un código anónimo generado en su teléfono. No se solicita su nombre, su documento de identidad ni su número telefónico, y no se registra su recorrido.
+Para qué se usa: elaborar un mapa de puntos críticos del distrito con fines de investigación, y ponerlo a disposición de la Municipalidad Distrital de Wanchaq.
+Qué se le pide: no fotografiar personas, rostros, placas de vehículos ni interiores de viviendas. Las imágenes que incumplan esta condición se eliminan.
+Sus derechos: puede eliminar sus reportes desde la aplicación en cualquier momento y solicitar el acceso, la rectificación o la cancelación de sus datos escribiendo al correo de contacto, conforme a la Ley N.º 29733, Ley de Protección de Datos Personales.
+Su participación es voluntaria y puede retirarse cuando lo decida, sin consecuencia alguna.
+☐ He leído esta información y acepto participar.
+Anexo 10. Tabla de prueba de validez del instrumento Cuestionario de Escala de Usabilidad del Sistema (SUS)
+Criterio
+Validación de expertos
+V de Aiken del criterio
+1
+2
+3
+Claridad
+90%
+95%
+65%
+0.83
+Objetividad
+85%
+92%
+65%
+0.81
+Actualidad
+95%
+94%
+60%
+0.83
+Organización
+90%
+91%
+70%
+0.84
+Suficiencia
+90%
+90%
+68%
+0.83
+Intencionalidad
+95%
+96%
+70%
+0.87
+Consistencia
+90%
+93%
+60%
+0.81
+Coherencia
+90%
+95%
+60%
+0.82
+Metodología
+90%
+92%
+75%
+0.86
+Conveniencia
+85%
+94%
+75%
+0.85
+Valuación cuantitativa
+0.83
+Valuación Cualitativa
+Muy Bueno
+Aplicabilidad
+Es aplicable
+Anexo 11. Tabla de prueba de validez del instrumento Ficha de Observación de Campo
+Criterio
+Validación de expertos
+V de Aiken del criterio
+1
+2
+3
+Claridad
+95%
+95%
+75%
+0.85
+Objetividad
+95%
+91%
+60%
+0.84
+Actualidad
+95%
+94%
+75%
+0.83
+Organización
+95%
+92%
+50%
+0.86
+Suficiencia
+90%
+95%
+65%
+0.84
+Intencionalidad
+95%
+93%
+50%
+0.86
+Consistencia
+95%
+94%
+50%
+0.83
+Coherencia
+95%
+93%
+55%
+0.83
+Metodología
+95%
+96%
+60%
+0.89
+Conveniencia
+90%
+90%
+61%
+0.85
+Valuación cuantitativa
+0.85
+Valuación Cualitativa
+Muy Bueno
+Aplicabilidad
+Es Aplicable
+Anexo 12. Tabla de prueba de validez del instrumento Ficha de Verificación de Precisión Geoespacial y Disponibilidad Operativa
+Criterio
+Validación de expertos
+V de Aiken del criterio
+1
+2
+3
+Claridad
+85%
+94%
+62%
+0.81
+Objetividad
+95%
+93%
+65%
+0.84
+Actualidad
+95%
+95%
+65%
+0.83
+Organización
+85%
+92%
+61%
+0.82
+Suficiencia
+85%
+91%
+66%
+0.81
+Intencionalidad
+95%
+94%
+65%
+0.86
+Consistencia
+90%
+96%
+55%
+0.82
+Coherencia
+90%
+93%
+60%
+0.81
+Metodología
+95%
+95%
+61%
+0.88
+Conveniencia
+90%
+92%
+60%
+0.86
+Valuación cuantitativa
+0.84
+Valuación Cualitativa
+Muy Buena
+Aplicabilidad
+Es Aplicable
+Anexo 13.  Prototipo del aplicativo
+Ilustración 16: Pantalla de registro de punto de contaminación
+Ilustración 17: Pantalla de visualización de los puntos

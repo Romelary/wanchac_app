@@ -74,3 +74,23 @@ class ReporteEliminado(models.Model):
     class Meta:
         db_table = "reporte_eliminado"
         constraints = [models.UniqueConstraint(fields=["id_anonimo", "id_local"], name="uq_lapida_clave_natural")]
+
+class FichaObservacion(models.Model):
+    """Registro de la validación en campo de un foco detectado (Paso 2.2)."""
+
+    foco_id = models.BigIntegerField(
+        primary_key=True, 
+        help_text="ID del foco (que corresponde al menor id de reporte del clúster)."
+    )
+    confirmado = models.BooleanField(help_text="¿Se confirmó que el basural existe?")
+    distancia_m = models.FloatField(null=True, blank=True, help_text="Distancia en metros desde el centro del foco.")
+    tipo_residuo = models.CharField(max_length=64, null=True, blank=True)
+    volumen = models.CharField(max_length=64, null=True, blank=True)
+    entorno = models.CharField(max_length=64, null=True, blank=True)
+    categoria_observador = models.CharField(max_length=16, null=True, blank=True, help_text="Categoría real según el investigador.")
+    foto_valida = models.BooleanField(default=True)
+    registro_completo = models.BooleanField(default=True)
+    fecha_verificacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "ficha_observacion"

@@ -18,5 +18,6 @@ fun Reporte.aGeoJsonFeature(): GeoJsonFeatureDto =
                 categoriaIa = categoriaIa?.name,
                 confianzaIa = confianzaIa,
                 precisionMetros = precisionMetros,
+                esPrueba = if (com.wanchaqlimpio.app.BuildConfig.MODO_PRUEBA) true else null,
             ),
     )

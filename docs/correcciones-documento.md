@@ -17,6 +17,8 @@
 
 **Auditoría completa del Capítulo IV realizada el 2026-09-17**, incluyendo el contenido real de las Tablas 6 a 13 (antes no visible, solo se tenía el texto de párrafos). Resultado: 8 correcciones (CORR-001 a CORR-008), más CORR-009 (idioma, Módulo 7) y CORR-010 (sugerencia de la IA vs. categoría confirmada, Módulo 3b), ambas detectadas el 2026-09-18. No se han aplicado cambios al `.docx` todavía — todas están `pendiente de aplicar`.
 
+**Auditoría de la confiabilidad de los instrumentos (2026-09-19, Cap. III y Anexos 2–12)**: CORR-011 a CORR-013, más la última observación de la lista de abajo. Detalle, evidencia y plan para sustituir lo que no se sostiene en [`plan-confiabilidad-instrumentos.md`](./plan-confiabilidad-instrumentos.md) §2.
+
 ---
 
 ## Registro de correcciones
@@ -134,6 +136,41 @@
 
 ---
 
+### CORR-011 — La sección «Confiabilidad de los instrumentos» reporta resultados de una «muestra piloto simulada» que contradicen la Tabla 5 y las fichas
+
+- **Sección afectada**: Cap. III, «Confiabilidad de los instrumentos» (párrafo inicial y los apartados del SUS, de la Ficha de Observación de Campo y del GPS) y Tabla 5 (columna «Qué necesitas»).
+- **Tipo de contenido**: Flexible (narrativa metodológica, no es un instrumento validado), pero lo que debe decir depende de datos que **aún no existen**.
+- **Divergencia**: (a) dice que se «llevaron a cabo» pruebas con «datos de una muestra piloto **simulada**», mientras la Tabla 5 habla de estadísticos **previstos** y pide un «piloto real»: los datos simulados no miden confiabilidad; (b) los kappa son **aritméticamente imposibles** con los acuerdos que declara: con 6 focos, 4 coincidencias en 3 categorías dan κ ≤ 0,54 (el texto dice «moderado-sustancial») y 5 coincidencias en 4 categorías dan κ ≤ 0,78 (el texto dice «> 0,80»); se enumeraron todas las tablas posibles ([evidencia](./evidencia/2026-09-19_verificacion-tesis-v591.txt)); (c) no coinciden con el diseño: 6 focos (F01–F06) frente a ≥ 10 agrupaciones de la Tabla 5; «Magnitud del foco» y «Composición» (Orgánico, Plástico, Papel, Vidrio) frente a «Volumen estimado» y las 7 opciones del Bloque C; tres puntos GPS frente a 8 × 5 de la ficha; «equipo de control» frente a la referencia de Google Earth Pro; (d) el alfa del SUS se da como «superior a 0.80» sin valor, n ni intervalo, y sin decir que los ítems negativos se invirtieron; (e) atribuye a la precisión del GPS la «confiabilidad técnica de la disponibilidad operativa», que es otra dimensión; (f) la Tabla 5 conserva una columna de notas de trabajo.
+- **Justificación / referencia**: [`plan-confiabilidad-instrumentos.md`](./plan-confiabilidad-instrumentos.md) §2.1 y §2.2; la Ética del propio documento («los resultados se reportan tal como se obtengan, incluidos los desfavorables»).
+- **Corrección propuesta**: **ahora**, sustituir el texto por la versión «prevista» del plan (§10-A) y quitar la columna «Qué necesitas»; **después de recolectar**, escribir los resultados reales con su intervalo de confianza (plan §10-B). Si se conserva algún ejercicio simulado, solo como ensayo del método, rotulado, en un anexo.
+- **Estado**: `pendiente de aplicar`
+- **Detectado**: 2026-09-19
+
+---
+
+### CORR-012 — La «V de Aiken» de los Anexos 10–12 no se reproduce con los datos del propio anexo
+
+- **Sección afectada**: Tabla 3 (nota «dispersión… de 59.2 a 94.0»), Tabla 4 y Anexos 10, 11 y 12 (Tablas 34–36).
+- **Tipo de contenido**: **Con validación externa ya emitida.** **No se edita en silencio**: requiere visto bueno del asesor.
+- **Divergencia**: el texto dice que los porcentajes se recodificaron a las cinco bandas de la ficha y que V = S / [n(c−1)]. Con los datos de los anexos ([evidencia](./evidencia/2026-09-19_verificacion-tesis-v591.txt)): en el Anexo 10 la «V» coincide con el **promedio de los tres porcentajes ÷ 100** en 10 de 10 criterios; en el Anexo 11, en 0 de 10 (ni con el promedio ni con la V), y en el 12, en 3 de 10. La V calculada como describe el texto sale ≈ 0,89 / 0,87 / 0,89 (no 0,83 / 0,85 / 0,84). Con 3 jueces y 5 categorías, la probabilidad exacta al azar de V ≥ 0,833 es 0,08 y de V ≥ 0,917 es 0,03: el «≥ 0,70» es una convención, no una prueba. El tercer juez puntúa 50–75 % frente a 90–96 % de los otros dos y la V global lo promedia. Y el «59.2» de la nota de la Tabla 3 no aparece: el mínimo de los promedios es 60,1.
+- **Corrección propuesta**: recalcular con una regla de recodificación **declarada en el texto**, reportar la V por criterio (con el intervalo de Penfield y Giacobbi, 2004, si se puede) y corregir la nota de la Tabla 3. Con las bandas de la ficha la V correcta sale **más alta**, así que probablemente no invalida el juicio, pero los valores cambian y eso lo decide el asesor.
+- **Estado**: `pendiente de aplicar` (con visto bueno)
+- **Detectado**: 2026-09-19
+
+---
+
+### CORR-013 — La Ficha de Verificación Geoespacial pide datos que la app no registra o que su diseño no permite demostrar
+
+- **Sección afectada**: Anexo 5 (Bloque B: «Precisión declarada por la app», «Condición de red» con 4G-5G / 3G-H+ / Sin red, «Filtro: Aceptó/Bloqueó») y Tabla 2 (8 puntos × 5 = 40 observaciones; criterio «≥ 95 % en cada condición», Anexo 2).
+- **Tipo de contenido**: **Con validación externa ya emitida.** **No se edita en silencio.**
+- **Divergencia**: (1) la app usa la precisión declarada para filtrar y **la descarta**: no la guarda (ni en el teléfono ni en el servidor) y las lecturas bloqueadas no dejan rastro; (2) la app distingue `WIFI`, `DATOS_MOVILES`, `SIN_INTERNET`, `SIN_RED`, no la generación de la red (4G-5G frente a 3G-H+), y «Wi-Fi» no es una opción de la ficha; (3) 40 observaciones repartidas en tres condiciones dejan ≈ 13 por condición: 13 de 13 no basta para **demostrar** «≥ 95 %» (límite inferior de Wilson 77 %; harían falta 73 de 73).
+- **Justificación / referencia**: [`plan-confiabilidad-instrumentos.md`](./plan-confiabilidad-instrumentos.md) §3.1, §5.3.7 y §9; [`pruebas-de-confiabilidad.md`](./pruebas-de-confiabilidad.md).
+- **Corrección propuesta**: **no cambiar la ficha**; complementarla: anotar la generación de red a mano con la tabla de equivalencias del plan §5.3.7, decidir si la app guarda la precisión declarada y registra las lecturas en depuración (tarea G9), y fijar con el asesor cómo se aplica «≥ 95 %» (valor observado o límite inferior) y con qué n por condición.
+- **Estado**: `pendiente de aplicar`
+- **Detectado**: 2026-09-19
+
+---
+
 ## Observaciones adicionales (no son correcciones formales)
 
 - **RNF-02** (*"la base de datos debe estar disponible el 99% del tiempo"*) no está respaldado por ningún indicador del Anexo 2, y es un compromiso de infraestructura poco realista para el alcance y presupuesto de un proyecto de tesis (la propia Delimitación del estudio reconoce restricciones de tiempo y presupuesto). No se recomienda tratarlo como corrección formal, pero sí evaluar si conviene suavizar la redacción antes de la sustentación.
@@ -151,6 +188,8 @@
 
 - **Límites cuantificados de la infraestructura gratuita** *(detectada 2026-09-18, backend; refuerza la observación sobre RNF-02)*: al configurar el backend se verificaron en la documentación oficial los límites reales del stack gratuito, que conviene citar en las *Limitaciones* con su fecha de consulta: **Render Free** — 0,1 CPU y 512 MB, se duerme a los 15 min sin tráfico y tarda ≈ 1 min en despertar, 750 h de instancia al mes, disco efímero; **Neon Free** — 0,5 GB, 100 h de cómputo al mes, el cómputo se duerme a los 5 min; **Cloudinary Free** — 25 créditos al mes. Con esa infraestructura, **RNF-02 (base de datos disponible el 99 % del tiempo) no es un compromiso que se pueda sostener ni medir con honestidad**: se recomienda suavizar su redacción (p. ej. "disponibilidad en horario de operación, con tolerancia a arranques en frío") o declararlo como objetivo no verificado. Lo que sí garantiza el diseño, y es verificable, es que **ningún reporte se pierde** por un servidor dormido (offline-first: queda en el teléfono y se reintenta). Detalle y fuentes en [`despliegue.md`](./despliegue.md) §2.
 - **"TensorFlow Lite" ahora se llama LiteRT** *(detectada 2026-09-18, Módulo 3b)*: el documento habla de TensorFlow Lite. Ese runtime pasó a llamarse LiteRT: TensorFlow avisa que `tf.lite.Interpreter` está en desuso a favor de LiteRT y la documentación oficial ya está bajo ese nombre. La app usa `com.google.ai.edge.litert:litert:1.4.2` (ver ADR-0003). Conviene mencionar el runtime como LiteRT (antes TensorFlow Lite) para que el documento no quede desactualizado.
+
+- **Sub-indicadores y adaptación del SUS** *(detectada 2026-09-19, auditoría de confiabilidad)*: (a) el Anexo 2 define *facilidad de aprendizaje*, *facilidad de uso* e *intención de uso* como puntajes con umbral «≥ 3,5», pero son subescalas de 3, 6 y **1** ítem (con un solo ítem no existe alfa) y la literatura desaconseja calcular subescalas del SUS de forma rutinaria (Lewis y Sauro, 2017); si se reportan, con su propio alfa y con cautela; (b) la nota de adaptación del Anexo 3 dice que «los ítems 5, 8 y 9 fueron contextualizados», pero leídos frente al SUS estándar los **diez** enunciados están reformulados (p. ej. el 2 y el 6 unen dos ideas), por lo que la confiabilidad publicada del SUS (α ≈ 0,91) no se hereda y hay que medirla. El Anexo 3 tiene validación externa: **no se edita en silencio**. Detalle en [`plan-confiabilidad-instrumentos.md`](./plan-confiabilidad-instrumentos.md) §2.1 (filas 6 y 7).
 
 ## Próxima revisión pendiente
 

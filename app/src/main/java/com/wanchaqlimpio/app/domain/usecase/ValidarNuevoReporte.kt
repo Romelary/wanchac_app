@@ -1,5 +1,6 @@
 package com.wanchaqlimpio.app.domain.usecase
 
+import com.wanchaqlimpio.app.BuildConfig
 import com.wanchaqlimpio.app.core.util.distanciaMetros
 import com.wanchaqlimpio.app.domain.LimiteDistritalWanchaq
 import com.wanchaqlimpio.app.domain.model.Reporte
@@ -28,6 +29,7 @@ sealed interface ResultadoValidacionReporte {
  * en diseno.md). Es una clase de dominio pura (sin Android ni Room) para que
  * se pueda probar sin infraestructura — ver pruebas.md.
  */
+
 class ValidarNuevoReporte
     @Inject
     constructor() {
@@ -35,19 +37,23 @@ class ValidarNuevoReporte
             ubicacion: Ubicacion,
             reportesPreviosDelMismoDispositivo: List<Reporte>,
             ahoraEpochMillis: Long,
-        ): ResultadoValidacionReporte =
-            when {
-                ubicacion.precisionMetros > PRECISION_MAXIMA_METROS ->
-                    ResultadoValidacionReporte.PrecisionInsuficiente(ubicacion.precisionMetros)
+        ): ResultadoValidacionReporte {
+            
+            // Bypass para pruebas de campo sin restricción de Wanchaq ni límite estricto de GPS
+            val fueraDelDistrito = !LimiteDistritalWanchaq.contiene(ubicacion.latitud, ubicacion.longitud)
+            val malaPrecision = ubicacion.precisionMetros > PRECISION_MAXIMA_METROS
 
-                !LimiteDistritalWanchaq.contiene(ubicacion.latitud, ubicacion.longitud) ->
-                    ResultadoValidacionReporte.FueraDelLimiteDistrital
-
-                reportesPreviosDelMismoDispositivo.any { esDuplicadoDe(it, ubicacion, ahoraEpochMillis) } ->
-                    ResultadoValidacionReporte.Duplicado
-
-                else -> ResultadoValidacionReporte.Valido
+            if (!BuildConfig.MODO_PRUEBA) {
+                if (malaPrecision) return ResultadoValidacionReporte.PrecisionInsuficiente(ubicacion.precisionMetros)
+                if (fueraDelDistrito) return ResultadoValidacionReporte.FueraDelLimiteDistrital
             }
+
+            if (reportesPreviosDelMismoDispositivo.any { esDuplicadoDe(it, ubicacion, ahoraEpochMillis) }) {
+                return ResultadoValidacionReporte.Duplicado
+            }
+
+            return ResultadoValidacionReporte.Valido
+        }
 
         private fun esDuplicadoDe(
             previo: Reporte,

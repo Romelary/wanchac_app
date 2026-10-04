@@ -1,0 +1,87 @@
+Evidencia: comprobaciones aritméticas sobre el documento «Proyecto de Investigación v5.91» — Wanchaq Limpio
+Fecha: 2026-09-19
+Ejecutó: el asistente (Claude), en la computadora del usuario. No usa credenciales, red ni datos de participantes.
+Comando: python analisis/confiabilidad/verificar_documento_v591.py
+Qué es: comprueba si las cifras del documento son coherentes ENTRE SÍ (V de Aiken de los Anexos 10-12; kappa posible con el
+acuerdo que declara la sección de confiabilidad; promedios de la Tabla 3). Los datos de los Anexos 10-12 están copiados en el
+script tal cual figuran en el documento. NO mide la confiabilidad de ningún instrumento.
+Se usa en docs/plan-confiabilidad-instrumentos.md §2 y en docs/correcciones-documento.md (CORR-011 y CORR-012).
+
+================================================================================================
+A. «V de Aiken» de los Anexos 10-12: ¿es la V de Aiken?
+================================================================================================
+
+Anexo 10 · Instrumento 1 (SUS)
+   criterio        jueces (%)         V del anexo  promedio/100  V de Aiken
+   Claridad        (90, 95, 65)              0.83         0.833       0.917
+   Objetividad     (85, 92, 65)              0.81         0.807       0.917
+   Actualidad      (95, 94, 60)              0.83         0.830       0.833
+   Organización    (90, 91, 70)              0.84         0.837       0.917
+   Suficiencia     (90, 90, 68)              0.83         0.827       0.917
+   Intencionalidad (95, 96, 70)              0.87         0.870       0.917
+   Consistencia    (90, 93, 60)              0.81         0.810       0.833
+   Coherencia      (90, 95, 60)              0.82         0.817       0.833
+   Metodología     (90, 92, 75)              0.86         0.857       0.917
+   Conveniencia    (85, 94, 75)              0.85         0.847       0.917
+   El valor del anexo coincide con el promedio/100 en 10 de 10 criterios.
+   V global: anexo = 0.835 | V de Aiken recalculada = 0.892
+
+Anexo 11 · Instrumento 2 (Ficha de campo)
+   criterio        jueces (%)         V del anexo  promedio/100  V de Aiken
+   Claridad        (95, 95, 75)              0.85         0.883       0.917
+   Objetividad     (95, 91, 60)              0.84         0.820       0.833
+   Actualidad      (95, 94, 75)              0.83         0.880       0.917
+   Organización    (95, 92, 50)              0.86         0.790       0.833
+   Suficiencia     (90, 95, 65)              0.84         0.833       0.917
+   Intencionalidad (95, 93, 50)              0.86         0.793       0.833
+   Consistencia    (95, 94, 50)              0.83         0.797       0.833
+   Coherencia      (95, 93, 55)              0.83         0.810       0.833
+   Metodología     (95, 96, 60)              0.89         0.837       0.833
+   Conveniencia    (90, 90, 61)              0.85         0.803       0.917
+   El valor del anexo coincide con el promedio/100 en 0 de 10 criterios.
+   V global: anexo = 0.848 | V de Aiken recalculada = 0.867
+
+Anexo 12 · Instrumento 3 (Ficha GPS)
+   criterio        jueces (%)         V del anexo  promedio/100  V de Aiken
+   Claridad        (85, 94, 62)              0.81         0.803       0.917
+   Objetividad     (95, 93, 65)              0.84         0.843       0.917
+   Actualidad      (95, 95, 65)              0.83         0.850       0.917
+   Organización    (85, 92, 61)              0.82         0.793       0.917
+   Suficiencia     (85, 91, 66)              0.81         0.807       0.917
+   Intencionalidad (95, 94, 65)              0.86         0.847       0.917
+   Consistencia    (90, 96, 55)              0.82         0.803       0.833
+   Coherencia      (90, 93, 60)              0.81         0.810       0.833
+   Metodología     (95, 95, 61)              0.88         0.837       0.917
+   Conveniencia    (90, 92, 60)              0.86         0.807       0.833
+   El valor del anexo coincide con el promedio/100 en 3 de 10 criterios.
+   V global: anexo = 0.834 | V de Aiken recalculada = 0.892
+
+   Probabilidad exacta de cada V con 3 jueces y 5 categorías si eligieran al azar:
+   V >= 1.000: p = 0.008
+   V >= 0.917: p = 0.032
+   V >= 0.833: p = 0.080
+   V >= 0.750: p = 0.160
+   V >= 0.667: p = 0.280
+
+================================================================================================
+B. ¿Es posible el kappa que dice el documento? (6 focos, F01-F06)
+================================================================================================
+
+   Magnitud del foco (Bajo/Medio/Alto): 3 categorías, acuerdo 66,7 % = 4 de 6
+   El texto dice: «kappa moderado-sustancial»
+   Tablas de contingencia posibles: 315 | kappa mínimo = -0.200 | kappa máximo = 0.538
+
+   Composición del residuo: 4 categorías, acuerdo 83,3 % = 5 de 6
+   El texto dice: «casi perfecta (kappa > 0,80)»
+   Tablas de contingencia posibles: 672 | kappa mínimo = 0.000 | kappa máximo = 0.778
+
+   Bandas de Landis y Koch (1977): 0,41-0,60 moderado; 0,61-0,80 sustancial; 0,81-1,00 casi perfecto
+
+================================================================================================
+C. Tabla 3: promedios por juez
+================================================================================================
+   Anexo 10 · Instrumento 1 (SUS)               jueces 1, 2, 3: 90.0 | 93.2 | 66.8
+   Anexo 11 · Instrumento 2 (Ficha de campo)    jueces 1, 2, 3: 94.0 | 93.3 | 60.1
+   Anexo 12 · Instrumento 3 (Ficha GPS)         jueces 1, 2, 3: 90.5 | 93.5 | 62.0
+   Mínimo de los 9 promedios = 60.1 (el texto habla de una dispersión «de 59.2 a 94.0»)
+   Puntaje individual más bajo de todos los anexos = 50
