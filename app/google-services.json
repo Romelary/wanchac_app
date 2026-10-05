@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1016805173103",
+    "project_id": "wanchac-b3739",
+    "storage_bucket": "wanchac-b3739.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016805173103:android:eb772a4b2b8fd344276a9a",
+        "android_client_info": {
+          "package_name": "com.wanchaqlimpio.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtU1L2UabBbzHai3yeDiJSra5_6EAvkKU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
