@@ -179,15 +179,20 @@ class ValidacionTest(SimpleTestCase):
 
     def test_los_bordes_del_rectangulo_son_validos_y_un_paso_mas_afuera_no(self):
         # Mismo rectángulo que LimiteDistritalWanchaq.kt (con `in`, es decir, inclusivo)
-        for lon, lat in ((-71.965, -13.545), (-71.930, -13.515), (-71.965, -13.515), (-71.930, -13.545)):
+        for lon, lat in ((-71.980, -13.552), (-71.925, -13.510), (-71.980, -13.510), (-71.925, -13.552)):
             d = base()
             d["geometry"]["coordinates"] = [lon, lat]
             self.assertEqual((validar(d).longitud, validar(d).latitud), (lon, lat))
-        for lon, lat in ((-71.9651, -13.53), (-71.9299, -13.53), (-71.9475, -13.5451), (-71.9475, -13.5149)):
+        for lon, lat in ((-71.9801, -13.53), (-71.9249, -13.53), (-71.950, -13.5521), (-71.950, -13.5099)):
             d = base()
             d["geometry"]["coordinates"] = [lon, lat]
             with self.subTest(lon=lon, lat=lat):
                 self.assertRechaza(d, "fuera_de_wanchaq", 422)
+
+    def test_municipalidad_de_wanchaq_es_valida(self):
+        d = base()
+        d["geometry"]["coordinates"] = [-71.96700, -13.52138]
+        self.assertEqual((validar(d).longitud, validar(d).latitud), (-71.96700, -13.52138))
 
     def test_la_forma_se_comprueba_antes_que_la_regla_del_distrito(self):
         # Categoría inválida Y fuera de Wanchaq: gana el 400 (un 422 significa "bien formado pero fuera del distrito")

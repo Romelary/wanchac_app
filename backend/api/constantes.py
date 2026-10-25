@@ -7,10 +7,9 @@ CATEGORIAS = ("PLASTICO", "CARTON", "VIDRIO", "ORGANICO", "ESCOMBROS", "MIXTO")
 CATEGORIAS_IA = ("PLASTICO", "CARTON", "VIDRIO", "ORGANICO")
 
 # Rectángulo aproximado del distrito de Wanchaq: el MISMO que usa la app (LimiteDistritalWanchaq.kt), para que cliente y
-# servidor coincidan. Es provisional hasta tener el polígono oficial (pendiente en docs/progreso.md); entonces la
-# validación definitiva pasará a ST_Within en PostGIS (CORR-007).
-WANCHAQ_LATITUD = (-13.545, -13.515)
-WANCHAQ_LONGITUD = (-71.965, -71.930)
+# servidor coincidan. Abarca desde Limacpampa y la Municipalidad de Wanchaq (-71.967) hasta Santa Rosa y Marcavalle.
+WANCHAQ_LATITUD = (-13.552, -13.510)
+WANCHAQ_LONGITUD = (-71.980, -71.925)
 
 # La fecha del reporte la fija el reloj del teléfono, que puede estar mal ajustado: se tolera un día hacia el futuro y se
 # rechaza lo anterior al desarrollo de la app.
